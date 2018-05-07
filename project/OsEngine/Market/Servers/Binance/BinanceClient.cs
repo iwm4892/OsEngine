@@ -41,7 +41,7 @@ namespace OsEngine.Market.Servers.Binance
             }
 
             // проверяем доступность сервера для HTTP общения с ним
-            Uri uri = new Uri(_baseUrl+"/v1/time");
+            Uri uri = new Uri(_baseUrl + "/v1/time");
             try
             {
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
@@ -384,7 +384,7 @@ namespace OsEngine.Market.Servers.Binance
             {
                 var param = new Dictionary<string, string>();
                 param.Add("symbol=" + nameSec.ToUpper(), "&interval=" + needTf);
-               
+
                 var res = CreateQuery(Method.GET, endPoint, param, false);
 
                 var candles = _deserializeCandles(res);
@@ -444,7 +444,7 @@ namespace OsEngine.Market.Servers.Binance
         /// <returns></returns>
         private List<Candle> BuildCandles(List<Candle> oldCandles, int needTf, int oldTf)
         {
-            List < Candle > newCandles = new List<Candle>();
+            List<Candle> newCandles = new List<Candle>();
 
             int index = oldCandles.FindIndex(can => can.TimeStart.Minute % needTf == 0);
 
@@ -535,8 +535,8 @@ namespace OsEngine.Market.Servers.Binance
                         }
                         else
                         {
-                            message = fullUrl + "&timestamp="+ timeStamp;
-                            fullUrl += "&timestamp="+ timeStamp + "&signature=" + CreateSignature(message.Trim('?'));
+                            message = fullUrl + "&timestamp=" + timeStamp;
+                            fullUrl += "&timestamp=" + timeStamp + "&signature=" + CreateSignature(message.Trim('?'));
                         }
                     }
 
@@ -548,7 +548,7 @@ namespace OsEngine.Market.Servers.Binance
                     if (response.Contains("code"))
                     {
                         var error = JsonConvert.DeserializeAnonymousType(response, new ErrorMessage());
-                        throw new Exception(error.msg);                        
+                        throw new Exception(error.msg);
                     }
 
                     return response;
@@ -568,7 +568,7 @@ namespace OsEngine.Market.Servers.Binance
         {
             var resTime = CreateQuery(Method.GET, "api/v1/time", null, false);
             var result = JsonConvert.DeserializeAnonymousType(resTime, new BinanceTime());
-            return (result.serverTime+500).ToString();
+            return (result.serverTime + 500).ToString();
 
             /*DateTime yearBegin = new DateTime(1970, 1, 1);
             var res = DateTime.UtcNow;
@@ -624,9 +624,24 @@ namespace OsEngine.Market.Servers.Binance
                     param.Add("&type=", "LIMIT");
                     param.Add("&timeInForce=", "GTC");
                     param.Add("&newClientOrderId=", order.NumberUser.ToString());
+                    //++++++++ вычисляем количество из размера лота
+                    Decimal quant;
+                    if (order.Side == Side.Sell)
+                    {
+                        quant = order.Volume / order.Price;
+                    }
+                    else
+                    {
+                        quant = order.Volume;
+                    }
+                    param.Add("&quantity=",
+                        quant.ToString("0.000000")//CultureInfo.InvariantCulture)
+                            .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, ".").Replace(",", "."));
+                    /*
                     param.Add("&quantity=",
                         order.Volume.ToString(CultureInfo.InvariantCulture)
                             .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));
+                    */
                     param.Add("&price=",
                         order.Price.ToString(CultureInfo.InvariantCulture)
                             .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));
@@ -744,7 +759,7 @@ namespace OsEngine.Market.Servers.Binance
         {
             if (!_wsStreams.ContainsKey(security.Name))
             {
-                string urlStr = "wss://stream.binance.com:9443/stream?streams=" + security.Name.ToLower() + "@depth20/" +security.Name.ToLower() + "@trade";
+                string urlStr = "wss://stream.binance.com:9443/stream?streams=" + security.Name.ToLower() + "@depth20/" + security.Name.ToLower() + "@trade";
 
                 _wsClient = new WebSocket(urlStr); //создаем вебсокет
 
@@ -785,7 +800,7 @@ namespace OsEngine.Market.Servers.Binance
                         {
                             if (mes.Contains("code"))
                             {
-                                SendLogMessage(JsonConvert.DeserializeAnonymousType(mes,new ErrorMessage()).msg, LogMessageType.Error);
+                                SendLogMessage(JsonConvert.DeserializeAnonymousType(mes, new ErrorMessage()).msg, LogMessageType.Error);
                             }
 
                             else if (mes.Contains("\"e\"" + ":" + "\"executionReport\""))

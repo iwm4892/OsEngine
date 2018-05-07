@@ -209,6 +209,7 @@
     <Compile Include="Charts\CandleChart\Indicators\KalmanFilterUi.xaml.cs">
       <DependentUpon>KalmanFilterUi.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Charts\CandleChart\Indicators\Flat.cs" />
     <Compile Include="Charts\CandleChart\Indicators\Line.cs" />
     <Compile Include="Charts\CandleChart\Indicators\MacdHistogram.cs" />
     <Compile Include="Charts\CandleChart\Indicators\MacdHistogramUi.xaml.cs">

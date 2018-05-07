@@ -27,7 +27,7 @@ namespace OsEngine.OsTrader.Panels
             List<string> result = new List<string>();
 
             // публичные примеры
-           
+
             result.Add("Engine");
             result.Add("MarketDepthJuggler");
             result.Add("TwoTimeFrameBot");
@@ -61,13 +61,14 @@ namespace OsEngine.OsTrader.Panels
             result.Add("PriceChannelVolatility");
             result.Add("RsiContrtrend");
             result.Add("PairTraderSpreadSma");
+            result.Add("RedSwift");
             // роботы с инструкцией по созданию
 
             result.Add("Robot");
             result.Add("FirstBot");
 
-            
-                
+            result.Add("ImpulsFlatBrake");
+
             return result;
         }
 
@@ -113,7 +114,7 @@ namespace OsEngine.OsTrader.Panels
                 bot = new PairTraderSimple(name);
             }
 
-// под релиз
+            // под релиз
             if (nameClass == "RsiTrade")
             {
                 bot = new RsiTrade(name);
@@ -219,20 +220,534 @@ namespace OsEngine.OsTrader.Panels
             {
                 bot = new PairTraderSpreadSma(name);
             }
-            
+            if (nameClass == "RedSwift")
+            {
+                bot = new RedSwift(name);
+            }
+            if (nameClass == "ImpulsFlatBrake")
+            {
+                bot = new ImpulsFlatBrake(name);
+            }
+
 
             return bot;
         }
     }
+    public class RedSwift : BotPanel
+    {
+        private BotTabSimple _tab;
+        // начальное значение стопа(при выставлении ордера)
+        //public StrategyParameterInt _startStop;
+        public Decimal _startStop;
+        // объем лота
+        public Decimal _volume;
 
-    # region примеры роботов для оптимизации
+        public override string GetNameStrategyType()
+        {
+            return "RedSwift";
+        }
+
+        public override void ShowIndividualSettingsDialog()
+        {
+            MessageBox.Show("У данной стратегии пока нет настроек");
+        }
+
+        public RedSwift(string name)
+            : base(name)
+        {
+            TabCreate(BotTabType.Simple);
+            _tab = TabsSimple[0];
+
+            //   _volume = CreateParameter("_volume", 1, 1m, 100, 2);
+            //   _startStop = CreateParameter("_startStop", 5, 5, 15, 1);
+
+            _tab.CandleFinishedEvent += TradeLogic;
+            _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
+            _tab.PositionClosingFailEvent += _tab_PositionClosingFailEvent;
+            _tab.PositionOpeningFailEvent += _tab_PositionOpeningFailEvent;
+            _tab.PositionClosingSuccesEvent += _tab_PositionOpeningSuccesEvent;
+            _volume = 10;
+            _startStop = 10;
+        }
+
+        private void _tab_PositionOpeningFailEvent(Position obj)
+        {
+            /*
+            if (obj.OpenActiv)
+            {
+                return;
+            }
+            if (obj.Direction== Side.Buy)
+            {
+                _tab.BuyAtMarket(_volume);
+            }
+            else
+            {
+                _tab.SellAtMarket(_volume);
+            }
+            */
+
+        }
+
+        private void _tab_PositionClosingFailEvent(Position obj)
+        {
+            /*
+            if (obj.State != PositionStateType.Closing)
+            {
+                return;
+            }
+               _tab.CloseAtMarket(obj, obj.OpenVolume);
+        */
+        }
+
+        private void _tab_PositionOpeningSuccesEvent(Position obj)
+        {
+            //выставим новые стопы
+            if (obj.Direction == Side.Buy)
+            {
+                _tab.CloseAtStop(obj, obj.EntryPrice - Convert.ToDecimal(_startStop), obj.EntryPrice - Convert.ToDecimal(_startStop));
+            }
+            else
+            {
+                _tab.CloseAtStop(obj, obj.EntryPrice + Convert.ToDecimal(_startStop), obj.EntryPrice + Convert.ToDecimal(_startStop));
+            }
+        }
+
+
+
+        private void TradeLogic(List<Candle> candles)
+        {
+            // 1. если свечей меньше чем 5 - выходим из метода.
+            if (candles.Count < 2)
+            {
+                return;
+            }
+
+            // 2. если уже есть открытые позиции – закрываем и выходим.
+            if (_tab.PositionsOpenAll != null && _tab.PositionsOpenAll.Count != 0)
+            {
+                //   _tab.CloseAllAtMarket();
+                //   return;
+
+                if (_tab.PositionOpenLong != null && _tab.PositionOpenLong.Count != 0 && candles[candles.Count - 2].Close > candles[candles.Count - 1].Close)
+                {
+                    _tab.CloseAllAtMarket();
+                    return;
+                }
+                if (_tab.PositionOpenShort != null && _tab.PositionOpenShort.Count != 0 && candles[candles.Count - 2].Close < candles[candles.Count - 1].Close)
+                {
+                    _tab.CloseAllAtMarket();
+                    return;
+                }
+
+            }
+
+            // 3. если закрытие последней свечи выше закрытия предыдущей – покупаем. 
+            if (candles[candles.Count - 1].Close > candles[candles.Count - 1].Open && (_tab.PositionOpenLong == null || _tab.PositionOpenLong.Count == 0))
+            //if (candles[candles.Count - 1].Close > candles[candles.Count - 2].Close)
+            {
+                _tab.BuyAtMarket(Convert.ToDecimal(_volume));
+            }
+
+            // 4. если закрытие последней свечи ниже закрытия предыдущей, продаем. 
+            if (candles[candles.Count - 1].Close < candles[candles.Count - 1].Open && (_tab.PositionOpenShort == null || _tab.PositionOpenShort.Count == 0))
+            //if (candles[candles.Count - 1].Close < candles[candles.Count - 2].Close )
+            {
+                _tab.SellAtMarket(Convert.ToDecimal(_volume));
+            }
+            // 5. поменяем стопы на предыдущих позициях
+
+            if (_tab.PositionsOpenAll != null && _tab.PositionsOpenAll.Count != 0)
+            {
+
+                decimal localstop;
+                localstop = (candles[candles.Count - 1].Close + candles[candles.Count - 1].Open) / 2;
+                for (int i = 0; i < _tab.PositionsOpenAll.Count; i++)
+                {
+                    _tab.CloseAtStop(_tab.PositionsOpenAll[i], localstop, localstop);
+                }
+            }
+
+        }
+    }
+    public class ImpulsFlatBrake : BotPanel
+    {
+        // переменные
+        private BotTabSimple _tab;
+        /// <summary>
+        /// Мой индикатор
+        /// </summary>
+        private Flat _flat;
+
+
+        //private Bollinger _Bol;
+        /// <summary>
+        /// Размер лота
+        /// </summary>
+        private StrategyParameterDecimal _Volume;
+        /// <summary>
+        /// верхняя граница коридора
+        /// </summary>
+        private Decimal upLine;
+        /// <summary>
+        /// нижняя граница коридора
+        /// </summary>
+        private Decimal downLine;
+        /// <summary>
+        /// размер средней свечи
+        /// </summary>
+        private Decimal sredCandle;
+        /// <summary>
+        /// режим on/off
+        /// </summary>
+        public StrategyParameterString Regime;
+        /// <summary>
+        /// размер стопа в % от размера последней свечи
+        /// </summary>
+        public StrategyParameterDecimal TralingStopPrise;
+        // смотрим количество свечей
+        public Int16 _CountCaldelsAnaliz;
+        //размер последней свечки
+        private Decimal LastCandleBody;
+        /// <summary>
+        /// проскальзывание
+        /// </summary>
+        public StrategyParameterInt Slipage;
+        /// <summary>
+        /// Цена открытия последней свечки
+        /// </summary>
+        private Decimal LastCandleOpen;
+        // отзыв заявок в реальном подключении
+
+        /// <summary>
+        /// позиции которые нужно отозвать
+        /// </summary>
+        List<Position> _positionsToClose = new List<Position>();
+
+        private DateTime LastUpdStop;
+        /// <summary>
+        /// место работы потока где отзываются заявки в реальном подключении
+        /// </summary>
+        private void ClosePositionThreadArea()
+        {
+            while (true)
+            {
+                Thread.Sleep(1000);
+
+                if (MainWindow.ProccesIsWorked == false)
+                {
+                    return;
+                }
+
+                for (int i = 0; i < _positionsToClose.Count; i++)
+                {
+                    if (_positionsToClose[i].State != PositionStateType.Opening)
+                    {
+                        continue;
+                    }
+
+                    if (_positionsToClose[i].OpenOrders != null &&
+                        !string.IsNullOrWhiteSpace(_positionsToClose[i].OpenOrders[0].NumberMarket))
+                    {
+                        _tab.CloseAllOrderToPosition(_positionsToClose[i]);
+                        _positionsToClose.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
+        }
+
+        public override string GetNameStrategyType()
+        {
+            return "ImpulsFlatBrake";
+        }
+
+        public override void ShowIndividualSettingsDialog()
+        {
+            MessageBox.Show("У данной стратегии пока нет настроек");
+        }
+        public ImpulsFlatBrake(string name)
+            : base(name)
+        {
+            TabCreate(BotTabType.Simple);
+            _tab = TabsSimple[0];
+
+            _flat = new Flat(name + "_flat", false) { Lenght = 20, ColorUp = Color.DodgerBlue, ColorDown = Color.DarkRed, };
+            _flat = (Flat)_tab.CreateCandleIndicator(_flat, "Prime");
+            _flat.Save();
+
+
+            Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
+            TralingStopPrise = CreateParameter("Stop", 5, 0.01m, 100, 0.01m);
+            _Volume = CreateParameter("Volume", 1, 0.01m, 100, 1);
+            //   _CountCaldelsAnaliz = CreateParameter("CountCaldelsAnaliz", 20, 1, 100, 5);
+            Slipage = CreateParameter("Slipage", 0, 0, 20, 1);
+            _tab.CandleUpdateEvent += _tab_CandleUpdateEvent;
+            _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
+            _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
+            // этот поток создан для того чтобы в реальной торговле отзывать заявки
+            // т.к. нужно ожидать когда у ордеров вернётся номер ордера на бирже
+            // а когда у нас каждую секунду переустанавливаются ордера, этого может не 
+            // успевать происходить. Особенно через наш любимый квик.
+
+            Thread closerThread = new Thread(ClosePositionThreadArea);
+            closerThread.IsBackground = true;
+            closerThread.Start();
+
+            LastUpdStop = DateTime.Now;
+        }
+
+        private void _tab_PositionOpeningSuccesEvent(Position obj)
+        {
+
+            //выставим новые стопы
+            Decimal Localstop;
+            if (obj.Direction == Side.Buy)
+            {
+                Localstop = obj.EntryPrice - obj.EntryPrice * TralingStopPrise.ValueDecimal / 100;
+                //  _tab.CloseAtTrailingStop(obj, obj.EntryPrice - LastCandleBody, obj.EntryPrice - LastCandleBody);
+            }
+            else
+            {
+                Localstop = obj.EntryPrice + obj.EntryPrice * TralingStopPrise.ValueDecimal / 100;
+                //  _tab.CloseAtTrailingStop(obj, obj.EntryPrice + LastCandleBody, obj.EntryPrice + LastCandleBody);
+            }
+
+
+            _tab.CloseAtTrailingStop(obj, Localstop, Localstop);
+        }
+
+        private void LogicClosePositionOnUpdate(List<Candle> candles, Position obj)
+        {
+
+            if (obj.ClosePrice != 0 && obj.Direction == Side.Buy)
+            {
+                if (obj.ClosePrice > candles[candles.Count - 1].Close)
+                {
+                    _tab.CloseAllAtMarket();
+                    return;
+                }
+            }
+            else
+            {
+                if (obj.ClosePrice != 0 && obj.ClosePrice < candles[candles.Count - 1].Close)
+                {
+                    _tab.CloseAllAtMarket();
+                    return;
+                }
+            }
+        }
+        private void LogicClosePosition(List<Candle> candles, Position obj)
+        {
+
+
+
+            /*
+            Decimal LocalStop;
+            //если это окончание свечки тогда логика другая
+            if (candles[candles.Count - 1].State == CandleStates.Finished)
+            {
+                if (obj.Direction == Side.Buy)
+                {
+                    LocalStop= candles[candles.Count - 1].Close - Convert.ToDecimal(_flat.AverageCandle * TralingStopPrise.ValueDecimal / 100);
+                    if (obj.StopOrderPrice != 0 && obj.StopOrderPrice < LocalStop)
+                    {
+                        _tab.CloseAtTrailingStop(obj, LocalStop + Slipage.ValueInt, LocalStop);
+                    }
+                }
+                else
+                {
+                    LocalStop = candles[candles.Count - 1].Close + Convert.ToDecimal(_flat.AverageCandle * TralingStopPrise.ValueDecimal / 100);
+                    if (obj.StopOrderPrice != 0 && obj.StopOrderPrice < LocalStop)
+                    {
+                        _tab.CloseAtTrailingStop(obj, LocalStop - Slipage.ValueInt, LocalStop);
+                    }
+                }
+            }
+            else
+            // если это текущее движение
+            {
+                
+                if (obj.Direction == Side.Buy)
+                {
+                    LocalStop = candles[candles.Count - 1].Close - Convert.ToInt16(_flat.AverageCandle * TralingStopPrise.ValueDecimal / 100);
+                    //LocalStop = candles[candles.Count - 1].Open;
+                    if (obj.StopOrderPrice != 0 && obj.StopOrderPrice < LocalStop)
+                    {
+
+                        if (
+                            (obj.CloseOrders != null && obj.CloseOrders.Count > 1 && obj.CloseOrders.Count < 4 && (DateTime.Now - obj.CloseOrders[obj.CloseOrders.Count - 1].TimeCreate).Seconds > 5)
+                            || obj.CloseOrders == null)
+                        {
+                            _tab.CloseAtTrailingStop(obj, LocalStop + Slipage.ValueInt, LocalStop);
+                        }
+                    }
+                }
+                else
+                {
+                    //LocalStop = candles[candles.Count - 1].Open;
+                    LocalStop = candles[candles.Count - 1].Close + Convert.ToInt16(_flat.AverageCandle * TralingStopPrise.ValueDecimal / 100);
+                    if (obj.StopOrderPrice != 0 && obj.StopOrderPrice > LocalStop)
+                    {
+                        if (
+                            (obj.CloseOrders != null && obj.CloseOrders.Count > 1 && obj.CloseOrders.Count < 4 && (DateTime.Now - obj.CloseOrders[obj.CloseOrders.Count - 1].TimeCreate).Seconds > 5)
+                            || obj.CloseOrders == null)
+                        {
+                            _tab.CloseAtTrailingStop(obj, LocalStop - Slipage.ValueInt, LocalStop);
+                        }
+
+                    }
+                }
+            }
+            if (obj.CloseOrders != null && obj.CloseOrders.Count > 4)
+            {
+                if (obj.CloseOrders[obj.CloseOrders.Count - 4].State != OrderStateType.Fail && obj.CloseOrders[obj.CloseOrders.Count - 4].State != OrderStateType.Cancel)
+                {
+                    _tab.CloseOrder(obj.CloseOrders[obj.CloseOrders.Count - 4]);
+                }
+
+            }
+            */
+            if (obj.Direction == Side.Buy)
+            {
+                _tab.CloseAtTrailingStop(obj,
+                    candles[candles.Count - 1].Close -
+                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100,
+                    candles[candles.Count - 1].Close -
+                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100);
+                /*
+                _tab.CloseAtTrailingStop(obj,
+                    candles[candles.Count - 1].Close -
+                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100,
+                    candles[candles.Count - 1].Close -
+                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100);
+                    */
+            }
+            else
+            {
+
+                _tab.CloseAtTrailingStop(obj,
+                    candles[candles.Count - 1].Close +
+                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100,
+                    candles[candles.Count - 1].Close +
+                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100);
+
+            }
+
+
+        }
+
+        private void _tab_CandleFinishedEvent(List<Candle> candles)
+        {
+            if (Regime.ValueString == "Off")
+            {
+                return;
+            }
+            if (candles.Count < _CountCaldelsAnaliz)
+            {
+                upLine = candles[candles.Count - 1].Low;
+                downLine = candles[candles.Count - 1].High;
+                return;
+            }
+            LastCandleBody = Math.Abs(candles[candles.Count - 1].High - candles[candles.Count - 1].Low);
+            LastCandleOpen = candles[candles.Count - 1].Open;
+
+
+            List<Position> openPositions = _tab.PositionsOpenAll;
+
+            if (openPositions != null && openPositions.Count != 0)
+            {
+                for (int i = 0; i < openPositions.Count; i++)
+                {
+                    if (openPositions.Count != 0)
+                    {
+                        LogicClosePosition(candles, openPositions[i]);
+                    }
+                }
+            }
+
+
+            if ((openPositions == null || openPositions.Count == 0)
+                && (_flat.LastMax != 0 & _flat.LastMin != 0)
+                && (_flat.LastMin != _flat.LastMax))
+            {
+                _tab.SellAtStopCanсel();
+                _tab.BuyAtStopCanсel();
+                _tab.PositionOpenerToStopsAll.Clear();
+                //                _tab.BuyAtStop(_Volume.ValueDecimal, _flat.LastMax + _flat.AverageCandle + Slipage.ValueInt, _flat.LastMax + _flat.AverageCandle, StopActivateType.HigherOrEqual);
+                //                _tab.SellAtStop(_Volume.ValueDecimal, _flat.LastMin - _flat.AverageCandle - Slipage.ValueInt, _flat.LastMin - _flat.AverageCandle, StopActivateType.LowerOrEqyal);
+                _tab.BuyAtStop(_Volume.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.HigherOrEqual);
+                _tab.SellAtStop(_Volume.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.LowerOrEqyal);
+
+
+            }
+
+        }
+
+        private void _tab_CandleUpdateEvent(List<Candle> candles)
+        {
+            if (Regime.ValueString == "Off")
+            {
+                return;
+            }
+            List<Position> openPositions = _tab.PositionsOpenAll;
+            if (openPositions != null && openPositions.Count != 0)
+            {
+                for (int i = 0; i < openPositions.Count; i++)
+                {
+                    if (openPositions[i].State != PositionStateType.Closing)
+                    {
+                        LogicClosePositionOnUpdate(candles, openPositions[i]);
+                    }
+                }
+            }
+            if (openPositions != null && openPositions.Count != 0 && (DateTime.Now - LastUpdStop).Seconds > 2)
+            {
+                for (int i = 0; i < openPositions.Count; i++)
+                {
+                    if (openPositions[i].State != PositionStateType.Closing)
+                    {
+                        LogicClosePosition(candles, openPositions[i]);
+                    }
+                }
+                LastUpdStop = DateTime.Now;
+
+            }
+
+            if (openPositions != null && openPositions.Count > 0)
+            {
+                for (int i = 0; i < openPositions.Count - 1; i++)
+                {
+                    if (openPositions[i].State == PositionStateType.Closing)
+                    {
+                        if (ServerMaster.StartProgram == ServerStartProgramm.IsOsTrader)
+                        { // в реальной торговле отправляем позицию на отзыв в массив, 
+                          // который обрабатывается отдельным потоком, ожидая когда у ордеров позиции
+                          // вернутся номера ордеров, прежде чем мы их будем пытаться отозвать
+                            _positionsToClose.Add(openPositions[i]);
+
+                        }
+                        else
+                        { // в тестере, сразу отправляем позицию на отзыв
+                            _tab.CloseAllOrderToPosition(openPositions[i]);
+                        }
+                    }
+
+                    //                        LogicClosePosition(candles, openPositions[i]);
+                    //                        if (openPositions.Count == 0) { break; }
+                }
+            }
+
+        }
+    }
+    #region примеры роботов для оптимизации
 
     /// <summary>
     /// робот анализирующий плотность стакана для входа
     /// </summary>
     public class MarketDepthJuggler : BotPanel
     {
-        
+
         //выставляем заявки над самыми толстыми покупками и продажами. 
         //не далее чем в пяти тиков от центра стакана. По две заявки.
         //Когда одна заявка отрабатывает, снимаем все ордера из системы.
@@ -309,7 +824,7 @@ namespace OsEngine.OsTrader.Panels
 
         }
 
-// начало логики
+        // начало логики
 
         /// <summary>
         /// последнее время проверки стакана
@@ -474,10 +989,10 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
-            _tab.CloseAtMarket(position, position.OpenVolume);
+            //   _tab.CloseAtMarket(position, position.OpenVolume);
         }
 
-// отзыв заявок в реальном подключении
+        // отзыв заявок в реальном подключении
 
         /// <summary>
         /// позиции которые нужно отозвать
@@ -615,7 +1130,7 @@ namespace OsEngine.OsTrader.Panels
         /// </summary>
         private AwesomeOscillator _aO;
 
-// настройки публичные
+        // настройки публичные
 
         /// <summary>
         /// длинна быстрой линии аллигатора
@@ -657,7 +1172,7 @@ namespace OsEngine.OsTrader.Panels
         /// </summary>
         public StrategyParameterString Regime;
 
-// переменные, нужные для торговли
+        // переменные, нужные для торговли
 
         private decimal _lastPrice;
 
@@ -1184,9 +1699,9 @@ namespace OsEngine.OsTrader.Panels
                     {
                         _tab.CloseAtTrailingStop(positions[i],
                             candles[candles.Count - 1].Close +
-                            candles[candles.Count - 1].Close*TralingStopLength.ValueDecimal/100,
+                            candles[candles.Count - 1].Close * TralingStopLength.ValueDecimal / 100,
                             candles[candles.Count - 1].Close +
-                            candles[candles.Count - 1].Close*TralingStopLength.ValueDecimal/100);
+                            candles[candles.Count - 1].Close * TralingStopLength.ValueDecimal / 100);
                     }
                 }
             }
@@ -1371,7 +1886,7 @@ namespace OsEngine.OsTrader.Panels
 
                     if (Regime.ValueString != "OnlyShort" && Regime.ValueString != "OnlyClosePosition")
                     {
-                        _tab.BuyAtLimit(Volume.ValueDecimal, _lastPrice + Slipage.ValueInt*_tab.Securiti.PriceStep);
+                        _tab.BuyAtLimit(Volume.ValueDecimal, _lastPrice + Slipage.ValueInt * _tab.Securiti.PriceStep);
                     }
                 }
             }
@@ -1492,11 +2007,11 @@ namespace OsEngine.OsTrader.Panels
         /// </summary>
         public StrategyParameterInt RsiLength;
 
-// переменные, нужные для торговли
+        // переменные, нужные для торговли
 
         private decimal _lastRsi;
 
-// логика
+        // логика
 
         /// <summary>
         /// событие завершения свечи
@@ -1635,7 +2150,7 @@ namespace OsEngine.OsTrader.Panels
             _lastBolUp = _bol.ValuesUp[_bol.ValuesUp.Count - 1];
             _lastBolDown = _bol.ValuesDown[_bol.ValuesDown.Count - 1];
 
-           
+
 
             if (_bol.ValuesUp == null)
             {
@@ -1733,7 +2248,7 @@ namespace OsEngine.OsTrader.Panels
             TabsSimple[0].CandleFinishedEvent += BotWhithTwoTimeFrame_CandleFinishedEvent;
             TabsSimple[0].PositionOpeningSuccesEvent += BotWhithTwoTimeFrame_PositionOpeningSuccesEvent;
 
-            Moving = new MovingAverage("moving",false);
+            Moving = new MovingAverage("moving", false);
             Moving.Lenght = 25;
             Moving.TypeCalculationAverage = MovingAverageTypeCalculation.Exponential;
         }
@@ -1741,8 +2256,8 @@ namespace OsEngine.OsTrader.Panels
         void BotWhithTwoTimeFrame_PositionOpeningSuccesEvent(Position position)
         {
 
-            TabsSimple[0].CloseAtStop(position, position.EntryPrice - 20*TabsSimple[0].Securiti.PriceStep,
-                position.EntryPrice - 20*TabsSimple[0].Securiti.PriceStep);
+            TabsSimple[0].CloseAtStop(position, position.EntryPrice - 20 * TabsSimple[0].Securiti.PriceStep,
+                position.EntryPrice - 20 * TabsSimple[0].Securiti.PriceStep);
 
             TabsSimple[0].CloseAtProfit(position, position.EntryPrice + 20 * TabsSimple[0].Securiti.PriceStep,
                 position.EntryPrice + 20 * TabsSimple[0].Securiti.PriceStep);
@@ -2976,7 +3491,7 @@ namespace OsEngine.OsTrader.Panels
                     VolumeFix1 = Convert.ToInt32(reader.ReadLine());
                     VolumeFix2 = Convert.ToInt32(reader.ReadLine());
                     LengthAtr = Convert.ToInt32(reader.ReadLine());
-                    KofAtr= Convert.ToDecimal(reader.ReadLine());
+                    KofAtr = Convert.ToDecimal(reader.ReadLine());
                     LengthUp = Convert.ToInt32(reader.ReadLine());
                     LengthDown = Convert.ToInt32(reader.ReadLine());
 
@@ -3062,7 +3577,7 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// логика открытия первой позиции и дополнительного входа
         /// </summary>
-        private void LogicOpenPosition(List<Candle> candles )
+        private void LogicOpenPosition(List<Candle> candles)
         {
             List<Position> openPositions = _tab.PositionsOpenAll;
             if (openPositions == null || openPositions.Count == 0)
@@ -5225,7 +5740,7 @@ namespace OsEngine.OsTrader.Panels
 
             _stoch = new StochasticOscillator(name + "Stochastic", false);
             _stoch = (StochasticOscillator)_tab.CreateCandleIndicator(_stoch, "StochasticArea");
-            
+
             Upline = new LineHorisontal("upline", "StochasticArea", false)
             {
                 Color = Color.Green,
@@ -8535,19 +9050,19 @@ namespace OsEngine.OsTrader.Panels
             _tab2 = TabsSimple[1];
             _tab2.CandleFinishedEvent += _tab2_CandleFinishedEvent;
 
-            _rsi1 = new Rsi( name + "RSI1", false) {Lenght = 25, ColorBase = Color.Gold };
-            _rsi1 = (Rsi) _tab1.CreateCandleIndicator(_rsi1, "Rsi1_Area");
+            _rsi1 = new Rsi(name + "RSI1", false) { Lenght = 25, ColorBase = Color.Gold };
+            _rsi1 = (Rsi)_tab1.CreateCandleIndicator(_rsi1, "Rsi1_Area");
             _rsi1.Save();
 
-            _rsi2 = new Rsi(name + "RSI2", false) {Lenght = 25, ColorBase = Color.GreenYellow};
-            _rsi2 = (Rsi) _tab2.CreateCandleIndicator(_rsi2, "Rsi2_Area");
+            _rsi2 = new Rsi(name + "RSI2", false) { Lenght = 25, ColorBase = Color.GreenYellow };
+            _rsi2 = (Rsi)_tab2.CreateCandleIndicator(_rsi2, "Rsi2_Area");
             _rsi2.Save();
 
             RsiSpread = 20;
 
             Volume1 = 1;
             Volume2 = 1;
-            
+
             Load();
 
             DeleteEvent += Strategy_DeleteEvent;
@@ -8568,7 +9083,7 @@ namespace OsEngine.OsTrader.Panels
         public override void ShowIndividualSettingsDialog()
         {
             PairRsiTradeUi ui = new PairRsiTradeUi(this);
-            ui.ShowDialog(); 
+            ui.ShowDialog();
         }
 
         /// <summary>
@@ -8635,7 +9150,7 @@ namespace OsEngine.OsTrader.Panels
 
         // публичные настройки
 
-       /// <summary>
+        /// <summary>
         /// объём первого инструмента
         /// </summary>
         public int RsiSpread;
@@ -8685,7 +9200,7 @@ namespace OsEngine.OsTrader.Panels
             _candles1 = candles;
 
             if (_candles2 == null ||
-                _candles2[_candles2.Count - 1].TimeStart != _candles1[_candles1.Count - 1].TimeStart )
+                _candles2[_candles2.Count - 1].TimeStart != _candles1[_candles1.Count - 1].TimeStart)
             {
                 return;
             }
@@ -8702,7 +9217,7 @@ namespace OsEngine.OsTrader.Panels
             _candles2 = candles;
 
             if (_candles1 == null ||
-                _candles2[_candles2.Count -1].TimeStart != _candles1[_candles1.Count - 1].TimeStart)
+                _candles2[_candles2.Count - 1].TimeStart != _candles1[_candles1.Count - 1].TimeStart)
             {
                 return;
             }
@@ -8721,7 +9236,7 @@ namespace OsEngine.OsTrader.Panels
 
             if (_candles1.Count < 10 && _candles2.Count < 10)
             {
-                return;;
+                return; ;
             }
 
             List<Position> pos1 = _tab1.PositionsOpenAll;
@@ -8732,30 +9247,30 @@ namespace OsEngine.OsTrader.Panels
                 return;
             }
 
-            if (_rsi1.Values == null && _rsi2.Values == null )
+            if (_rsi1.Values == null && _rsi2.Values == null)
             {
                 return;
             }
 
-            if ( _rsi1.Values.Count < _rsi1.Lenght+3 || _rsi2.Values.Count < _rsi2.Lenght + 3)
+            if (_rsi1.Values.Count < _rsi1.Lenght + 3 || _rsi2.Values.Count < _rsi2.Lenght + 3)
             {
                 return;
             }
 
             decimal lastRsi1 = _rsi1.Values[_rsi1.Values.Count - 1];
             decimal lastRsi2 = _rsi2.Values[_rsi2.Values.Count - 1];
-           
+
             if (lastRsi1 > lastRsi2 + RsiSpread)
             {
                 _tab1.SellAtMarket(Volume1);
                 _tab2.BuyAtMarket(Volume2);
-            } 
+            }
 
             if (lastRsi2 > lastRsi1 + RsiSpread)
             {
                 _tab1.BuyAtMarket(Volume1);
                 _tab2.SellAtMarket(Volume2);
-            } 
+            }
         }
 
         private void CheckExit()
@@ -8936,7 +9451,7 @@ namespace OsEngine.OsTrader.Panels
         private decimal _pivotS3;
 
         // логика
-        
+
         /// <summary>
         /// Метод-обработчик события завершения свечи
         /// </summary>
@@ -8951,9 +9466,9 @@ namespace OsEngine.OsTrader.Panels
             _lastPriceO = candles[candles.Count - 1].Open;
             _lastPriceC = candles[candles.Count - 1].Close;
             _pivotR1 = _pivot.ValuesR1[_pivot.ValuesR1.Count - 1];
-            
+
             _pivotS1 = _pivot.ValuesS1[_pivot.ValuesS1.Count - 1];
-            
+
 
             List<Position> openPositions = _tab.PositionsOpenAll;
 
