@@ -626,14 +626,16 @@ namespace OsEngine.Market.Servers.Binance
                     param.Add("&newClientOrderId=", order.NumberUser.ToString());
                     //++++++++ вычисляем количество из размера лота
                     Decimal quant;
+                    /*
                     if (order.Side == Side.Sell)
                     {
                         quant = order.Volume / order.Price;
                     }
                     else
                     {
+                    */
                         quant = order.Volume;
-                    }
+                    //}
                     param.Add("&quantity=",
                         quant.ToString("0.000000")//CultureInfo.InvariantCulture)
                             .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, ".").Replace(",", "."));

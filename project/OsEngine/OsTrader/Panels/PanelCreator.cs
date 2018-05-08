@@ -414,6 +414,10 @@ namespace OsEngine.OsTrader.Panels
         /// </summary>
         public StrategyParameterInt Slipage;
         /// <summary>
+        /// Играем на фьючерс, от этого зависит объем лота
+        /// </summary>
+        public StrategyParameterBool isFutures;
+        /// <summary>
         /// Цена открытия последней свечки
         /// </summary>
         private Decimal LastCandleOpen;
@@ -480,6 +484,7 @@ namespace OsEngine.OsTrader.Panels
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
             TralingStopPrise = CreateParameter("Stop", 5, 0.01m, 100, 0.01m);
             _Volume = CreateParameter("Volume", 1, 0.01m, 100, 1);
+            isFutures = CreateParameter("isFutures",false);
             //   _CountCaldelsAnaliz = CreateParameter("CountCaldelsAnaliz", 20, 1, 100, 5);
             Slipage = CreateParameter("Slipage", 0, 0, 20, 1);
             _tab.CandleUpdateEvent += _tab_CandleUpdateEvent;
@@ -676,8 +681,18 @@ namespace OsEngine.OsTrader.Panels
                 _tab.PositionOpenerToStopsAll.Clear();
                 //                _tab.BuyAtStop(_Volume.ValueDecimal, _flat.LastMax + _flat.AverageCandle + Slipage.ValueInt, _flat.LastMax + _flat.AverageCandle, StopActivateType.HigherOrEqual);
                 //                _tab.SellAtStop(_Volume.ValueDecimal, _flat.LastMin - _flat.AverageCandle - Slipage.ValueInt, _flat.LastMin - _flat.AverageCandle, StopActivateType.LowerOrEqyal);
-                _tab.BuyAtStop(_Volume.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.HigherOrEqual);
-                _tab.SellAtStop(_Volume.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.LowerOrEqyal);
+                if (isFutures.ValueBool)
+                {
+                    _tab.BuyAtStop(_Volume.ValueDecimal/(_flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal), _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.HigherOrEqual);
+                    _tab.SellAtStop(_Volume.ValueDecimal/(_flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal), _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.LowerOrEqyal);
+
+                }
+                else
+                {
+                    _tab.BuyAtStop(_Volume.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.HigherOrEqual);
+                    _tab.SellAtStop(_Volume.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.LowerOrEqyal);
+
+                }
 
 
             }
