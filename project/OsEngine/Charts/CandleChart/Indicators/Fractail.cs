@@ -228,6 +228,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public List<decimal> ValuesDown { get; set; }
 
+       public List<Color> ColorSeries { get; set; }
+
         /// <summary>
         /// прогрузить новыми свечками
         /// </summary>

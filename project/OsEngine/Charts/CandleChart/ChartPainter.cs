@@ -2754,7 +2754,7 @@ namespace OsEngine.Charts.CandleChart
                     List<Color> colors = indicator.Colors;
                     string name = indicator.Name;
 
-                    PaintLikeColumn(valList[0], colors[0], colors[1], name + 0);
+                    PaintLikeColumn(valList[0], colors[0], colors[1], name + 0, indicator.ColorSeries);
                 }
                 if (indicator.TypeIndicator == IndicatorOneCandleChartType.Point)
                 {
@@ -3040,7 +3040,7 @@ namespace OsEngine.Charts.CandleChart
         /// <summary>
         /// прорисовать как столбцы
         /// </summary>
-        private void PaintLikeColumn(List<decimal> values, Color colorUp, Color colorDown, string nameSeries)
+        private void PaintLikeColumn(List<decimal> values, Color colorUp, Color colorDown, string nameSeries, List<Color> ColorSeries)
         {
             if (values == null ||
                 values.Count == 0)
@@ -3065,12 +3065,12 @@ namespace OsEngine.Charts.CandleChart
             if (mySeries.Points.Count != 0 &&
                 values.Count - 1 == mySeries.Points.Count)
             {// если прорисовываем только последнюю точку
-                PaintLikeColumnLast(values,nameSeries,colorUp,colorDown);
+                PaintLikeColumnLast(values,nameSeries,colorUp,colorDown, ColorSeries);
             }
             else if (mySeries.Points.Count != 0 &&
                 values.Count == mySeries.Points.Count)
             {// перерисовываем последнюю точку
-                RePaintLikeColumnLast(values, nameSeries, colorUp, colorDown);
+                RePaintLikeColumnLast(values, nameSeries, colorUp, colorDown, ColorSeries);
             }
             else
             { // если надо полностью перерисовываем весь индикатор
@@ -3104,6 +3104,10 @@ namespace OsEngine.Charts.CandleChart
                             {
                                 series.Points[i].Color = colorUp;
                             }
+                            if (ColorSeries !=null && ColorSeries.Count != 0)
+                            {
+                                series.Points[i].Color = ColorSeries[i];
+                            }
 
                         }
                         else
@@ -3112,6 +3116,11 @@ namespace OsEngine.Charts.CandleChart
                             {
                                 series.Points[i].Color = colorDown;
                             }
+                            if (ColorSeries != null && ColorSeries.Count != 0)
+                            {
+                                series.Points[i].Color = ColorSeries[i];
+                            }
+
                         }
                     }
                 }
@@ -3125,12 +3134,19 @@ namespace OsEngine.Charts.CandleChart
         /// <summary>
         /// прорисовать индикатор как две линии, последний элемент
         /// </summary>
-        private void PaintLikeColumnLast(List<decimal> values, string nameSeries, Color colorUp, Color colorDown)
+        private void PaintLikeColumnLast(List<decimal> values, string nameSeries, Color colorUp, Color colorDown, List<Color> ColorSeries)
         {
 
             Series mySeriesUp = FundSeriesByNameSafe(nameSeries);
             decimal lastPointUp = values[values.Count - 1];
             mySeriesUp.Points.AddXY(mySeriesUp.Points.Count, lastPointUp);
+
+            // если задан цвет то используем его
+            if (ColorSeries != null && ColorSeries.Count != 0)
+            {
+                mySeriesUp.Points[mySeriesUp.Points.Count - 1].Color = ColorSeries[mySeriesUp.Points.Count - 1];
+                return;
+            }
 
             if (values[values.Count - 1] > values[values.Count - 2])
             {
@@ -3146,16 +3162,24 @@ namespace OsEngine.Charts.CandleChart
                     mySeriesUp.Points[mySeriesUp.Points.Count - 1].Color = colorDown;
                 }
             }
+
         }
 
         /// <summary>
         /// прорисовать индикатор как две линии, последний элемент
         /// </summary>
-        private void RePaintLikeColumnLast(List<decimal> values, string nameSeries, Color colorUp, Color colorDown)
+        private void RePaintLikeColumnLast(List<decimal> values, string nameSeries, Color colorUp, Color colorDown, List<Color> ColorSeries)
         {
             Series mySeriesUp = FundSeriesByNameSafe(nameSeries);
             decimal lastPoint = Convert.ToDecimal(values[values.Count - 1]);
             mySeriesUp.Points[mySeriesUp.Points.Count - 1].YValues = new[] { Convert.ToDouble(lastPoint) };
+            
+            // если задан цвет то используем его
+            if (ColorSeries != null && ColorSeries.Count != 0)
+            {
+                mySeriesUp.Points[mySeriesUp.Points.Count - 1].Color = ColorSeries[mySeriesUp.Points.Count - 1];
+                return;
+            }
 
             if (values.Count != 1)
             {

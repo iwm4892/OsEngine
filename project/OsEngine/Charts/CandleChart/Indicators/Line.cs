@@ -123,6 +123,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public bool PaintOn
         { get; set; }
 
+       public List<Color> ColorSeries { get; set; }
+
         /// <summary>
         /// сохранить настройки
         /// </summary>

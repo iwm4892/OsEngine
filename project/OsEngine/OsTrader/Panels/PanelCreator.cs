@@ -378,9 +378,10 @@ namespace OsEngine.OsTrader.Panels
         /// Мой индикатор
         /// </summary>
         private Flat _flat;
-
-
-        //private Bollinger _Bol;
+        /// <summary>
+        /// Индикатор дельты
+        /// </summary>
+        private Delta delta;
         /// <summary>
         /// Размер лота
         /// </summary>
@@ -480,6 +481,9 @@ namespace OsEngine.OsTrader.Panels
             _flat = (Flat)_tab.CreateCandleIndicator(_flat, "Prime");
             _flat.Save();
 
+            delta = new Delta(name + "_delta", false);
+            delta = (Delta)_tab.CreateCandleIndicator(delta, "New");
+            delta.Save();
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
             TralingStopPrise = CreateParameter("Stop", 5, 0.01m, 100, 0.01m);

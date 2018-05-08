@@ -92,6 +92,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         void Process(List<Candle> candles);
 
+        /// <summary>
+        /// Цвета для значений индикатора
+        /// </summary>
+        List<Color> ColorSeries { get; }
     }
 
     /// <summary>

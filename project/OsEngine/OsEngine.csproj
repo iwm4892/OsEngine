@@ -276,6 +276,7 @@
     <Compile Include="Charts\CandleChart\Indicators\VerticalHorizontalFilterUi.xaml.cs">
       <DependentUpon>VerticalHorizontalFilterUi.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Charts\CandleChart\Indicators\Delta.cs" />
     <Compile Include="Charts\CandleChart\Indicators\Volume.cs" />
     <Compile Include="Charts\CandleChart\Indicators\VolumeOscillator.cs" />
     <Compile Include="Charts\CandleChart\Indicators\VolumeOscillatorUi.xaml.cs">

@@ -130,6 +130,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public bool PaintOn
         { get; set; }
 
+       public List<Color> ColorSeries { get; set; }
+
         /// <summary>
         /// сохранить настройки в файл
         /// </summary>
@@ -255,12 +257,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
             if (Values == null)
             {
                 Values = new List<decimal>();
-                Values.Add(candles[candles.Count-1].Volume);
+                ColorSeries = new List<Color>();
             }
-            else
-            {
                 Values.Add(candles[candles.Count - 1].Volume);
-            }
+                ColorSeries.Add(GetColor(candles[candles.Count - 1]));
         }
 
         /// <summary>
@@ -269,10 +269,12 @@ namespace OsEngine.Charts.CandleChart.Indicators
         private void ProcessAllCandle(List<Candle> candles)
         {
             Values = new List<decimal>();
+            ColorSeries = new List<Color>();
 
             for (int i = 0; i < candles.Count; i++)
             {
                 Values.Add(candles[i].Volume);
+                ColorSeries.Add(GetColor(candles[candles.Count - 1]));
             }
         }
 
@@ -282,6 +284,21 @@ namespace OsEngine.Charts.CandleChart.Indicators
         private void ProcessLastCanlde(List<Candle> candles)
         {
             Values[Values.Count-1] = (candles[candles.Count - 1].Volume);
+            ColorSeries[ColorSeries.Count - 1] = GetColor(candles[candles.Count - 1]);
         }
+        /// <summary>
+        /// Получить цвет по значению
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        private Color GetColor(Candle candle)
+        {
+            if (candle.Close >= candle.Open)
+            {
+                return ColorUp;
+            }
+            return ColorDown;
+        }
+
     }
 }

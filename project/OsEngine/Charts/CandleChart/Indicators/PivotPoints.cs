@@ -174,8 +174,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public Color ColorR3 { get; set; }
 
         public Color ColorP { get; set; }
+
+       public List<Color> ColorSeries { get; set; }
         #endregion
-        
+
         /// <summary>
         /// нужно перерисовать индикатор
         /// </summary>
