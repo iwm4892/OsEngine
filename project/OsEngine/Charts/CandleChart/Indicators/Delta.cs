@@ -11,7 +11,7 @@ using OsEngine.Entity;
 namespace OsEngine.Charts.CandleChart.Indicators
 {
     /// <summary>
-    ///  Volume. Объём свечек. Индикатор
+    ///  Delta. Объём свечек. Индикатор
     /// </summary>
     public class Delta:IIndicatorCandle
     {

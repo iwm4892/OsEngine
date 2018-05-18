@@ -548,75 +548,6 @@ namespace OsEngine.OsTrader.Panels
         }
         private void LogicClosePosition(List<Candle> candles, Position obj)
         {
-
-
-
-            /*
-            Decimal LocalStop;
-            //если это окончание свечки тогда логика другая
-            if (candles[candles.Count - 1].State == CandleStates.Finished)
-            {
-                if (obj.Direction == Side.Buy)
-                {
-                    LocalStop= candles[candles.Count - 1].Close - Convert.ToDecimal(_flat.AverageCandle * TralingStopPrise.ValueDecimal / 100);
-                    if (obj.StopOrderPrice != 0 && obj.StopOrderPrice < LocalStop)
-                    {
-                        _tab.CloseAtTrailingStop(obj, LocalStop + Slipage.ValueInt, LocalStop);
-                    }
-                }
-                else
-                {
-                    LocalStop = candles[candles.Count - 1].Close + Convert.ToDecimal(_flat.AverageCandle * TralingStopPrise.ValueDecimal / 100);
-                    if (obj.StopOrderPrice != 0 && obj.StopOrderPrice < LocalStop)
-                    {
-                        _tab.CloseAtTrailingStop(obj, LocalStop - Slipage.ValueInt, LocalStop);
-                    }
-                }
-            }
-            else
-            // если это текущее движение
-            {
-                
-                if (obj.Direction == Side.Buy)
-                {
-                    LocalStop = candles[candles.Count - 1].Close - Convert.ToInt16(_flat.AverageCandle * TralingStopPrise.ValueDecimal / 100);
-                    //LocalStop = candles[candles.Count - 1].Open;
-                    if (obj.StopOrderPrice != 0 && obj.StopOrderPrice < LocalStop)
-                    {
-
-                        if (
-                            (obj.CloseOrders != null && obj.CloseOrders.Count > 1 && obj.CloseOrders.Count < 4 && (DateTime.Now - obj.CloseOrders[obj.CloseOrders.Count - 1].TimeCreate).Seconds > 5)
-                            || obj.CloseOrders == null)
-                        {
-                            _tab.CloseAtTrailingStop(obj, LocalStop + Slipage.ValueInt, LocalStop);
-                        }
-                    }
-                }
-                else
-                {
-                    //LocalStop = candles[candles.Count - 1].Open;
-                    LocalStop = candles[candles.Count - 1].Close + Convert.ToInt16(_flat.AverageCandle * TralingStopPrise.ValueDecimal / 100);
-                    if (obj.StopOrderPrice != 0 && obj.StopOrderPrice > LocalStop)
-                    {
-                        if (
-                            (obj.CloseOrders != null && obj.CloseOrders.Count > 1 && obj.CloseOrders.Count < 4 && (DateTime.Now - obj.CloseOrders[obj.CloseOrders.Count - 1].TimeCreate).Seconds > 5)
-                            || obj.CloseOrders == null)
-                        {
-                            _tab.CloseAtTrailingStop(obj, LocalStop - Slipage.ValueInt, LocalStop);
-                        }
-
-                    }
-                }
-            }
-            if (obj.CloseOrders != null && obj.CloseOrders.Count > 4)
-            {
-                if (obj.CloseOrders[obj.CloseOrders.Count - 4].State != OrderStateType.Fail && obj.CloseOrders[obj.CloseOrders.Count - 4].State != OrderStateType.Cancel)
-                {
-                    _tab.CloseOrder(obj.CloseOrders[obj.CloseOrders.Count - 4]);
-                }
-
-            }
-            */
             if (obj.Direction == Side.Buy)
             {
                 _tab.CloseAtTrailingStop(obj,
@@ -624,13 +555,6 @@ namespace OsEngine.OsTrader.Panels
                     candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100,
                     candles[candles.Count - 1].Close -
                     candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100);
-                /*
-                _tab.CloseAtTrailingStop(obj,
-                    candles[candles.Count - 1].Close -
-                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100,
-                    candles[candles.Count - 1].Close -
-                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100);
-                    */
             }
             else
             {
@@ -2192,10 +2116,8 @@ namespace OsEngine.OsTrader.Panels
             if (_lastPrice > _lastBolUp)
             {
                 _tab.SellAtMarket(Volume);
-
             }
         }
-
     }
 
     public class FirstBot : BotPanel
