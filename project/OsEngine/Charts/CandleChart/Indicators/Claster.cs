@@ -285,6 +285,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 Values = new List<decimal>();
                 ColorSeries = new List<Color>();
+                data = new List<ClasterData>();
+
             }
             ClasterData clasterData = GetValue(candles, candles.Count - 1);
             data.Add(clasterData);
@@ -299,7 +301,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         {
             Values = new List<decimal>();
             ColorSeries = new List<Color>();
-
+            data = new List<ClasterData>();
             for (int i = 0; i < candles.Count; i++)
             {
                 ClasterData clasterData = GetValue(candles, i);

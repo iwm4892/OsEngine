@@ -15,14 +15,20 @@ namespace OsEngine.Entity
     {
         public ClasterData(List<Trade> trades)
         {
+            data = new List<PriseData>();
             update(trades);
         }
         public ClasterData()
         {
+            data = new List<PriseData>();
         }
         public void update(List<Trade> trades)
         {
-            data.Clear();
+            if (trades==null || trades.Count == 0)
+            {
+                return;
+            }
+            //data.Clear(); //= new List<PriseData>();
             for (int i = 0; i < trades.Count; i++)
             {
                 add(trades[i]);
@@ -40,14 +46,14 @@ namespace OsEngine.Entity
         /// <summary>
         /// данные объемов по ценам свечи
         /// </summary>
-        List<PriseData> data;
+        public List<PriseData> data;
         /// <summary>
         /// Добавление данных в колекцию
         /// </summary>
         public void add(Trade trade)
         {
             //дозаполняем накопленные цены
-            for (int i = 0;i<data.Count;i++)
+            for (int i = 0; i<data.Count && data.Count>0; i++)
             {
                 if (data[i].prise == trade.Price)
                 {

@@ -382,6 +382,9 @@ namespace OsEngine.OsTrader.Panels
         /// Индикатор дельты
         /// </summary>
         private Delta delta;
+        private Volume Volume;
+        private Claster Claster;
+
         /// <summary>
         /// Размер лота
         /// </summary>
@@ -485,6 +488,15 @@ namespace OsEngine.OsTrader.Panels
             delta = (Delta)_tab.CreateCandleIndicator(delta, "New");
             delta.Save();
 
+            Volume = new Volume(name + "_Volume", false);
+            Volume = (Volume)_tab.CreateCandleIndicator(Volume, "New");
+            Volume.Save();
+
+            Claster = new Claster(name + "_Claster", false);
+            Claster = (Claster)_tab.CreateCandleIndicator(Claster, "New");
+            Claster.Save();
+
+
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
             TralingStopPrise = CreateParameter("Stop", 5, 0.01m, 100, 0.01m);
             _Volume = CreateParameter("Volume", 1, 0.01m, 100, 1);
@@ -582,6 +594,13 @@ namespace OsEngine.OsTrader.Panels
                 downLine = candles[candles.Count - 1].High;
                 return;
             }
+
+            List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
+            indicators.Add(delta);
+            indicators.Add(Volume);
+            indicators.Add(Claster);
+
+            List<Pattern> b = Pattern.GetValidatePatterns(candles, indicators); 
             LastCandleBody = Math.Abs(candles[candles.Count - 1].High - candles[candles.Count - 1].Low);
             LastCandleOpen = candles[candles.Count - 1].Open;
 
