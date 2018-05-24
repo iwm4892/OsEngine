@@ -374,6 +374,7 @@ namespace OsEngine.OsTrader.Panels
     {
         // переменные
         private BotTabSimple _tab;
+        private BotTabSimple _tabDelta;
         /// <summary>
         /// Мой индикатор
         /// </summary>
@@ -384,6 +385,10 @@ namespace OsEngine.OsTrader.Panels
         private Delta delta;
         private Volume Volume;
         private Claster Claster;
+
+        private Delta delta_delta;
+        private Volume delta_Volume;
+        private Claster delta_Claster;
 
         /// <summary>
         /// Размер лота
@@ -478,24 +483,39 @@ namespace OsEngine.OsTrader.Panels
             : base(name)
         {
             TabCreate(BotTabType.Simple);
+            TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
+            _tabDelta = TabsSimple[1];
+         //   _tabDelta.Securiti.Type = _tab.Securiti.Type;
+         //   _tabDelta.Securiti.NameId = _tab.Securiti.NameId;
 
             _flat = new Flat(name + "_flat", false) { Lenght = 20, ColorUp = Color.DodgerBlue, ColorDown = Color.DarkRed, };
             _flat = (Flat)_tab.CreateCandleIndicator(_flat, "Prime");
             _flat.Save();
 
             delta = new Delta(name + "_delta", false);
-            delta = (Delta)_tab.CreateCandleIndicator(delta, "New");
+            delta = (Delta)_tab.CreateCandleIndicator(delta, "New1");
             delta.Save();
 
             Volume = new Volume(name + "_Volume", false);
-            Volume = (Volume)_tab.CreateCandleIndicator(Volume, "New");
+            Volume = (Volume)_tab.CreateCandleIndicator(Volume, "New2");
             Volume.Save();
 
             Claster = new Claster(name + "_Claster", false);
             Claster = (Claster)_tab.CreateCandleIndicator(Claster, "New");
             Claster.Save();
 
+            delta_delta = new Delta(name + "delta_delta", false);
+            delta_delta = (Delta)_tabDelta.CreateCandleIndicator(delta_delta, "New1");
+            delta_delta.Save();
+
+            delta_Volume = new Volume(name + "delta_Volume", false);
+            delta_Volume = (Volume)_tabDelta.CreateCandleIndicator(delta_Volume, "New2");
+            delta_Volume.Save();
+
+            delta_Claster = new Claster(name + "delta_Claster", false);
+            delta_Claster = (Claster)_tabDelta.CreateCandleIndicator(delta_Claster, "New");
+            delta_Claster.Save();
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
             TralingStopPrise = CreateParameter("Stop", 5, 0.01m, 100, 0.01m);
@@ -506,6 +526,8 @@ namespace OsEngine.OsTrader.Panels
             _tab.CandleUpdateEvent += _tab_CandleUpdateEvent;
             _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
             _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
+
+            _tabDelta.CandleFinishedEvent += _tabDeltacandleFinishedEvent;
             // этот поток создан для того чтобы в реальной торговле отзывать заявки
             // т.к. нужно ожидать когда у ордеров вернётся номер ордера на бирже
             // а когда у нас каждую секунду переустанавливаются ордера, этого может не 
@@ -517,7 +539,36 @@ namespace OsEngine.OsTrader.Panels
 
             LastUpdStop = DateTime.Now;
         }
+        private void _tabDeltacandleFinishedEvent(List<Candle> candles)
+        {
+            List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
+            indicators.Add(delta_delta);
+            indicators.Add(delta_Volume);
+            indicators.Add(delta_Claster);
 
+            // открытие позиций по сигналке
+            List<string> patterns = new List<string>();
+            patterns.Add("Signal_pattern");
+            
+            List<Position> openPositions = _tab.PositionsOpenAll;
+
+            if (openPositions == null || openPositions.Count == 0)
+            {
+            
+                List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
+                if (signal.Count != 0 && signal[0].isPattern)
+                {
+                    if (signal[0].Side == Side.Buy)
+                    {
+                        _tab.BuyAtMarket(_Volume.ValueDecimal);
+                    }
+                    else
+                    {
+                        _tab.SellAtMarket(_Volume.ValueDecimal);
+                    }
+                }
+            }
+        }
         private void _tab_PositionOpeningSuccesEvent(Position obj)
         {
 
@@ -525,12 +576,14 @@ namespace OsEngine.OsTrader.Panels
             Decimal Localstop;
             if (obj.Direction == Side.Buy)
             {
-                Localstop = obj.EntryPrice - obj.EntryPrice * TralingStopPrise.ValueDecimal / 100;
+                Localstop = Claster.data[Claster.data.Count-1].MaxData.Price - Claster.data[Claster.data.Count - 1].MaxData.Price * TralingStopPrise.ValueDecimal / 100;
+                //Localstop = obj.EntryPrice - obj.EntryPrice * TralingStopPrise.ValueDecimal / 100;
                 //  _tab.CloseAtTrailingStop(obj, obj.EntryPrice - LastCandleBody, obj.EntryPrice - LastCandleBody);
             }
             else
             {
-                Localstop = obj.EntryPrice + obj.EntryPrice * TralingStopPrise.ValueDecimal / 100;
+                Localstop = Claster.data[Claster.data.Count - 1].MaxData.Price + Claster.data[Claster.data.Count - 1].MaxData.Price * TralingStopPrise.ValueDecimal / 100;
+                //Localstop = obj.EntryPrice + obj.EntryPrice * TralingStopPrise.ValueDecimal / 100;
                 //  _tab.CloseAtTrailingStop(obj, obj.EntryPrice + LastCandleBody, obj.EntryPrice + LastCandleBody);
             }
 
@@ -560,6 +613,33 @@ namespace OsEngine.OsTrader.Panels
         }
         private void LogicClosePosition(List<Candle> candles, Position obj)
         {
+            /*
+            List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
+            indicators.Add(delta);
+            indicators.Add(Volume);
+            indicators.Add(Claster);
+
+
+            List<Position> openPositions = _tab.PositionsOpenAll;
+
+            if (openPositions != null || openPositions.Count != 0)
+            {
+
+                List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators);
+                for (int i = 0; i < signal.Count; i++)
+                {
+                    if (signal[i].isPattern)
+                    {
+                        if(signal[i].Side != obj.Direction)
+                        {
+                            _tab.CloseAllAtMarket();
+                            return;
+                        }
+                    }
+
+                }
+            }
+            
             if (obj.Direction == Side.Buy)
             {
                 _tab.CloseAtTrailingStop(obj,
@@ -576,6 +656,25 @@ namespace OsEngine.OsTrader.Panels
                     candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100,
                     candles[candles.Count - 1].Close +
                     candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100);
+
+            }
+            */
+            if (obj.Direction == Side.Buy)
+            {
+                _tab.CloseAtTrailingStop(obj,
+                    Claster.data[Claster.data.Count-2].MaxData.Price -
+                    Claster.data[Claster.data.Count - 2].MaxData.Price * TralingStopPrise.ValueDecimal / 100,
+                    Claster.data[Claster.data.Count - 2].MaxData.Price -
+                    Claster.data[Claster.data.Count - 2].MaxData.Price * TralingStopPrise.ValueDecimal / 100);
+            }
+            else
+            {
+
+                _tab.CloseAtTrailingStop(obj,
+                    Claster.data[Claster.data.Count - 2].MaxData.Price +
+                    Claster.data[Claster.data.Count - 2].MaxData.Price * TralingStopPrise.ValueDecimal / 100,
+                    Claster.data[Claster.data.Count - 2].MaxData.Price +
+                    Claster.data[Claster.data.Count - 2].MaxData.Price * TralingStopPrise.ValueDecimal / 100);
 
             }
 
@@ -595,12 +694,8 @@ namespace OsEngine.OsTrader.Panels
                 return;
             }
 
-            List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
-            indicators.Add(delta);
-            indicators.Add(Volume);
-            indicators.Add(Claster);
 
-            List<Pattern> b = Pattern.GetValidatePatterns(candles, indicators); 
+            
             LastCandleBody = Math.Abs(candles[candles.Count - 1].High - candles[candles.Count - 1].Low);
             LastCandleOpen = candles[candles.Count - 1].Open;
 
@@ -617,8 +712,7 @@ namespace OsEngine.OsTrader.Panels
                     }
                 }
             }
-
-
+            /*
             if ((openPositions == null || openPositions.Count == 0)
                 && (_flat.LastMax != 0 & _flat.LastMin != 0)
                 && (_flat.LastMin != _flat.LastMax))
@@ -643,6 +737,7 @@ namespace OsEngine.OsTrader.Panels
 
 
             }
+            */
 
         }
 
@@ -2092,7 +2187,6 @@ namespace OsEngine.OsTrader.Panels
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
-
             _bol = new Bollinger(false);
             _bol = (Bollinger)_tab.CreateCandleIndicator(_bol, "Prime");
 

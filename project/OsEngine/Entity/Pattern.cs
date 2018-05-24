@@ -115,11 +115,10 @@ namespace OsEngine.Entity
         public static List<Pattern> GetValidatePatterns(List<Candle> candles, List<IIndicatorCandle> indicators)
         {
             List<Pattern> result = new List<Pattern>();
-
             List<string> patterns = new List<string>();
-
             patterns.Add("B_pattern");
             patterns.Add("P_pattern");
+            patterns.Add("Signal_pattern");
 
             for (int i = 0; i < patterns.Count; i++)
             {
@@ -132,7 +131,66 @@ namespace OsEngine.Entity
             }
             return result;
         }
+        public static List<Pattern> GetValidatePatterns(List<Candle> candles, List<IIndicatorCandle> indicators, List<string> patterns)
+        {
+            List<Pattern> result = new List<Pattern>();
+            if (patterns == null || patterns.Count == 0)
+            {
+                patterns = new List<string>();
+                patterns.Add("B_pattern");
+                patterns.Add("P_pattern");
+                patterns.Add("Signal_pattern");
+            }
+
+            for (int i = 0; i < patterns.Count; i++)
+            {
+                Pattern p = Pattern.GetPattern(patterns[i], candles, indicators);
+
+                if (p.isPattern)
+                {
+                    result.Add(p);
+                }
+            }
+            return result;
+        }
     }
+    public class CandleData
+    {
+        /// <summary>
+        /// Размер тела свечи
+        /// </summary>
+        public decimal candleBody;
+        /// <summary>
+        /// Размер свечи(включая тени)
+        /// </summary>
+        public decimal candleSize;
+        /// <summary>
+        /// Размер верхней тени
+        /// </summary>
+        public decimal hiShadow;
+        /// <summary>
+        /// Размер нижней тени
+        /// </summary>
+        public decimal lowShadow;
+
+        public CandleData(Candle candle)
+        {
+            candleSize = candle.High - candle.Low;
+            if (candle.IsUp)
+            {
+                candleBody = candle.Close - candle.Open;
+                hiShadow = candle.High - candle.Close;
+                lowShadow = candle.Low - candle.Open;
+            }
+            else
+            {
+                candleBody = candle.Open - candle.Close;
+                hiShadow = candle.High - candle.Open;
+                lowShadow = candle.Low - candle.Close;
+            }
+        }
+    }
+
     public class B_pattern : Pattern
     {
         public B_pattern(List<Candle> candles, List<IIndicatorCandle> indicators)
@@ -150,7 +208,7 @@ namespace OsEngine.Entity
 
             if (Candles[Candles.Count - 2].IsUp && Candles[Candles.Count - 1].IsDown
                 && Delta.Values[Delta.Values.Count - 1] < 0
-                && Claster.data[Claster.data.Count - 1].MaxData.prise <= (Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].Low) / 3 + Candles[Candles.Count - 1].Low)
+                && Claster.data[Claster.data.Count - 1].MaxData.Price <= (Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].Low) / 3 + Candles[Candles.Count - 1].Low)
             {
                 isPattern = true;
                 Side = Side.Sell;
@@ -174,7 +232,7 @@ namespace OsEngine.Entity
         {
             if (Candles[Candles.Count - 2].IsDown && Candles[Candles.Count - 1].IsUp
                 && Delta.Values[Delta.Values.Count - 1] > 0
-                && Claster.data[Claster.data.Count - 1].MaxData.prise >= (+Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].Low) / 3)
+                && Claster.data[Claster.data.Count - 1].MaxData.Price >= (+Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].Low) / 3)
             {
                 isPattern = true;
                 Side = Side.Buy;
@@ -182,4 +240,64 @@ namespace OsEngine.Entity
         }
 
     }
+
+    public class Signal_pattern  : Pattern
+    {
+        public Signal_pattern(List<Candle> candles, List<IIndicatorCandle> indicators)
+        {
+            CandlesCount = 6;
+            Fill(candles, indicators);
+            if (!Validate())
+            {
+                return;
+            }
+            Check();
+        }
+        public void Check()
+        {
+            /*
+            // проверим тренд из последних CandlesCount Свечеек
+            // и посчетаем средний спрэд
+            decimal trend =0;
+            decimal sredspread=0;
+            for (int i= Candles.Count-CandlesCount;i< Candles.Count; i++)
+            {
+                trend += Candles[i].Close-Candles[i].Open;
+                sredspread += Candles[i].High - Candles[i].Low;
+            }
+            sredspread = sredspread / CandlesCount;
+            if (Math.Abs(trend) > sredspread * (decimal)0.1)
+            {
+                return;
+            }
+            */
+            CandleData cData = new CandleData(Candles[Candles.Count - 1]);
+            //предположим что тени нет если размер тени меньше 10% размера свечи
+            // предполагаем что длинная тень это больше 30% размера свечи
+            if (Candles[Candles.Count - 1].IsUp
+                && cData.hiShadow < cData.candleSize * (decimal)0.1
+                && cData.lowShadow > cData.candleSize * (decimal)0.3
+                && Claster.data[Claster.data.Count - 1].MaxData.Price <= Candles[Candles.Count - 1].Open +(cData.candleBody * (decimal)0.3)
+                && Delta.Values[Delta.Values.Count - 1] > 0
+                && Volume.Values[Volume.Values.Count-2]<= Volume.Values[Volume.Values.Count - 1]
+                )
+            {
+                isPattern = true;
+                Side = Side.Buy;
+            }
+            if (Candles[Candles.Count - 1].IsDown
+                && cData.lowShadow < cData.candleSize * (decimal)0.1
+                && cData.hiShadow > cData.candleSize * (decimal)0.3
+                && Claster.data[Claster.data.Count - 1].MaxData.Price >= Candles[Candles.Count - 1].Open - (cData.candleBody * (decimal)0.3)
+                && Delta.Values[Delta.Values.Count - 1] < 0
+                && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1])
+            {
+                isPattern = true;
+                Side = Side.Sell;
+            }
+
+        }
+
+    }
+
 }

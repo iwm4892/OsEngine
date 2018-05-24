@@ -290,7 +290,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             }
             ClasterData clasterData = GetValue(candles, candles.Count - 1);
             data.Add(clasterData);
-            Values.Add(clasterData.MaxData.prise);
+            Values.Add(clasterData.MaxData.Price);
             ColorSeries.Add(GetColor(clasterData));
         }
 
@@ -307,7 +307,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 ClasterData clasterData = GetValue(candles, i);
                 data.Add(clasterData);
 
-                Values.Add(clasterData.MaxData.prise);
+                Values.Add(clasterData.MaxData.Price);
                 ColorSeries.Add(GetColor(clasterData));
             }
         }
@@ -320,7 +320,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             ClasterData clasterData = GetValue(candles, candles.Count - 1);
             data[data.Count - 1] = clasterData;
 
-            Values[Values.Count-1]  = clasterData.MaxData.prise;
+            Values[Values.Count-1]  = clasterData.MaxData.Price;
             ColorSeries[ColorSeries.Count - 1] = GetColor(clasterData);
         }
         /// <summary>

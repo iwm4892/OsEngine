@@ -3,6 +3,7 @@
 */
 
 using System;
+using System.Data;
 using OsEngine.Market.Servers.Entity;
 using System.Collections.Generic;
 
@@ -15,11 +16,13 @@ namespace OsEngine.Entity
     {
         public ClasterData(List<Trade> trades)
         {
+            //MakeDataTable();
             data = new List<PriseData>();
             update(trades);
         }
         public ClasterData()
         {
+            //MakeDataTable();
             data = new List<PriseData>();
         }
         public void update(List<Trade> trades)
@@ -43,6 +46,24 @@ namespace OsEngine.Entity
                 }
             }
         }
+        public System.Data.DataTable dataTable;
+
+        private void MakeDataTable()
+        {
+            dataTable = new DataTable();
+            DataColumn column = new DataColumn("Price", typeof(decimal));
+            column.Unique = true;
+            dataTable.Columns.Add(column);
+
+            dataTable.Columns.Add(new DataColumn("Volume", typeof(decimal)));
+            dataTable.Columns.Add(new DataColumn("Side", typeof(Side)));
+            dataTable.Columns.Add(new DataColumn("volumeBuy", typeof(decimal)));
+            dataTable.Columns.Add(new DataColumn("volumeSell", typeof(decimal)));
+
+            DataColumn[] PrimaryKeyColumns = new DataColumn[1];
+            PrimaryKeyColumns[0] = dataTable.Columns["Price"];
+            dataTable.PrimaryKey = PrimaryKeyColumns;
+        }
         /// <summary>
         /// данные объемов по ценам свечи
         /// </summary>
@@ -52,20 +73,59 @@ namespace OsEngine.Entity
         /// </summary>
         public void add(Trade trade)
         {
+            /*
+            DataRow row = dataTable.Rows.Find(trade.Price);
+            if (row == null)
+            {
+                row = dataTable.Rows.Add();
+                row["Price"] = trade.Price;
+            }
+            
+            //запоминаем объемы
+            if (trade.Side == Side.Buy)
+            {
+                row["volumeBuy"] = (decimal)row["volumeBuy"] + trade.Volume;
+            }
+            else
+            {
+                row["volumeSell"] = (decimal)row["volumeSell"] + trade.Volume;
+            }
+            // берем максимальный объем
+            row["volume"] = Math.Max((decimal)row["volumeBuy"], (decimal)row["volumeSell"]);
+            
+            //определяем сторону объема
+            if (row["volume"] == row["volumeBuy"])
+            {
+                row["side"] = Side.Buy;
+            }
+            else
+            {
+                row["side"] = Side.Sell;
+            }
+            */
             //дозаполняем накопленные цены
+            PriseData pd = data.Find(x => x.Price == trade.Price);
+            if (pd.Price != 0)
+            {
+                pd.Add(trade);
+                return;
+            }
+            /*
             for (int i = 0; i<data.Count && data.Count>0; i++)
             {
-                if (data[i].prise == trade.Price)
+                if (data[i].Price == trade.Price)
                 {
                     data[i].Add(trade);
                     return;
                 }
             }
+            */
             // добавляем новые цены
-            PriseData _dt = new PriseData();
-            _dt.prise = trade.Price;
-            _dt.Add(trade);
-            data.Add(_dt);
+             pd = new PriseData();
+            pd.Price = trade.Price;
+            pd.Add(trade);
+            data.Add(pd);
+            
         }
         /// <summary>
         /// Направление максимального объема Buy/Sell
@@ -80,7 +140,7 @@ namespace OsEngine.Entity
             /// <summary>
             /// цена
             /// </summary>
-            public decimal prise;
+            public decimal Price;
             /// <summary>
             /// объем
             /// </summary>
