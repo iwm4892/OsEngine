@@ -43,6 +43,8 @@ namespace OsEngine.Entity
                 if (data[i].volume > max)
                 {
                     MaxData = data[i];
+                    max = data[i].volume;
+                       
                 }
             }
         }
@@ -169,6 +171,16 @@ namespace OsEngine.Entity
                 {
                     volumeSell += trade.Volume;
                 }
+                if (volumeBuy > volumeSell)
+                {
+                    side = Side.Buy;
+                }
+                else
+                {
+                    side = Side.Sell;
+                }
+                volume += trade.Volume;
+                /*
                 volume = Math.Max(volumeBuy, volumeSell);
                 if(volume== volumeBuy) {
                     side = Side.Buy;
@@ -177,6 +189,7 @@ namespace OsEngine.Entity
                 {
                     side = Side.Sell;
                 }
+                */
 
             }
 

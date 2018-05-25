@@ -391,6 +391,11 @@ namespace OsEngine.OsTrader.Panels
         private Claster delta_Claster;
 
         /// <summary>
+        /// Размер дельты
+        /// </summary>
+        private StrategyParameterInt _DeltaStep;
+
+        /// <summary>
         /// Размер лота
         /// </summary>
         private StrategyParameterDecimal _Volume;
@@ -502,7 +507,7 @@ namespace OsEngine.OsTrader.Panels
             Volume.Save();
 
             Claster = new Claster(name + "_Claster", false);
-            Claster = (Claster)_tab.CreateCandleIndicator(Claster, "New");
+            Claster = (Claster)_tab.CreateCandleIndicator(Claster, "Prime");
             Claster.Save();
 
             delta_delta = new Delta(name + "delta_delta", false);
@@ -514,20 +519,25 @@ namespace OsEngine.OsTrader.Panels
             delta_Volume.Save();
 
             delta_Claster = new Claster(name + "delta_Claster", false);
-            delta_Claster = (Claster)_tabDelta.CreateCandleIndicator(delta_Claster, "New");
+            delta_Claster = (Claster)_tabDelta.CreateCandleIndicator(delta_Claster, "Prime");
             delta_Claster.Save();
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
-            TralingStopPrise = CreateParameter("Stop", 5, 0.01m, 100, 0.01m);
-            _Volume = CreateParameter("Volume", 1, 0.01m, 100, 1);
+            TralingStopPrise = CreateParameter("Stop", 5, 0.00m, 100, 0.01m);
+            _Volume = CreateParameter("Volume", 1, 0.00m, 100, 1);
             isFutures = CreateParameter("isFutures",false);
             //   _CountCaldelsAnaliz = CreateParameter("CountCaldelsAnaliz", 20, 1, 100, 5);
             Slipage = CreateParameter("Slipage", 0, 0, 20, 1);
+            _DeltaStep = CreateParameter("Размер дельты", 100,0,1000000,50);
+
+
+
             _tab.CandleUpdateEvent += _tab_CandleUpdateEvent;
             _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
             _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
 
             _tabDelta.CandleFinishedEvent += _tabDeltacandleFinishedEvent;
+            _tabDelta.CandleUpdateEvent += _tabDelta_CandleUpdateEvent;
             // этот поток создан для того чтобы в реальной торговле отзывать заявки
             // т.к. нужно ожидать когда у ордеров вернётся номер ордера на бирже
             // а когда у нас каждую секунду переустанавливаются ордера, этого может не 
@@ -539,6 +549,12 @@ namespace OsEngine.OsTrader.Panels
 
             LastUpdStop = DateTime.Now;
         }
+
+        private void _tabDelta_CandleUpdateEvent(List<Candle> obj)
+        {
+            DeltaStepCheck();
+        }
+
         private void _tabDeltacandleFinishedEvent(List<Candle> candles)
         {
             List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
@@ -680,9 +696,21 @@ namespace OsEngine.OsTrader.Panels
 
 
         }
+        private void DeltaStepCheck()
+        {
+            if (_tabDelta.Connector.TimeFrameBuilder.DeltaPeriods.Periods[0].DeltaStep != _DeltaStep.ValueInt)
+            {
+                //Заполнение параметров дельты
+                for (int i = 0; i < _tabDelta.Connector.TimeFrameBuilder.DeltaPeriods.Periods.Count; i++)
+                {
+                    _tabDelta.Connector.TimeFrameBuilder.DeltaPeriods.Periods[i].DeltaStep = _DeltaStep.ValueInt;
+                }
+            }
 
+        }
         private void _tab_CandleFinishedEvent(List<Candle> candles)
         {
+            
             if (Regime.ValueString == "Off")
             {
                 return;
@@ -695,7 +723,7 @@ namespace OsEngine.OsTrader.Panels
             }
 
 
-            
+
             LastCandleBody = Math.Abs(candles[candles.Count - 1].High - candles[candles.Count - 1].Low);
             LastCandleOpen = candles[candles.Count - 1].Open;
 

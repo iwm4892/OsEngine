@@ -24,11 +24,13 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public Claster(string uniqName,bool canDelete)
         {
             Name = uniqName;
-            TypeIndicator = IndicatorOneCandleChartType.Column;
-            ColorBase = Color.DeepSkyBlue;
+            TypeIndicator = IndicatorOneCandleChartType.Line;
+            ColorBase = Color.DarkOrange;
+            /*
             ColorUp = Color.DodgerBlue;
             ColorDown = Color.DarkRed;
-            PaintOn = false;
+            */
+            PaintOn = true;
             CanDelete = canDelete;
             Load();
         }
@@ -42,13 +44,13 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public Claster(bool canDelete)
         {
             Name = Guid.NewGuid().ToString();
-            TypeIndicator = IndicatorOneCandleChartType.Column;
-            ColorBase = Color.DeepSkyBlue;
-            
+            TypeIndicator = IndicatorOneCandleChartType.Line;
+            ColorBase = Color.DarkOrange;
+            /*
             ColorUp = Color.DodgerBlue;
             ColorDown = Color.DarkRed;
-            
-            PaintOn = false;
+            */
+            PaintOn = true;
             CanDelete = canDelete;
         }
         
@@ -77,11 +79,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
             get
             {
                 List<Color> colors = new List<Color>();
-                //colors.Add(ColorBase);
-                
+                colors.Add(ColorBase);
+                /*
                 colors.Add(ColorUp);
                 colors.Add(ColorDown);
-                
+                */
                 return colors;
             }
 
@@ -166,10 +168,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 using (StreamWriter writer = new StreamWriter(@"Engine\" + Name + @".txt", false))
                 {
                     writer.WriteLine(ColorBase.ToArgb());
-                    
+                    /*
                     writer.WriteLine(ColorUp.ToArgb());
                     writer.WriteLine(ColorDown.ToArgb());
-                    
+                    */
                     writer.WriteLine(PaintOn);
                     writer.Close();
                 }
@@ -194,10 +196,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 using (StreamReader reader = new StreamReader(@"Engine\" + Name + @".txt"))
                 {
                     ColorBase = Color.FromArgb(Convert.ToInt32(reader.ReadLine()));
-                    
+                    /*
                     ColorUp = Color.FromArgb(Convert.ToInt32(reader.ReadLine()));
                     ColorDown = Color.FromArgb(Convert.ToInt32(reader.ReadLine()));
-                    
+                    */
                     PaintOn = Convert.ToBoolean(reader.ReadLine());
                     reader.Close();
                 }
@@ -330,11 +332,14 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <returns></returns>
         private Color GetColor(ClasterData val)
         {
+            return ColorBase;
+            /*
             if (val.MaxData.side == Side.Buy)
             {
                 return ColorUp;
             }
             return ColorDown;
+            */
         }
         /// <summary>
         /// взять значение индикаторм по индексу
