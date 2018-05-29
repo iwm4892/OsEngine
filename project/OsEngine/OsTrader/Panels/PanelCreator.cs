@@ -383,11 +383,25 @@ namespace OsEngine.OsTrader.Panels
         /// Индикатор дельты
         /// </summary>
         private Delta delta;
+        /// <summary>
+        /// Индикатор объема
+        /// </summary>
         private Volume Volume;
+        /// <summary>
+        /// Индикатор кластер объемов по ценам
+        /// </summary>
         private Claster Claster;
-
+        /// <summary>
+        /// Индикатор дельты
+        /// </summary>
         private Delta delta_delta;
+        /// <summary>
+        /// Индикатор объема
+        /// </summary>
         private Volume delta_Volume;
+        /// <summary>
+        /// Индикатор кластер объемов по ценам
+        /// </summary>
         private Claster delta_Claster;
 
         /// <summary>
@@ -526,7 +540,6 @@ namespace OsEngine.OsTrader.Panels
             TralingStopPrise = CreateParameter("Stop", 5, 0.00m, 100, 0.01m);
             _Volume = CreateParameter("Volume", 1, 0.00m, 100, 1);
             isFutures = CreateParameter("isFutures",false);
-            //   _CountCaldelsAnaliz = CreateParameter("CountCaldelsAnaliz", 20, 1, 100, 5);
             Slipage = CreateParameter("Slipage", 0, 0, 20, 1);
             _DeltaStep = CreateParameter("Размер дельты", 100,0,1000000,50);
 
@@ -594,14 +607,10 @@ namespace OsEngine.OsTrader.Panels
             if (obj.Direction == Side.Buy)
             {
                 Localstop = Claster.data[Claster.data.Count-1].MaxData.Price - Claster.data[Claster.data.Count - 1].MaxData.Price * TralingStopPrise.ValueDecimal / 100;
-                //Localstop = obj.EntryPrice - obj.EntryPrice * TralingStopPrise.ValueDecimal / 100;
-                //  _tab.CloseAtTrailingStop(obj, obj.EntryPrice - LastCandleBody, obj.EntryPrice - LastCandleBody);
             }
             else
             {
                 Localstop = Claster.data[Claster.data.Count - 1].MaxData.Price + Claster.data[Claster.data.Count - 1].MaxData.Price * TralingStopPrise.ValueDecimal / 100;
-                //Localstop = obj.EntryPrice + obj.EntryPrice * TralingStopPrise.ValueDecimal / 100;
-                //  _tab.CloseAtTrailingStop(obj, obj.EntryPrice + LastCandleBody, obj.EntryPrice + LastCandleBody);
             }
 
 
@@ -656,27 +665,6 @@ namespace OsEngine.OsTrader.Panels
 
                 }
             }
-            
-            /*
-            if (obj.Direction == Side.Buy)
-            {
-                _tab.CloseAtTrailingStop(obj,
-                    candles[candles.Count - 1].Close -
-                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100,
-                    candles[candles.Count - 1].Close -
-                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100);
-            }
-            else
-            {
-
-                _tab.CloseAtTrailingStop(obj,
-                    candles[candles.Count - 1].Close +
-                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100,
-                    candles[candles.Count - 1].Close +
-                    candles[candles.Count - 1].Close * TralingStopPrise.ValueDecimal / 100);
-
-            }
-            */
             /*
             if (obj.Direction == Side.Buy)
             {
