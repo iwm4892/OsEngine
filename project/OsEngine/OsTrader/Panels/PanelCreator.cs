@@ -562,11 +562,12 @@ namespace OsEngine.OsTrader.Panels
             indicators.Add(delta_Volume);
             indicators.Add(delta_Claster);
 
-            // открытие позиций по сигналке
+            // открытие позиций по патерну
             List<string> patterns = new List<string>();
-            patterns.Add("Signal_pattern");
-            
-            List<Position> openPositions = _tab.PositionsOpenAll;
+            patterns.Add("Signal_pattern"); //сигналка
+        //    patterns.Add("Metla_pattern"); // метелка
+
+            List <Position> openPositions = _tab.PositionsOpenAll;
 
             if (openPositions == null || openPositions.Count == 0)
             {
@@ -629,7 +630,7 @@ namespace OsEngine.OsTrader.Panels
         }
         private void LogicClosePosition(List<Candle> candles, Position obj)
         {
-            /*
+            
             List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
             indicators.Add(delta);
             indicators.Add(Volume);
@@ -656,6 +657,7 @@ namespace OsEngine.OsTrader.Panels
                 }
             }
             
+            /*
             if (obj.Direction == Side.Buy)
             {
                 _tab.CloseAtTrailingStop(obj,
@@ -675,6 +677,7 @@ namespace OsEngine.OsTrader.Panels
 
             }
             */
+            /*
             if (obj.Direction == Side.Buy)
             {
                 _tab.CloseAtTrailingStop(obj,
@@ -693,7 +696,7 @@ namespace OsEngine.OsTrader.Panels
                     Claster.data[Claster.data.Count - 2].MaxData.Price * TralingStopPrise.ValueDecimal / 100);
 
             }
-
+            */
 
         }
         private void DeltaStepCheck()
@@ -740,34 +743,63 @@ namespace OsEngine.OsTrader.Panels
                     }
                 }
             }
-            /*
-            if ((openPositions == null || openPositions.Count == 0)
-                && (_flat.LastMax != 0 & _flat.LastMin != 0)
-                && (_flat.LastMin != _flat.LastMax))
+
+            List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
+            indicators.Add(delta_delta);
+            indicators.Add(delta_Volume);
+            indicators.Add(delta_Claster);
+
+            // открытие позиций по патерну
+            List<string> patterns = new List<string>();
+            patterns.Add("Metla_pattern"); // метелка
+
+            openPositions = _tab.PositionsOpenAll;
+
+            if (openPositions == null || openPositions.Count == 0)
             {
-                _tab.SellAtStopCanсel();
-                _tab.BuyAtStopCanсel();
-                _tab.PositionOpenerToStopsAll.Clear();
-                //                _tab.BuyAtStop(_Volume.ValueDecimal, _flat.LastMax + _flat.AverageCandle + Slipage.ValueInt, _flat.LastMax + _flat.AverageCandle, StopActivateType.HigherOrEqual);
-                //                _tab.SellAtStop(_Volume.ValueDecimal, _flat.LastMin - _flat.AverageCandle - Slipage.ValueInt, _flat.LastMin - _flat.AverageCandle, StopActivateType.LowerOrEqyal);
-                if (isFutures.ValueBool)
+
+                List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
+                if (signal.Count != 0 && signal[0].isPattern)
                 {
-                    _tab.BuyAtStop(_Volume.ValueDecimal/(_flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal), _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.HigherOrEqual);
-                    _tab.SellAtStop(_Volume.ValueDecimal/(_flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal), _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.LowerOrEqyal);
-
+                    if (signal[0].Side == Side.Buy)
+                    {
+                        _tab.BuyAtMarket(_Volume.ValueDecimal);
+                    }
+                    else
+                    {
+                        _tab.SellAtMarket(_Volume.ValueDecimal);
+                    }
                 }
-                else
-                {
-                    _tab.BuyAtStop(_Volume.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.HigherOrEqual);
-                    _tab.SellAtStop(_Volume.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.LowerOrEqyal);
-
-                }
-
+            }
+        
+        /*
+        if ((openPositions == null || openPositions.Count == 0)
+            && (_flat.LastMax != 0 & _flat.LastMin != 0)
+            && (_flat.LastMin != _flat.LastMax))
+        {
+            _tab.SellAtStopCanсel();
+            _tab.BuyAtStopCanсel();
+            _tab.PositionOpenerToStopsAll.Clear();
+            //                _tab.BuyAtStop(_Volume.ValueDecimal, _flat.LastMax + _flat.AverageCandle + Slipage.ValueInt, _flat.LastMax + _flat.AverageCandle, StopActivateType.HigherOrEqual);
+            //                _tab.SellAtStop(_Volume.ValueDecimal, _flat.LastMin - _flat.AverageCandle - Slipage.ValueInt, _flat.LastMin - _flat.AverageCandle, StopActivateType.LowerOrEqyal);
+            if (isFutures.ValueBool)
+            {
+                _tab.BuyAtStop(_Volume.ValueDecimal/(_flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal), _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.HigherOrEqual);
+                _tab.SellAtStop(_Volume.ValueDecimal/(_flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal), _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.LowerOrEqyal);
 
             }
-            */
+            else
+            {
+                _tab.BuyAtStop(_Volume.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesUp[_flat.ValuesUp.Count - 1] + Slipage.ValueInt + _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.HigherOrEqual);
+                _tab.SellAtStop(_Volume.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, _flat.ValuesDown[_flat.ValuesDown.Count - 1] - Slipage.ValueInt - _flat.AverageCandle * TralingStopPrise.ValueDecimal, StopActivateType.LowerOrEqyal);
+
+            }
+
 
         }
+        */
+
+    }
 
         private void _tab_CandleUpdateEvent(List<Candle> candles)
         {
