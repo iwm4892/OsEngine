@@ -541,7 +541,7 @@ namespace OsEngine.OsTrader.Panels
             _Volume = CreateParameter("Volume", 1, 0.00m, 100, 1);
             isFutures = CreateParameter("isFutures",false);
             Slipage = CreateParameter("Slipage", 0, 0, 20, 1);
-            _DeltaStep = CreateParameter("Размер дельты", 100,0,1000000,50);
+            _DeltaStep = CreateParameter("Размер дельты", 100,0,10000000,50);
 
 
 
