@@ -72,7 +72,6 @@ namespace OsEngine.Market.Servers.BitMex
             }
 
             _ws = new ClientWebSocket();
-
             Uri uri = new Uri(_serverAdress);
             _ws.ConnectAsync(uri, CancellationToken.None).Wait();
 

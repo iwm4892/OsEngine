@@ -1958,7 +1958,7 @@ namespace OsEngine.Market.Servers.BitMex
                             param["symbol"] = order.SecurityNameCode;
                             param["price"] = order.Price.ToString().Replace(",",".");
                             param["side"] = order.Side == Side.Buy ? "Buy" : "Sell";
-                            param["orderQty"] = order.Volume.ToString();
+                            param["orderQty"] = ((int)order.Volume).ToString(); //чтобы отправлялись только целые объемы
                             param["clOrdID"] = order.NumberUser.ToString();
                             param["ordType"] = order.TypeOrder == OrderPriceType.Limit ? "Limit" : "Market";
 
