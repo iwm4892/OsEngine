@@ -507,11 +507,11 @@ namespace OsEngine.OsTrader.Panels
             _tabDelta = TabsSimple[1];
          //   _tabDelta.Securiti.Type = _tab.Securiti.Type;
          //   _tabDelta.Securiti.NameId = _tab.Securiti.NameId;
-
+         /*
             _flat = new Flat(name + "_flat", false) { Lenght = 20, ColorUp = Color.DodgerBlue, ColorDown = Color.DarkRed, };
             _flat = (Flat)_tab.CreateCandleIndicator(_flat, "Prime");
             _flat.Save();
-
+         */   
             delta = new Delta(name + "_delta", false);
             delta = (Delta)_tab.CreateCandleIndicator(delta, "New1");
             delta.Save();
@@ -648,7 +648,7 @@ namespace OsEngine.OsTrader.Panels
 
             List<Position> openPositions = _tab.PositionsOpenAll;
 
-            if (openPositions != null || openPositions.Count != 0)
+            if ((openPositions != null || openPositions.Count != 0)&&(openPositions[openPositions.Count-1].ProfitOperationPunkt>0))
             {
 
                 List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators);

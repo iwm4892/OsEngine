@@ -25,6 +25,23 @@ namespace OsEngine.Entity
             //MakeDataTable();
             data = new List<PriseData>();
         }
+        /// <summary>
+        /// отработанные идентификаторы сделок
+        /// </summary>
+        private List<String> Trades_id;
+        /// <summary>
+        /// проверка что сделка еще не общитана
+        /// </summary>
+        /// <param name="trade">сделка</param>
+        /// <returns></returns>
+        private bool isNewTrade(Trade trade)
+        {
+            if (trade.Id == ""|| Trades_id.IndexOf(trade.Id) == -1)
+            {
+                return true;
+            }
+            return false;
+        }
         public void update(List<Trade> trades)
         {
             if (trades==null || trades.Count == 0)
@@ -34,7 +51,10 @@ namespace OsEngine.Entity
             //data.Clear(); //= new List<PriseData>();
             for (int i = 0; i < trades.Count; i++)
             {
-                add(trades[i]);
+                if (isNewTrade(trades[i]))
+                {
+                    add(trades[i]);
+                }
             }
             decimal max=0;
 
@@ -112,21 +132,16 @@ namespace OsEngine.Entity
                 pd.Add(trade);
                 return;
             }
-            /*
-            for (int i = 0; i<data.Count && data.Count>0; i++)
-            {
-                if (data[i].Price == trade.Price)
-                {
-                    data[i].Add(trade);
-                    return;
-                }
-            }
-            */
             // добавляем новые цены
-             pd = new PriseData();
+            pd = new PriseData();
             pd.Price = trade.Price;
             pd.Add(trade);
             data.Add(pd);
+            //запоминаем id сделки
+            if (trade.Id != "")
+            {
+                Trades_id.Add(trade.Id);
+            }
             
         }
         /// <summary>
@@ -180,17 +195,6 @@ namespace OsEngine.Entity
                     side = Side.Sell;
                 }
                 volume += trade.Volume;
-                /*
-                volume = Math.Max(volumeBuy, volumeSell);
-                if(volume== volumeBuy) {
-                    side = Side.Buy;
-                }
-                else
-                {
-                    side = Side.Sell;
-                }
-                */
-
             }
 
         }
