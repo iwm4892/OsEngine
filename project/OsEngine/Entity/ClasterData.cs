@@ -36,6 +36,10 @@ namespace OsEngine.Entity
         /// <returns></returns>
         private bool isNewTrade(Trade trade)
         {
+            if (Trades_id == null)
+            {
+                Trades_id = new List<string>();
+            }
             if (trade.Id == ""|| Trades_id.IndexOf(trade.Id) == -1)
             {
                 return true;
@@ -47,6 +51,10 @@ namespace OsEngine.Entity
             if (trades==null || trades.Count == 0)
             {
                 return;
+            }
+            if (trades[0].Id == "")
+            {
+                data = new List<PriseData>();
             }
             //data.Clear(); //= new List<PriseData>();
             for (int i = 0; i < trades.Count; i++)

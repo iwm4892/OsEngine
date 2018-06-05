@@ -99,11 +99,16 @@ namespace OsEngine.Entity
 
         public bool Validate()
         {
+            bool result = true;
             if (Candles == null || Candles.Count < CandlesCount)
             {
-                return false;
+                result = false;
             }
-            return true;
+            if(Delta !=null && Delta.Values.Count < CandlesCount)
+            {
+                result = false;
+            }
+            return result;
         }
         static Pattern GetPattern(string name, List<Candle> _candles, List<IIndicatorCandle> _indicators)
         {

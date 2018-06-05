@@ -319,11 +319,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessLastCanlde(List<Candle> candles)
         {
-            ClasterData clasterData = GetValue(candles, candles.Count - 1);
-            data[data.Count - 1] = clasterData;
+            data[data.Count - 1].update(candles[candles.Count-1].Trades);
 
-            Values[Values.Count-1]  = clasterData.MaxData.Price;
-            ColorSeries[ColorSeries.Count - 1] = GetColor(clasterData);
+            Values[Values.Count-1]  = data[data.Count - 1].MaxData.Price;
+            ColorSeries[ColorSeries.Count - 1] = GetColor(data[data.Count - 1]);
         }
         /// <summary>
         /// Получить цвет по значению
