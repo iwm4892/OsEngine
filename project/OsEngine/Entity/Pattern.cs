@@ -124,6 +124,7 @@ namespace OsEngine.Entity
             patterns.Add("P_pattern");
         //    patterns.Add("Signal_pattern");
             patterns.Add("Metla_pattern");
+            patterns.Add("Trap_pattern");
 
             return GetValidatePatterns(candles,indicators,patterns);
         }
@@ -178,6 +179,42 @@ namespace OsEngine.Entity
                 lowShadow = candle.Low - candle.Close;
             }
         }
+    }
+    public class Trap_pattern : Pattern
+    {
+        public Trap_pattern(List<Candle> candles, List<IIndicatorCandle> indicators)
+        {
+            CandlesCount = 1;
+            Fill(candles, indicators);
+            if (!Validate())
+            {
+                return;
+            }
+            Check();
+        }
+        public void Check()
+        {
+            CandleData cData = new CandleData(Candles[Candles.Count - 1]);
+            if (Candles[Candles.Count - 1].IsUp 
+                && Candles[Candles.Count - 1].Open > Claster.data[Claster.data.Count - 1].MaxData.Price
+                && Claster.data[Claster.data.Count - 1].MaxData.side == Side.Sell
+                && Delta.Values[Delta.Values.Count - 1] > 0
+                )
+            {
+                isPattern = true;
+                Side = Side.Buy;
+            }
+            if (Candles[Candles.Count - 1].IsDown
+                && Candles[Candles.Count - 1].Open < Claster.data[Claster.data.Count - 1].MaxData.Price
+                && Claster.data[Claster.data.Count - 1].MaxData.side == Side.Buy
+                && Delta.Values[Delta.Values.Count - 1] < 0
+                )
+            {
+                isPattern = true;
+                Side = Side.Sell;
+            }
+        }
+
     }
 
     public class B_pattern : Pattern

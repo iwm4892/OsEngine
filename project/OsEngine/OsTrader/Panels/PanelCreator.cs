@@ -825,7 +825,7 @@ namespace OsEngine.OsTrader.Panels
                 {
                     if (openPositions[i].State == PositionStateType.Closing)
                     {
-                        if (ServerMaster.StartProgram == ServerStartProgramm.IsOsTrader)
+                        if (ServerMaster.StartProgram != ServerStartProgramm.IsOsTrader)
                         { // в реальной торговле отправляем позицию на отзыв в массив, 
                           // который обрабатывается отдельным потоком, ожидая когда у ордеров позиции
                           // вернутся номера ордеров, прежде чем мы их будем пытаться отозвать
