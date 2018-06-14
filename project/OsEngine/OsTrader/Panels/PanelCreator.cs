@@ -473,7 +473,7 @@ namespace OsEngine.OsTrader.Panels
 
                 for (int i = 0; i < _positionsToClose.Count; i++)
                 {
-                    if (_positionsToClose[i].State != PositionStateType.Opening)
+                    if (_positionsToClose[i].State == PositionStateType.Opening)
                     {
                         continue;
                     }
@@ -578,15 +578,22 @@ namespace OsEngine.OsTrader.Panels
             // открытие позиций по патерну
             List<string> patterns = new List<string>();
             patterns.Add("Signal_pattern"); //сигналка
-        //    patterns.Add("Metla_pattern"); // метелка
+                                            //    patterns.Add("Metla_pattern"); // метелка
 
-            List <Position> openPositions = _tab.PositionsOpenAll;
+            List<Position> openPositions = _tab.PositionsOpenAll;
 
-            if (openPositions == null || openPositions.Count == 0)
+            List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
+            if (signal.Count > 0 && signal[0].isPattern)
             {
-            
-                List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
-                if (signal.Count != 0 && signal[0].isPattern)
+
+                if ((_tab.PositionsOpenAll != null && _tab.PositionsOpenAll.Count > 0)
+                    && signal[0].Side != _tab.PositionsOpenAll[0].Direction)
+                {
+                    _tab.CloseAllAtMarket();
+                    return;
+                }
+                if ((_tab.PositionsOpenAll == null || _tab.PositionsOpenAll.Count == 0)
+                    && (signal.Count != 0 && signal[0].isPattern))
                 {
                     if (signal[0].Side == Side.Buy)
                     {
@@ -596,8 +603,10 @@ namespace OsEngine.OsTrader.Panels
                     {
                         _tab.SellAtMarket(_Volume.ValueDecimal);
                     }
+
                 }
             }
+
         }
         private void _tab_PositionOpeningSuccesEvent(Position obj)
         {
@@ -619,7 +628,7 @@ namespace OsEngine.OsTrader.Panels
 
         private void LogicClosePositionOnUpdate(List<Candle> candles, Position obj)
         {
-
+            /*
             if (obj.ClosePrice != 0 && obj.Direction == Side.Buy)
             {
                 if (obj.ClosePrice > candles[candles.Count - 1].Close)
@@ -636,6 +645,7 @@ namespace OsEngine.OsTrader.Panels
                     return;
                 }
             }
+            */
         }
         private void LogicClosePosition(List<Candle> candles, Position obj)
         {
@@ -648,7 +658,10 @@ namespace OsEngine.OsTrader.Panels
 
             List<Position> openPositions = _tab.PositionsOpenAll;
 
-            if ((openPositions != null || openPositions.Count != 0)&&(openPositions[openPositions.Count-1].ProfitOperationPunkt>0))
+            if (
+                (openPositions != null || openPositions.Count != 0)
+             //   &&(openPositions[openPositions.Count-1].ProfitOperationPunkt>0)
+                )
             {
 
                 List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators);
@@ -743,22 +756,22 @@ namespace OsEngine.OsTrader.Panels
 
             openPositions = _tab.PositionsOpenAll;
 
-            if (openPositions == null || openPositions.Count == 0)
-            {
-
-                List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
-                if (signal.Count != 0 && signal[0].isPattern)
+                if (openPositions == null || openPositions.Count == 0)
                 {
-                    if (signal[0].Side == Side.Buy)
+
+                    List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
+                    if (signal.Count != 0 && signal[0].isPattern)
                     {
-                        _tab.BuyAtMarket(_Volume.ValueDecimal);
-                    }
-                    else
-                    {
-                        _tab.SellAtMarket(_Volume.ValueDecimal);
+                        if (signal[0].Side == Side.Buy)
+                        {
+                            _tab.BuyAtMarket(_Volume.ValueDecimal);
+                        }
+                        else
+                        {
+                            _tab.SellAtMarket(_Volume.ValueDecimal);
+                        }
                     }
                 }
-            }
         
         /*
         if ((openPositions == null || openPositions.Count == 0)
