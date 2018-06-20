@@ -192,7 +192,7 @@ namespace OsEngine.Entity
             }
             Check();
         }
-        public void Check()
+        public new void  Check()
         {
             CandleData cData = new CandleData(Candles[Candles.Count - 1]);
             if (Candles[Candles.Count - 1].IsUp 
@@ -229,7 +229,7 @@ namespace OsEngine.Entity
             }
             Check();
         }
-        public void Check()
+        public new void Check()
         {
 
             if (Candles[Candles.Count - 2].IsUp && Candles[Candles.Count - 1].IsDown
@@ -254,7 +254,7 @@ namespace OsEngine.Entity
             }
             Check();
         }
-        public void Check()
+        public new void Check()
         {
             if (Candles[Candles.Count - 2].IsDown && Candles[Candles.Count - 1].IsUp
                 && Delta.Values[Delta.Values.Count - 1] > 0
@@ -279,7 +279,7 @@ namespace OsEngine.Entity
             }
             Check();
         }
-        public void Check()
+        public new void Check()
         {
             /*
             // проверим тренд из последних CandlesCount Свечеек
@@ -302,7 +302,7 @@ namespace OsEngine.Entity
             // предполагаем что длинная тень это больше 30% размера свечи
             if (Candles[Candles.Count - 1].IsUp
                 && cData.hiShadow ==0//< cData.candleSize * (decimal)0.1
-                && cData.lowShadow > cData.candleSize * (decimal)0.3
+            //    && cData.lowShadow > cData.candleSize * (decimal)0.3
                 && Claster.data[Claster.data.Count - 1].MaxData.Price <= Candles[Candles.Count - 1].Open +(cData.candleBody * (decimal)0.3)
                 && Delta.Values[Delta.Values.Count - 1] > 0
                 && Volume.Values[Volume.Values.Count-2]<= Volume.Values[Volume.Values.Count - 1]
@@ -313,7 +313,7 @@ namespace OsEngine.Entity
             }
             if (Candles[Candles.Count - 1].IsDown
                 && cData.lowShadow ==0//< cData.candleSize * (decimal)0.1
-                && cData.hiShadow > cData.candleSize * (decimal)0.3
+            //    && cData.hiShadow > cData.candleSize * (decimal)0.3
                 && Claster.data[Claster.data.Count - 1].MaxData.Price >= Candles[Candles.Count - 1].Open - (cData.candleBody * (decimal)0.3)
                 && Delta.Values[Delta.Values.Count - 1] < 0
                 && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1])
@@ -338,7 +338,7 @@ namespace OsEngine.Entity
             }
             Check();
         }
-        public void Check()
+        public new void Check()
         {
             /*
             // проверим тренд из последних CandlesCount Свечеек

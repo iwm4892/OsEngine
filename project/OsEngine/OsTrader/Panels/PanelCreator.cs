@@ -746,10 +746,10 @@ namespace OsEngine.OsTrader.Panels
             }
 
             List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
-            indicators.Add(delta_delta);
-            indicators.Add(delta_Volume);
-            indicators.Add(delta_Claster);
-
+            indicators.Add(delta);
+            indicators.Add(Volume);
+            indicators.Add(Claster);
+            
             // открытие позиций по патерну
             List<string> patterns = new List<string>();
             patterns.Add("Metla_pattern"); // метелка
@@ -772,7 +772,7 @@ namespace OsEngine.OsTrader.Panels
                         }
                     }
                 }
-        
+            
         /*
         if ((openPositions == null || openPositions.Count == 0)
             && (_flat.LastMax != 0 & _flat.LastMin != 0)
