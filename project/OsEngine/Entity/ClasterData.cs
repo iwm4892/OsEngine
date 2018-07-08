@@ -17,7 +17,10 @@ namespace OsEngine.Entity
         public ClasterData(List<Trade> trades)
         {
             //MakeDataTable();
-            data = new List<PriseData>();
+            if (data == null)
+            {
+                data = new List<PriseData>();
+            }
             update(trades);
         }
         public ClasterData()
@@ -64,6 +67,7 @@ namespace OsEngine.Entity
                     add(trades[i]);
                 }
             }
+            /*
             decimal max=0;
 
             for(int i = 0; i < data.Count; i++)
@@ -75,6 +79,7 @@ namespace OsEngine.Entity
                        
                 }
             }
+            */
         }
         public System.Data.DataTable dataTable;
 
@@ -138,6 +143,10 @@ namespace OsEngine.Entity
             if (pd.Price != 0)
             {
                 pd.Add(trade);
+                if (MaxData.volume < pd.volume)
+                {
+                    MaxData = pd;
+                }
                 return;
             }
             // добавляем новые цены
@@ -145,6 +154,11 @@ namespace OsEngine.Entity
             pd.Price = trade.Price;
             pd.Add(trade);
             data.Add(pd);
+
+            if (MaxData.volume < pd.volume)
+            {
+                MaxData = pd;
+            }
             //запоминаем id сделки
             if (trade.Id != "")
             {
@@ -203,6 +217,7 @@ namespace OsEngine.Entity
                     side = Side.Sell;
                 }
                 volume += trade.Volume;
+
             }
 
         }
