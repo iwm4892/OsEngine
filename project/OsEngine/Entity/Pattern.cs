@@ -366,7 +366,7 @@ namespace OsEngine.Entity
                     && Claster.data[Claster.data.Count - 1].MaxData.Price <= Candles[Candles.Count - 1].Close + (cData2.candleBody * (decimal)0.3)
                     && Delta.Values[Delta.Values.Count - 2] > 0
                     && Delta.Values[Delta.Values.Count - 1] < 0
-                    && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
+                   && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
                     )
                 {
                     isPattern = true;

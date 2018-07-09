@@ -565,7 +565,7 @@ namespace OsEngine.OsTrader.Panels
 
         private void _tabDelta_CandleUpdateEvent(List<Candle> obj)
         {
-            DeltaStepCheck();
+          //  DeltaStepCheck();
         }
 
         private void _tabDeltacandleFinishedEvent(List<Candle> candles)
@@ -719,18 +719,10 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
-            if (candles.Count < _CountCaldelsAnaliz)
+            if(candles.Count<2 || Claster.data.Count < 2)
             {
-                upLine = candles[candles.Count - 1].Low;
-                downLine = candles[candles.Count - 1].High;
                 return;
             }
-
-
-
-            LastCandleBody = Math.Abs(candles[candles.Count - 1].High - candles[candles.Count - 1].Low);
-            LastCandleOpen = candles[candles.Count - 1].Open;
-
 
             List<Position> openPositions = _tab.PositionsOpenAll;
 
@@ -809,28 +801,6 @@ namespace OsEngine.OsTrader.Panels
                 return;
             }
             List<Position> openPositions = _tab.PositionsOpenAll;
-            if (openPositions != null && openPositions.Count != 0)
-            {
-                for (int i = 0; i < openPositions.Count; i++)
-                {
-                    if (openPositions[i].State != PositionStateType.Closing)
-                    {
-                        LogicClosePositionOnUpdate(candles, openPositions[i]);
-                    }
-                }
-            }
-            if (openPositions != null && openPositions.Count != 0 && (DateTime.Now - LastUpdStop).Seconds > 2)
-            {
-                for (int i = 0; i < openPositions.Count; i++)
-                {
-                    if (openPositions[i].State != PositionStateType.Closing)
-                    {
-                        LogicClosePosition(candles, openPositions[i]);
-                    }
-                }
-                LastUpdStop = DateTime.Now;
-
-            }
 
             if (openPositions != null && openPositions.Count > 0)
             {
@@ -842,7 +812,10 @@ namespace OsEngine.OsTrader.Panels
                         { // в реальной торговле отправляем позицию на отзыв в массив, 
                           // который обрабатывается отдельным потоком, ожидая когда у ордеров позиции
                           // вернутся номера ордеров, прежде чем мы их будем пытаться отозвать
-                            _positionsToClose.Add(openPositions[i]);
+                            if (_positionsToClose.IndexOf(openPositions[i]) == -1)
+                            {
+                                _positionsToClose.Add(openPositions[i]);
+                            }
 
                         }
                         else
