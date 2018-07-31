@@ -797,11 +797,8 @@ namespace OsEngine.Entity
             {
                 if (_openOrders != null)
                 {
-<<<<<<< HEAD
                     return _openOrders[_openOrders.Count - 1].TimeCallBack;
-=======
                     return _openOrders[_openOrders.Count - 1].GetLastTradeTime();
->>>>>>> pr/1
                 }
                 return DateTime.MinValue;
             }

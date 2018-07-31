@@ -67,38 +67,9 @@ namespace OsEngine.Entity
                     add(trades[i]);
                 }
             }
-            /*
-            decimal max=0;
-
-            for(int i = 0; i < data.Count; i++)
-            {
-                if (data[i].volume > max)
-                {
-                    MaxData = data[i];
-                    max = data[i].volume;
-                       
-                }
-            }
-            */
         }
         public System.Data.DataTable dataTable;
 
-        private void MakeDataTable()
-        {
-            dataTable = new DataTable();
-            DataColumn column = new DataColumn("Price", typeof(decimal));
-            column.Unique = true;
-            dataTable.Columns.Add(column);
-
-            dataTable.Columns.Add(new DataColumn("Volume", typeof(decimal)));
-            dataTable.Columns.Add(new DataColumn("Side", typeof(Side)));
-            dataTable.Columns.Add(new DataColumn("volumeBuy", typeof(decimal)));
-            dataTable.Columns.Add(new DataColumn("volumeSell", typeof(decimal)));
-
-            DataColumn[] PrimaryKeyColumns = new DataColumn[1];
-            PrimaryKeyColumns[0] = dataTable.Columns["Price"];
-            dataTable.PrimaryKey = PrimaryKeyColumns;
-        }
         /// <summary>
         /// данные объемов по ценам свечи
         /// </summary>
@@ -108,36 +79,6 @@ namespace OsEngine.Entity
         /// </summary>
         public void add(Trade trade)
         {
-            /*
-            DataRow row = dataTable.Rows.Find(trade.Price);
-            if (row == null)
-            {
-                row = dataTable.Rows.Add();
-                row["Price"] = trade.Price;
-            }
-            
-            //запоминаем объемы
-            if (trade.Side == Side.Buy)
-            {
-                row["volumeBuy"] = (decimal)row["volumeBuy"] + trade.Volume;
-            }
-            else
-            {
-                row["volumeSell"] = (decimal)row["volumeSell"] + trade.Volume;
-            }
-            // берем максимальный объем
-            row["volume"] = Math.Max((decimal)row["volumeBuy"], (decimal)row["volumeSell"]);
-            
-            //определяем сторону объема
-            if (row["volume"] == row["volumeBuy"])
-            {
-                row["side"] = Side.Buy;
-            }
-            else
-            {
-                row["side"] = Side.Sell;
-            }
-            */
             //дозаполняем накопленные цены
             PriseData pd = data.Find(x => x.Price == trade.Price);
             if (pd.Price != 0)
@@ -159,10 +100,6 @@ namespace OsEngine.Entity
             {
                 MaxData = pd;
             }
-<<<<<<< HEAD
-
-=======
->>>>>>> 8a81d98ed0c721b07c257d554991928600d6c811
             //запоминаем id сделки
             if (trade.Id != "")
             {

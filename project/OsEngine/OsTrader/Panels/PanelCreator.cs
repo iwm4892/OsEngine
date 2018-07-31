@@ -382,6 +382,8 @@ namespace OsEngine.OsTrader.Panels
         // переменные
         private BotTabSimple _tab;
         private BotTabSimple _tabDelta;
+        private BotTabSimple _tabHper;
+
         /// <summary>
         /// Мой индикатор
         /// </summary>
@@ -410,7 +412,10 @@ namespace OsEngine.OsTrader.Panels
         /// Индикатор кластер объемов по ценам
         /// </summary>
         private Claster delta_Claster;
-
+        /// <summary>
+        /// Кластер старшего периода
+        /// </summary>
+        private Claster HPer_Claster;       
         /// <summary>
         /// Размер дельты
         /// </summary>
@@ -510,15 +515,11 @@ namespace OsEngine.OsTrader.Panels
         {
             TabCreate(BotTabType.Simple);
             TabCreate(BotTabType.Simple);
+            TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
             _tabDelta = TabsSimple[1];
-         //   _tabDelta.Securiti.Type = _tab.Securiti.Type;
-         //   _tabDelta.Securiti.NameId = _tab.Securiti.NameId;
-         /*
-            _flat = new Flat(name + "_flat", false) { Lenght = 20, ColorUp = Color.DodgerBlue, ColorDown = Color.DarkRed, };
-            _flat = (Flat)_tab.CreateCandleIndicator(_flat, "Prime");
-            _flat.Save();
-         */   
+            _tabHper = TabsSimple[2];
+
             delta = new Delta(name + "_delta", false);
             delta = (Delta)_tab.CreateCandleIndicator(delta, "New1");
             delta.Save();
@@ -542,6 +543,10 @@ namespace OsEngine.OsTrader.Panels
             delta_Claster = new Claster(name + "delta_Claster", false);
             delta_Claster = (Claster)_tabDelta.CreateCandleIndicator(delta_Claster, "Prime");
             delta_Claster.Save();
+
+            HPer_Claster = new Claster(name + "HPer_Claster", false);
+            HPer_Claster = (Claster)_tabHper.CreateCandleIndicator(HPer_Claster, "Prime");
+            HPer_Claster.Save();
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
             TralingStopPrise = CreateParameter("Stop", 5, 0.00m, 100, 0.01m);
@@ -572,19 +577,7 @@ namespace OsEngine.OsTrader.Panels
 
         private void _tabDelta_CandleUpdateEvent(List<Candle> obj)
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
           //  DeltaStepCheck();
-=======
-        //    DeltaStepCheck();
->>>>>>> 8a81d98ed0c721b07c257d554991928600d6c811
-=======
-        //    DeltaStepCheck();
->>>>>>> 8a81d98ed0c721b07c257d554991928600d6c811
-=======
-        //    DeltaStepCheck();
->>>>>>> 8a81d98ed0c721b07c257d554991928600d6c811
         }
 
         private void _tabDeltacandleFinishedEvent(List<Candle> candles)
@@ -636,11 +629,11 @@ namespace OsEngine.OsTrader.Panels
             Decimal Localstop;
             if (obj.Direction == Side.Buy)
             {
-                Localstop = Claster.data[Claster.data.Count-1].MaxData.Price - Claster.data[Claster.data.Count - 1].MaxData.Price * TralingStopPrise.ValueDecimal / 100;
+                Localstop = HPer_Claster.data[HPer_Claster.data.Count-1].MaxData.Price - HPer_Claster.data[HPer_Claster.data.Count - 1].MaxData.Price * TralingStopPrise.ValueDecimal / 100;
             }
             else
             {
-                Localstop = Claster.data[Claster.data.Count - 1].MaxData.Price + Claster.data[Claster.data.Count - 1].MaxData.Price * TralingStopPrise.ValueDecimal / 100;
+                Localstop = HPer_Claster.data[HPer_Claster.data.Count - 1].MaxData.Price + HPer_Claster.data[HPer_Claster.data.Count - 1].MaxData.Price * TralingStopPrise.ValueDecimal / 100;
             }
 
 

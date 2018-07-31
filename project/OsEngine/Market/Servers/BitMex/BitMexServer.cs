@@ -1969,12 +1969,9 @@ namespace OsEngine.Market.Servers.BitMex
                             param["symbol"] = order.SecurityNameCode;
                             param["price"] = order.Price.ToString().Replace(",", ".");
                             param["side"] = order.Side == Side.Buy ? "Buy" : "Sell";
-<<<<<<< HEAD
                             param["orderQty"] = ((int)order.Volume).ToString(); //чтобы отправлялись только целые объемы
-=======
                             //param["orderIDs"] = order.NumberUser.ToString();
                             param["orderQty"] = order.Volume.ToString();
->>>>>>> pr/1
                             param["clOrdID"] = order.NumberUser.ToString();
 
                             param["ordType"] = order.TypeOrder == OrderPriceType.Limit ? "Limit" : "Market";
