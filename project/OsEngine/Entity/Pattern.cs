@@ -368,7 +368,11 @@ namespace OsEngine.Entity
                     && Delta.Values[Delta.Values.Count - 1] < 0
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                    && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
+=======
+//                    && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
+>>>>>>> 8a81d98ed0c721b07c257d554991928600d6c811
 =======
 //                    && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
 >>>>>>> 8a81d98ed0c721b07c257d554991928600d6c811

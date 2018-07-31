@@ -159,7 +159,10 @@ namespace OsEngine.Entity
             {
                 MaxData = pd;
             }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8a81d98ed0c721b07c257d554991928600d6c811
             //запоминаем id сделки
             if (trade.Id != "")
             {
