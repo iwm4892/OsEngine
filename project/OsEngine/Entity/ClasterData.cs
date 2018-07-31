@@ -17,7 +17,10 @@ namespace OsEngine.Entity
         public ClasterData(List<Trade> trades)
         {
             //MakeDataTable();
-            data = new List<PriseData>();
+            if (data == null)
+            {
+                data = new List<PriseData>();
+            }
             update(trades);
         }
         public ClasterData()
@@ -215,6 +218,7 @@ namespace OsEngine.Entity
                     side = Side.Sell;
                 }
                 volume += trade.Volume;
+
             }
 
         }

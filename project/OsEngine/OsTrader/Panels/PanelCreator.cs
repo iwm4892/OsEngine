@@ -565,7 +565,15 @@ namespace OsEngine.OsTrader.Panels
 
         private void _tabDelta_CandleUpdateEvent(List<Candle> obj)
         {
+<<<<<<< HEAD
+<<<<<<< HEAD
           //  DeltaStepCheck();
+=======
+        //    DeltaStepCheck();
+>>>>>>> 8a81d98ed0c721b07c257d554991928600d6c811
+=======
+        //    DeltaStepCheck();
+>>>>>>> 8a81d98ed0c721b07c257d554991928600d6c811
         }
 
         private void _tabDeltacandleFinishedEvent(List<Candle> candles)
@@ -589,12 +597,14 @@ namespace OsEngine.OsTrader.Panels
                 if ((_tab.PositionsOpenAll != null && _tab.PositionsOpenAll.Count > 0)
                     && signal[0].Side != _tab.PositionsOpenAll[0].Direction)
                 {
+                    _tab.SetNewLogMessage("Закрытие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
                     _tab.CloseAllAtMarket();
                     return;
                 }
                 if ((_tab.PositionsOpenAll == null || _tab.PositionsOpenAll.Count == 0)
                     && (signal.Count != 0 && signal[0].isPattern))
                 {
+                    _tab.SetNewLogMessage("Открытие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
                     if (signal[0].Side == Side.Buy)
                     {
                         _tab.BuyAtMarket(_Volume.ValueDecimal);
@@ -671,6 +681,8 @@ namespace OsEngine.OsTrader.Panels
                     {
                         if(signal[i].Side != obj.Direction)
                         {
+                            _tab.SetNewLogMessage("Закрытие по патерну " + signal[i].GetType().Name, LogMessageType.Signal);
+
                             _tab.CloseAllAtMarket();
                             return;
                         }
@@ -754,6 +766,7 @@ namespace OsEngine.OsTrader.Panels
                     List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
                     if (signal.Count != 0 && signal[0].isPattern)
                     {
+                    _tab.SetNewLogMessage("Открыие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
                         if (signal[0].Side == Side.Buy)
                         {
                             _tab.BuyAtMarket(_Volume.ValueDecimal);
