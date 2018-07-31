@@ -1286,7 +1286,7 @@ Connection conn, Listener listener, Message msg)
                 }
                 if (_listenerMarketDepth.State == State.Closed)
                 {
-                    _listenerMarketDepth.Open("mode=online");
+                    _listenerMarketDepth.Open("mode=snapshot+online");
                     //_listenerMarketDepth.Open();
                 }
 
@@ -2063,7 +2063,7 @@ Connection conn, Listener listener, Message msg)
                             smsg["client_code"].set(clientCode);
                             smsg["type"].set(1);
                             smsg["dir"].set(dir);
-                            smsg["amount"].set(order.Volume);
+                            smsg["amount"].set(Convert.ToInt32(order.Volume));
                             smsg["price"].set(order.Price.ToString(new CultureInfo("ru-RU")));
                             smsg["ext_id"].set(order.NumberUser);
 

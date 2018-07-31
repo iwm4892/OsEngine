@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -123,10 +124,13 @@ namespace OsEngine.Journal.Internal
         /// </summary>
         private void Load()
         {
-            if (_typeWork == ConnectorWorkType.Tester)
+            if (ServerMaster.StartProgram == ServerStartProgramm.IsTester ||
+               ServerMaster.StartProgram == ServerStartProgramm.IsOsOptimizer ||
+                ServerMaster.StartProgram == ServerStartProgramm.IsOsMiner)
             {
                 return;
             }
+
             if (!File.Exists(@"Engine\" + _name + @"DealController.txt"))
             {
                 return;
@@ -243,7 +247,7 @@ namespace OsEngine.Journal.Internal
                 _closePositionChanged = true;
                 _closeShortChanged = true;
                 _closeLongChanged = true;
-                _positionsToPaint = new ConcurrentQueue<Position>();
+                _positionsToPaint = new List<Position>();
                 ClearPositionsGrid();
                 _neadToSave = true;
             }
@@ -265,7 +269,9 @@ namespace OsEngine.Journal.Internal
                 return;
             }
 
-            if (ServerMaster.StartProgram == ServerStartProgramm.IsTester)
+            if (ServerMaster.StartProgram == ServerStartProgramm.IsTester ||
+               ServerMaster.StartProgram == ServerStartProgramm.IsOsOptimizer ||
+                ServerMaster.StartProgram == ServerStartProgramm.IsOsMiner)
             {
                 return;
             }
@@ -424,10 +430,12 @@ namespace OsEngine.Journal.Internal
                 if (isOpenOrder || isCloseOrder)
                 {
                     PositionStateType positionState = _deals[i].State;
+                    decimal lastPosVolume = _deals[i].OpenVolume;
 
                     _deals[i].SetOrder(updateOrder);
 
-                    if (positionState != _deals[i].State)
+                    if (positionState != _deals[i].State ||
+                        lastPosVolume != _deals[i].OpenVolume)
                     {
                         _openLongChanged = true;
                         _openShortChanged = true;
@@ -438,10 +446,15 @@ namespace OsEngine.Journal.Internal
                         UpdeteOpenPositionArray(_deals[i]);
                     }
 
-                    if (positionState != _deals[i].State && PositionChangeEvent != null)
+                    if (positionState != _deals[i].State && PositionStateChangeEvent != null)
                     {
                         // AlertMessageManager.ThrowAlert(null, "было " + positionState + "стало" + _deals[i].State, "");
-                        PositionChangeEvent(_deals[i]);
+                        PositionStateChangeEvent(_deals[i]);
+                    }
+
+                    if (lastPosVolume != _deals[i].OpenVolume && PositionNetVolumeChangeEvent != null)
+                    {
+                        PositionNetVolumeChangeEvent(_deals[i]);
                     }
 
                     ProcesPosition(_deals[i]);
@@ -497,9 +510,12 @@ namespace OsEngine.Journal.Internal
                 {
                     PositionStateType positionState = _deals[i].State;
 
+                    decimal lastPosVolume = _deals[i].OpenVolume;
+
                     _deals[i].SetTrade(trade);
 
-                    if (positionState != _deals[i].State)
+                    if (positionState != _deals[i].State ||
+                        lastPosVolume != _deals[i].OpenVolume)
                     {
                         UpdeteOpenPositionArray(_deals[i]);
                         _openLongChanged = true;
@@ -509,9 +525,14 @@ namespace OsEngine.Journal.Internal
                         _closeLongChanged = true;
                     }
 
-                    if (positionState != _deals[i].State && PositionChangeEvent != null)
+                    if (positionState != _deals[i].State && PositionStateChangeEvent != null)
                     {
-                        PositionChangeEvent(_deals[i]);
+                        PositionStateChangeEvent(_deals[i]);
+                    }
+
+                    if (lastPosVolume != _deals[i].OpenVolume && PositionNetVolumeChangeEvent != null)
+                    {
+                        PositionNetVolumeChangeEvent(_deals[i]);
                     }
 
                     ProcesPosition(_deals[i]);
@@ -849,19 +870,24 @@ namespace OsEngine.Journal.Internal
 
             try
             {
-                if (_hostCloseDeal != null && 
-                    _hostOpenDeal != null && 
-                    !_positionsToPaint.IsEmpty)
+                if (_hostCloseDeal == null ||
+                    _hostOpenDeal == null ||
+                    _positionsToPaint.Count == 0)
                 {
-                    while (!_positionsToPaint.IsEmpty)
+                    return;
+                }
+
+                lock (_positionPaintLocker)
+                {
+                    while (_positionsToPaint.Count != 0)
                     {
-                        Position newElement;
-                        _positionsToPaint.TryDequeue(out newElement);
+                        Position newElement = _positionsToPaint[0];
 
                         if (newElement != null)
                         {
                             PaintPosition(newElement);
                         }
+                        _positionsToPaint.RemoveAt(0);
                     }
                 }
             }
@@ -871,7 +897,9 @@ namespace OsEngine.Journal.Internal
             }
         }
 
-        private ConcurrentQueue<Position> _positionsToPaint = new ConcurrentQueue<Position>();  
+        object _positionPaintLocker = new object();
+
+        private List<Position> _positionsToPaint = new List<Position>();  
 
         /// <summary>
         /// создать таблицы для прорисовки позиций
@@ -1207,7 +1235,19 @@ namespace OsEngine.Journal.Internal
         /// </summary>
         public void ProcesPosition(Position position)
         {
-          _positionsToPaint.Enqueue(position);
+            lock (_positionPaintLocker)
+            {
+                for (int i = 0; i < _positionsToPaint.Count; i++)
+                {
+                    if (_positionsToPaint[i].Number == position.Number)
+                    {
+                        _positionsToPaint[i] = position;
+                        return;
+                    }
+                }
+
+                _positionsToPaint.Add(position);
+            }
         }
 
         /// <summary>
@@ -1540,9 +1580,15 @@ namespace OsEngine.Journal.Internal
 
         // события
         /// <summary>
-        /// изменилось состояние сделок
+        /// изменился статус сделки
         /// </summary>
-        public event Action<Position> PositionChangeEvent;
+        public event Action<Position> PositionStateChangeEvent;
+
+        // события
+        /// <summary>
+        /// изменился открытый объём по позиции
+        /// </summary>
+        public event Action<Position> PositionNetVolumeChangeEvent;
 
         /// <summary>
         /// пользователь выбрал во всплывающем меню некое действие

@@ -1498,7 +1498,9 @@ namespace OsEngine.Market.Servers.SmartCom
                     trade.Id = tradeno;
                     trade.Time = datetime;
                     trade.Volume = Convert.ToInt32(volume);
-                    if (action == StOrder_Action.StOrder_Action_Buy)
+
+                    if (action == StOrder_Action.StOrder_Action_Buy ||
+                        action == StOrder_Action.StOrder_Action_Cover)
                     {
                         trade.Side = Side.Buy;
                     }
@@ -1615,6 +1617,16 @@ namespace OsEngine.Market.Servers.SmartCom
                 trade.NumberOrderParent = orderid;
                 trade.Price = Convert.ToDecimal(price);
                 trade.Volume = Convert.ToInt32(Math.Abs(amount));
+
+                if(amount >0)
+                {
+                    trade.Side = Side.Buy;
+                }
+                else
+                {
+                    trade.Side = Side.Sell;
+                }
+
                 trade.Time = datetime;
 
                 if (_myTrades == null)
@@ -1938,7 +1950,8 @@ namespace OsEngine.Market.Servers.SmartCom
                 }
 
 
-                if (action == StOrder_Action.StOrder_Action_Buy)
+                if (action == StOrder_Action.StOrder_Action_Buy ||
+                    action == StOrder_Action.StOrder_Action_Cover)
                 {
                     order.Side = Side.Buy;
                 }

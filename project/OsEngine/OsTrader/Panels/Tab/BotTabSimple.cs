@@ -55,13 +55,14 @@ namespace OsEngine.OsTrader.Panels.Tab
 
                 _journal = new Journal.Journal(TabName);
 
-                _journal.PositionChangeEvent += _journal_DealChangeEvent;
+                _journal.PositionStateChangeEvent += _journal_PositionStateChangeEvent;
+                _journal.PositionNetVolumeChangeEvent += _journal_PositionNetVolumeChangeEvent;
                 _journal.UserSelectActionEvent += _journal_UserSelectActionEvent;
                 _journal.LogMessageEvent += SetNewLogMessage;
 
                 _chartMaster = new ChartMaster(TabName);
                 _chartMaster.LogMessageEvent += SetNewLogMessage;
-                _chartMaster.SetNewSecurity(_connector.NamePaper, _connector.TimeFrame, _connector.PortfolioName, _connector.ServerType);
+                _chartMaster.SetNewSecurity(_connector.NamePaper, _connector.TimeFrame, _connector.TimeFrameTimeSpan, _connector.PortfolioName, _connector.ServerType);
                 _chartMaster.SetPosition(_journal.AllPosition);
 
                 _alerts = new AlertMaster(TabName, _connector, _chartMaster);
@@ -91,9 +92,10 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// </summary>
         /// <param name="securityName">имя бумаги</param>
         /// <param name="timeFrame">таймфрейм бумаги</param>
+        /// <param name="timeFrameSpan">таймфрейм в виде времени</param>
         /// <param name="portfolioName">номер портфеля</param>
         /// <param name="serverType">тип сервера у коннектора</param>
-        void _connector_ConnectorStartedReconnectEvent(string securityName, TimeFrame timeFrame, string portfolioName, ServerType serverType)
+        void _connector_ConnectorStartedReconnectEvent(string securityName, TimeFrame timeFrame, TimeSpan timeFrameSpan, string portfolioName, ServerType serverType)
         {
             if (string.IsNullOrEmpty(securityName)// ||
                 //string.IsNullOrEmpty(portfolioName)
@@ -102,7 +104,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 return;
             }
 
-            _chartMaster.SetNewSecurity(securityName, timeFrame, portfolioName, serverType);
+            _chartMaster.SetNewSecurity(securityName, timeFrame,timeFrameSpan, portfolioName, serverType);
         }
 
 // управление
@@ -2315,17 +2317,17 @@ namespace OsEngine.OsTrader.Panels.Tab
 
                 // закрываыем другие открывающие ордера, если они есть
 
-                /*if (position.OpenOrders != null &&
-                    position.OpenOrders.Length > 0)
+                if (position.OpenOrders != null &&
+                    position.OpenOrders.Count > 0)
                 {
-                    for (int i = 0; i < position.OpenOrders.Length; i++)
+                    for (int i = 0; i < position.OpenOrders.Count; i++)
                     {
                         if (position.OpenOrders[i].State == OrderStateType.Activ)
                         {
                             _connector.OrderCancel(position.OpenOrders[i]);
                         }
                     }
-                }*/
+                }
 
 
                 Order newOrder = _dealCreator.CreateOrder(Side.Buy, price, volume, OrderPriceType.Limit,
@@ -2769,20 +2771,20 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// <summary>
         /// проверить, не сработал ли стоп или профит у сделки
         /// </summary>
-        private void CheckStop(Position position, decimal lastTrade)
+        private bool CheckStop(Position position, decimal lastTrade)
         {
             try
             {
                 if (!position.StopOrderIsActiv && !position.ProfitOrderIsActiv)
                 {
-                    return;
+                    return false;
                 }
 
                 if (ServerStatus != ServerConnectStatus.Connect ||
                     Securiti == null ||
                     Portfolio == null)
                 {
-                    return;
+                    return false;
                 }
 
                 if (position.StopOrderIsActiv)
@@ -2795,6 +2797,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                         position.StopOrderIsActiv = false;
 
                         CloseDeal(position, OrderPriceType.Limit, position.StopOrderPrice, _manualControl.SecondToClose, true);
+                        return true;
                     }
 
                     if (position.Direction == Side.Sell &&
@@ -2803,6 +2806,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                         position.StopOrderIsActiv = false;
                         position.ProfitOrderIsActiv = false;
                         CloseDeal(position, OrderPriceType.Limit, position.StopOrderPrice, _manualControl.SecondToClose, true);
+                        return true;
                     }
                 }
 
@@ -2815,6 +2819,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                         position.ProfitOrderIsActiv = false;
 
                         CloseDeal(position, OrderPriceType.Limit, position.ProfitOrderPrice, _manualControl.SecondToClose, true);
+                        return true;
                     }
 
                     if (position.Direction == Side.Sell &&
@@ -2823,6 +2828,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                         position.StopOrderIsActiv = false;
                         position.ProfitOrderIsActiv = false;
                         CloseDeal(position, OrderPriceType.Limit, position.ProfitOrderPrice, _manualControl.SecondToClose, true);
+                        return true;
                     }
                 }
             }
@@ -2830,6 +2836,7 @@ namespace OsEngine.OsTrader.Panels.Tab
             {
                 SetNewLogMessage(error.ToString(), LogMessageType.Error);
             }
+            return false;
         }
 
         /// <summary>
@@ -3254,10 +3261,10 @@ namespace OsEngine.OsTrader.Panels.Tab
         }
 
         /// <summary>
-        /// изменились сделки в журнале
+        /// изменился статус сделки
         /// </summary>
         /// <param name="position">позиция</param>
-        private void _journal_DealChangeEvent(Position position)
+        private void _journal_PositionStateChangeEvent(Position position)
         {
             try
             {
@@ -3350,6 +3357,19 @@ namespace OsEngine.OsTrader.Panels.Tab
             {
                 SetNewLogMessage(error.ToString(), LogMessageType.Error);
             }
+        }
+
+        /// <summary>
+        /// изменился открытый объём по сделке
+        /// </summary>
+        /// <param name="position">позиция</param>
+        void _journal_PositionNetVolumeChangeEvent(Position position)
+        {
+            if (PositionNetVolumeChangeEvent != null)
+            {
+                PositionNetVolumeChangeEvent(position);
+            }
+            //SetNewLogMessage("Pos num " + position.Number + "Vol " + position.OpenVolume, LogMessageType.Error);
         }
 
         /// <summary>
@@ -3534,7 +3554,14 @@ namespace OsEngine.OsTrader.Panels.Tab
                 {
                     for (int i2 = _lastTickIndex; i < openPositions.Count && i2 < curCount && trades[i2] != null; i2++)
                     {
-                        CheckStop(openPositions[i], trades[i2].Price);
+                        if (CheckStop(openPositions[i], trades[i2].Price))
+                        {
+                            if (ServerMaster.StartProgram != ServerStartProgramm.IsOsTrader)
+                            {
+                                i--;
+                            }
+                            break;
+                        }
                     }
                 }
             }
@@ -3676,6 +3703,12 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// позиция успешно открыта
         /// </summary>
         public event Action<Position> PositionOpeningSuccesEvent;
+
+        /// <summary>
+        /// у позиции изменился открытый объём. 
+        /// Вызывается каждый раз когда по ордерам позиции проходит какой-то трейд.
+        /// </summary>
+        public event Action<Position> PositionNetVolumeChangeEvent;
 
         /// <summary>
         /// открытие позиции не случилось

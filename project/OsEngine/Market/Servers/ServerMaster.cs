@@ -15,6 +15,7 @@ using OsEngine.Market.Servers.BitStamp;
 using OsEngine.Market.Servers.Finam;
 using OsEngine.Market.Servers.InteractivBrokers;
 using OsEngine.Market.Servers.Kraken;
+using OsEngine.Market.Servers.NinjaTrader;
 using OsEngine.Market.Servers.Oanda;
 using OsEngine.Market.Servers.Optimizer;
 using OsEngine.Market.Servers.Plaza;
@@ -76,7 +77,6 @@ namespace OsEngine.Market.Servers
                 ServerMasterUi ui = new ServerMasterUi();
                 ui.ShowDialog();
             }
-
         }
 
         /// <summary>
@@ -100,6 +100,21 @@ namespace OsEngine.Market.Servers
                     }
 
                     BinanceServer serv = new BinanceServer(neadLoadTicks);
+                    _servers.Add(serv);
+
+                    if (ServerCreateEvent != null)
+                    {
+                        ServerCreateEvent();
+                    }
+                }
+                if (type == ServerType.NinjaTrader)
+                {
+                    if (_servers.Find(server => server.ServerType == ServerType.NinjaTrader) != null)
+                    {
+                        return;
+                    }
+
+                    NinjaTraderServer serv = new NinjaTraderServer(neadLoadTicks);
                     _servers.Add(serv);
 
                     if (ServerCreateEvent != null)
@@ -617,7 +632,12 @@ namespace OsEngine.Market.Servers
         /// <summary>
         /// конвертер тиков в свечи
         /// </summary>
-        IsOsConverter
+        IsOsConverter,
+
+        /// <summary>
+        /// майнер паттернов
+        /// </summary>
+        IsOsMiner
     }
 
     /// <summary>
@@ -629,6 +649,11 @@ namespace OsEngine.Market.Servers
         /// биржа криптовалют Binance
         /// </summary>
         Binance,
+
+        /// <summary>
+        /// нинзя трейдер
+        /// </summary>
+        NinjaTrader,
 
         /// <summary>
         /// биржа криптовалют Kraken
@@ -654,6 +679,11 @@ namespace OsEngine.Market.Servers
         /// Оптимизатор
         /// </summary>
         Optimizer,
+
+        /// <summary>
+        /// Майнер
+        /// </summary>
+        Miner,
 
         /// <summary>
         /// Квик луа

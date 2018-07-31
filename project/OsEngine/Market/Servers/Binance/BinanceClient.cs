@@ -20,12 +20,12 @@ namespace OsEngine.Market.Servers.Binance
     {
         public BinanceClient(string pubKey, string secKey)
         {
-            _apiKey = pubKey;
-            _secretKey = secKey;
+            ApiKey = pubKey;
+            SecretKey = secKey;
         }
 
-        string _apiKey;
-        string _secretKey;
+        public string ApiKey;
+        public string SecretKey;
 
         private string _baseUrl = "https://api.binance.com/api";
 
@@ -34,8 +34,8 @@ namespace OsEngine.Market.Servers.Binance
         /// </summary>
         public void Connect()
         {
-            if (string.IsNullOrWhiteSpace(_apiKey) ||
-                string.IsNullOrWhiteSpace(_secretKey))
+            if (string.IsNullOrEmpty(ApiKey) ||
+                string.IsNullOrEmpty(SecretKey))
             {
                 return;
             }
@@ -541,7 +541,7 @@ namespace OsEngine.Market.Servers.Binance
                     }
 
                     var request = new RestRequest(endpoint + fullUrl, method);
-                    request.AddHeader("X-MBX-APIKEY", _apiKey);
+                    request.AddHeader("X-MBX-APIKEY", ApiKey);
 
                     var response = new RestClient("https://api.binance.com").Execute(request).Content;
 
@@ -581,7 +581,7 @@ namespace OsEngine.Market.Servers.Binance
         private string CreateSignature(string message)
         {
             var messageBytes = Encoding.UTF8.GetBytes(message);
-            var keyBytes = Encoding.UTF8.GetBytes(_secretKey);
+            var keyBytes = Encoding.UTF8.GetBytes(SecretKey);
             var hash = new HMACSHA256(keyBytes);
             var computedHash = hash.ComputeHash(messageBytes);
             return BitConverter.ToString(computedHash).Replace("-", "").ToLower();
@@ -650,7 +650,7 @@ namespace OsEngine.Market.Servers.Binance
 
                     var res = CreateQuery(Method.POST, "api/v3/order", param, true);
 
-                    if (res.Contains("code"))
+                    if (res != null && res.Contains("code"))
                     {
                         SendLogMessage(res, LogMessageType.Trade);
                     }
@@ -809,6 +809,20 @@ namespace OsEngine.Market.Servers.Binance
                             {
                                 var order = JsonConvert.DeserializeAnonymousType(mes, new ExecutionReport());
 
+                                if (string.IsNullOrEmpty(order.c))
+                                {
+                                   continue;
+                                }
+
+                                try
+                                {
+                                    Convert.ToInt32(order.c);
+                                }
+                                catch (Exception)
+                                {
+                                    continue;
+                                }
+
                                 if (order.x == "NEW")
                                 {
                                     Order newOrder = new Order();
@@ -863,6 +877,7 @@ namespace OsEngine.Market.Servers.Binance
                                 }
                                 else if (order.x == "TRADE")
                                 {
+
                                     MyTrade trade = new MyTrade();
                                     trade.Time = new DateTime(1970, 1, 1).AddMilliseconds(Convert.ToDouble(order.T));
                                     trade.NumberOrderParent = order.i.ToString();
@@ -913,7 +928,7 @@ namespace OsEngine.Market.Servers.Binance
 
                 catch (Exception exception)
                 {
-                    SendLogMessage(exception.Message, LogMessageType.Connect);
+                    SendLogMessage(exception.ToString(), LogMessageType.Error);
                 }
                 Thread.Sleep(1);
             }
@@ -971,7 +986,7 @@ namespace OsEngine.Market.Servers.Binance
 
                 catch (Exception exception)
                 {
-                    SendLogMessage(exception.Message, LogMessageType.Connect);
+                    SendLogMessage(exception.ToString(), LogMessageType.Error);
                 }
                 Thread.Sleep(1);
             }

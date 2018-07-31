@@ -118,8 +118,6 @@ namespace OsEngine.Market.Servers.BitMex
                 _ws = null;
             }
             IsConnected = false;
-
-            _neadToStopAllThreads = false;
         }
 
         /// <summary>
@@ -227,6 +225,11 @@ namespace OsEngine.Market.Servers.BitMex
                     if (_neadToStopAllThreads == true)
                     {
                         return;
+                    }
+
+                    if (ws.State != WebSocketState.Open)
+                    {
+                        continue;
                     }
 
                     if (IsConnected)
@@ -539,7 +542,9 @@ namespace OsEngine.Market.Servers.BitMex
         private long GetNonce()
         {
             DateTime yearBegin = new DateTime(1990, 1, 1);
-            return DateTime.UtcNow.Ticks - yearBegin.Ticks;
+            long nonce = DateTime.UtcNow.Ticks - yearBegin.Ticks;
+            long shortNonce =  nonce - 8000000000000000;
+            return shortNonce;
         }
 
         public static string ByteArrayToString(byte[] ba)

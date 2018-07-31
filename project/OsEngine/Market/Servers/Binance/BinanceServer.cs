@@ -194,6 +194,12 @@ namespace OsEngine.Market.Servers.Binance
         /// </summary>
         public void StartServer()
         {
+            if (_clientBinance != null)
+            {
+                _clientBinance.ApiKey = UserKey;
+                _clientBinance.SecretKey = UserPrivateKey;
+            }
+
             _serverStatusNead = ServerConnectStatus.Connect;
         }
 
@@ -778,7 +784,19 @@ namespace OsEngine.Market.Servers.Binance
                 }
                 foreach (var onePortf in portfs.B)
                 {
+                    if (onePortf == null ||
+                        onePortf.f == null ||
+                        onePortf.l == null)
+                    {
+                        continue;
+                    }
                     Portfolio neeedPortf = _portfolios.Find(p => p.Number == onePortf.a);
+
+                    if (neeedPortf == null)
+                    {
+                        continue;
+                    }
+
                     neeedPortf.ValueCurrent = Convert.ToDecimal(onePortf.f.Replace(".", CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator), CultureInfo.InvariantCulture);
                     neeedPortf.ValueBlocked = Convert.ToDecimal(onePortf.l.Replace(".", CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator), CultureInfo.InvariantCulture);
                 }
@@ -916,6 +934,7 @@ namespace OsEngine.Market.Servers.Binance
                     {
                         needDepth = new MarketDepth();
                         needDepth.SecurityNameCode = myDepth.stream.Split('@')[0].ToUpper();
+                        _depths.Add(needDepth);
                     }
 
                     List<MarketDepthLevel> ascs = new List<MarketDepthLevel>();
@@ -950,12 +969,11 @@ namespace OsEngine.Market.Servers.Binance
 
                     needDepth.Asks = ascs;
                     needDepth.Bids = bids;
-
-                    _depths.Add(needDepth);
+                    needDepth.Time = ServerTime;
 
                     if (NewMarketDepthEvent != null)
                     {
-                        _marketDepthsToSend.Enqueue(needDepth);
+                        _marketDepthsToSend.Enqueue(needDepth.GetCopy());
 
                         if (needDepth.Asks.Count != 0 && needDepth.Bids.Count != 0)
                         {
@@ -1018,6 +1036,11 @@ namespace OsEngine.Market.Servers.Binance
         {
             try
             {
+                if (_allTrades == null)
+                {
+                    return null;
+                }
+
                 List<Trade> trades = new List<Trade>();
 
                 for (int i = 0; i < _allTrades.Length; i++)

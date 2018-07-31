@@ -6,17 +6,16 @@ using System;
 using System.Globalization;
 using System.Windows;
 
-
-namespace OsEngine.OsTrader.Panels.PanelsGui
+namespace OsEngine.OsTrader.Panels.SingleRobots
 {
     /// <summary>
     /// Логика взаимодействия для BollingerUi.xaml
     /// </summary>
-    public partial class BollingerStrategyUi
+    public partial class StrategyBollingerUi
     {
         private StrategyBollinger _strategy;
 
-        public BollingerStrategyUi(StrategyBollinger strategy)
+        public StrategyBollingerUi(StrategyBollinger strategy)
         {
             InitializeComponent();
             _strategy = strategy;
@@ -37,12 +36,11 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             try
             {
 
-                if (Convert.ToInt32(TextBoxVolumeOne.Text) <= 0 ||
+                if (Convert.ToDecimal(TextBoxVolumeOne.Text) <= 0 ||
                     Convert.ToDecimal(TextBoxSlipage.Text) < 0)
                 {
                     throw new Exception("");
                 }
-                Convert.ToDecimal(TextBoxSlipage.Text);
             }
             catch (Exception)
             {
@@ -50,7 +48,7 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
                 return;
             }
 
-            _strategy.Volume = Convert.ToInt32(TextBoxVolumeOne.Text);
+            _strategy.Volume = Convert.ToDecimal(TextBoxVolumeOne.Text);
             _strategy.Slipage = Convert.ToDecimal(TextBoxSlipage.Text);
 
             Enum.TryParse(ComboBoxRegime.Text, true, out _strategy.Regime);

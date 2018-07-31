@@ -5,16 +5,13 @@
 using System;
 using System.Windows;
 
-namespace OsEngine.OsTrader.Panels.PanelsGui
+namespace OsEngine.OsTrader.Panels.SingleRobots
 {
-    /// <summary>
-    /// Логика взаимодействия для FilipLevelUi.xaml
-    /// </summary>
-    public partial class FilipLevelUi
+    public partial class MarketMakerBotUi
     {
-        private FilippLevel _strategy;
+        private MarketMakerBot _strategy;
 
-        public FilipLevelUi(FilippLevel strategy)
+        public MarketMakerBotUi(MarketMakerBot strategy)
         {
             InitializeComponent();
             _strategy = strategy;
@@ -35,7 +32,7 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
         {
             try
             {
-                if (Convert.ToInt32(TextBoxVolumeOne.Text) <= 0||
+                if (Convert.ToDecimal(TextBoxVolumeOne.Text) <= 0||
                     Convert.ToDecimal(TextBoxSpreadBeetwenLine.Text) <= 0)
                 {
                     throw new Exception("");
@@ -47,7 +44,7 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
                 return;
             }
 
-            _strategy.Volume = Convert.ToInt32(TextBoxVolumeOne.Text);
+            _strategy.Volume = Convert.ToDecimal(TextBoxVolumeOne.Text);
             _strategy.PersentToSpreadLines = Convert.ToDecimal(TextBoxSpreadBeetwenLine.Text);
             Enum.TryParse(ComboBoxRegime.Text, true, out _strategy.Regime);
 
