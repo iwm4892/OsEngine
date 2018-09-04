@@ -8,56 +8,46 @@ using System.Drawing;
 using System.IO;
 using OsEngine.Entity;
 
+
 namespace OsEngine.Charts.CandleChart.Indicators
 {
-    /// <summary>
-    ///  Volume. Объём свечек. Индикатор
-    /// </summary>
-    public class Claster:IIndicatorCandle
-    {
 
-        /// <summary>
-        /// конструктор с параметрами. Индикатор будет сохраняться
+    /// <summary>
+    /// линия построенная на основе массива значений decimal
+    /// </summary>
+    public class PriceLevleLine : IIndicatorCandle
+    {
+       /// <summary>
+        /// конструктор
         /// </summary>
         /// <param name="uniqName">уникальное имя</param>
         /// <param name="canDelete">можно ли пользователю удалить индикатор с графика вручную</param>
-        public Claster(string uniqName,bool canDelete)
+        public PriceLevleLine(string uniqName, bool canDelete)
         {
             Name = uniqName;
             TypeIndicator = IndicatorOneCandleChartType.Line;
-            ColorBase = Color.DarkOrange;
-            /*
-            ColorUp = Color.DodgerBlue;
-            ColorDown = Color.DarkRed;
-            */
+            ColorBase = Color.DodgerBlue;
             PaintOn = true;
-            CanDelete = canDelete;
+            CanDelete = canDelete; 
             Load();
         }
 
         /// <summary>
-        /// конструктор без параметров. Индикатор не будет сохраняться
+        /// индикатор без параметнов. Не будет сохраняться
         /// используется ТОЛЬКО для создания составных индикаторов
         /// не используйте его из слоя создания роботов!
         /// </summary>
         /// <param name="canDelete">можно ли пользователю удалить индикатор с графика вручную</param>
-        public Claster(bool canDelete)
+        public PriceLevleLine(bool canDelete)
         {
             Name = Guid.NewGuid().ToString();
+
             TypeIndicator = IndicatorOneCandleChartType.Line;
-            ColorBase = Color.DarkOrange;
-            /*
-            ColorUp = Color.DodgerBlue;
-            ColorDown = Color.DarkRed;
-            */
+            ColorBase = Color.DodgerBlue;
             PaintOn = true;
-            CanDelete = canDelete;
+            CanDelete = canDelete; 
         }
-        
-        /// <summary>
-        /// Данные кластеров
-        /// </summary>
-        public List<ClasterData> data;
+
         /// <summary>
         /// все значения индикатора
         /// </summary>
@@ -80,10 +70,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 List<Color> colors = new List<Color>();
                 colors.Add(ColorBase);
-                /*
-                colors.Add(ColorUp);
-                colors.Add(ColorDown);
-                */
                 return colors;
             }
 
@@ -96,82 +82,63 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public bool CanDelete { get; set; }
 
         /// <summary>
-        /// тип индикатора
+        /// тип прорисовки индикатора
         /// </summary>
         public IndicatorOneCandleChartType TypeIndicator
         { get; set; }
 
         /// <summary>
-        /// имя серии данных на которой будет прорисовываться индикатор
+        /// имя серии на которой индикатор прорисовывается
         /// </summary>
         public string NameSeries
         { get; set; }
 
         /// <summary>
-        /// имя области данных на которой будет прорисовываться индикатор
+        /// имя области на котророй индикатор прорисовывается
         /// </summary>
         public string NameArea
         { get; set; }
 
         /// <summary>
-        /// объём
+        /// значение индикатора
         /// </summary>
-        public List<decimal> Values
+        public List<decimal> Values 
         { get; set; }
 
         /// <summary>
-        /// уникальное имя
+        /// уникальное имя индикатора
         /// </summary>
         public string Name
         { get; set; }
 
-        
         /// <summary>
-        /// цвет растущего объёма
+        /// цвет для прорисовки базовой точки данных
         /// </summary>
-        public Color ColorUp
+        public Color ColorBase
         { get; set; }
 
         /// <summary>
-        /// цвет падающего объёма
-        /// </summary>
-        public Color ColorDown
-        { get; set; }
-        
-
-        /// <summary>
-        /// цвет линии индикатора
-        /// </summary>
-        public Color ColorBase { get; set; }
-
-        /// <summary>
-        /// включена ли прорисовка индикатора на чарте
+        /// включена ли прорисовка индикатора
         /// </summary>
         public bool PaintOn
         { get; set; }
-        /// <summary>
-        /// Цвета значений
-        /// </summary>
-        public List<Color> ColorSeries { get; set; }
+
+       public List<Color> ColorSeries { get; set; }
 
         /// <summary>
-        /// сохранить настройки в файл
+        /// сохранить настройки
         /// </summary>
         public void Save()
         {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                return;
+            }
             try
             {
-                if (string.IsNullOrWhiteSpace(Name))
-                {
-                    return;
-                }
                 using (StreamWriter writer = new StreamWriter(@"Engine\" + Name + @".txt", false))
                 {
                     writer.WriteLine(ColorBase.ToArgb());
-                    /*
-                    writer.WriteLine(ColorUp.ToArgb());
-                    writer.WriteLine(ColorDown.ToArgb());
-                    */
                     writer.WriteLine(PaintOn);
                     writer.Close();
                 }
@@ -183,7 +150,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         }
 
         /// <summary>
-        /// загрузить настройки из файла
+        /// загрузить настройки
         /// </summary>
         public void Load()
         {
@@ -193,16 +160,17 @@ namespace OsEngine.Charts.CandleChart.Indicators
             }
             try
             {
+
                 using (StreamReader reader = new StreamReader(@"Engine\" + Name + @".txt"))
                 {
                     ColorBase = Color.FromArgb(Convert.ToInt32(reader.ReadLine()));
-                    /*
-                    ColorUp = Color.FromArgb(Convert.ToInt32(reader.ReadLine()));
-                    ColorDown = Color.FromArgb(Convert.ToInt32(reader.ReadLine()));
-                    */
                     PaintOn = Convert.ToBoolean(reader.ReadLine());
+                    reader.ReadLine();
+
                     reader.Close();
                 }
+
+
             }
             catch (Exception)
             {
@@ -237,38 +205,34 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public void ShowDialog()
         {
-        /*    VolumeUi ui = new VolumeUi(this);
-            ui.ShowDialog();
-
-            if (ui.IsChange)
-            {
-                if (NeadToReloadEvent != null)
-                {
-                    NeadToReloadEvent(this);
-                }
-            }
-            */
+           // ignored. Этот тип индикатора настраивается и создаётся только из кода
         }
 
         /// <summary>
-        /// нужно перерисовать индикатор
+        /// индикатор нужно перерисовать
         /// </summary>
         public event Action<IIndicatorCandle> NeadToReloadEvent;
 
-// вычисления
+        #region Кластера
+        public List<ClasterData> data;
+        #endregion 
 
         /// <summary>
         /// прогрузить индикатор свечками
         /// </summary>
         public void Process(List<Candle> candles)
         {
-            if (Values != null &&
-                           Values.Count + 1 == candles.Count)
+            if (Values == null)
+            {
+                Values = new List<decimal>();
+            }
+            if (data != null &&
+                           data.Count + 1 == candles.Count)
             {
                 ProcessOneCandle(candles);
             }
-            else if (Values != null &&
-                Values.Count == candles.Count)
+            else if (data != null &&
+                data.Count == candles.Count)
             {
                 ProcessLastCanlde(candles);
             }
@@ -276,30 +240,60 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 ProcessAllCandle(candles);
             }
-        }
 
+
+        }
+        public List<levlel> LevleData = new List<levlel>();
+
+        private void ProcessValue()
+        {
+            if (data.Count > 2)
+            {
+                if (data[data.Count - 1].MaxData.Price < data[data.Count - 2].MaxData.Price
+                    && data[data.Count - 3].MaxData.Price < data[data.Count - 2].MaxData.Price
+                    )
+                {
+                    levlel el = new levlel();
+                    el.levlSide = Side.Buy;
+                    el.Value = data[data.Count - 2].MaxData.Price;
+                    LevleData.Add(el);
+
+                    Values.Add(data[data.Count - 2].MaxData.Price);
+                }
+
+                if (data[data.Count - 1].MaxData.Price > data[data.Count - 2].MaxData.Price
+                    && data[data.Count - 3].MaxData.Price > data[data.Count - 2].MaxData.Price
+                    )
+                {
+                    levlel el = new levlel();
+                    el.levlSide = Side.Sell;
+                    el.Value = data[data.Count - 2].MaxData.Price;
+                    LevleData.Add(el);
+
+                    Values.Add(data[data.Count - 2].MaxData.Price);
+
+                }
+            }
+            if (LevleData.Count > 10)
+            {
+                LevleData.RemoveAt(0);
+            }
+
+        }
         /// <summary>
         /// прогрузить только последнюю свечку
         /// </summary>
         private void ProcessOneCandle(List<Candle> candles)
         {
-            if (Values == null)
+            if (data == null)
             {
-                Values = new List<decimal>();
-                ColorSeries = new List<Color>();
                 data = new List<ClasterData>();
 
             }
-            /*
-            ClasterData clasterDataLast = GetValue(candles, candles.Count - 2);
-            data[data.Count - 1] = clasterDataLast;
-            Values[Values.Count - 1] = clasterDataLast.MaxData.Price;
-            ColorSeries[ColorSeries.Count - 1] = GetColor(clasterDataLast);
-            */
+            ProcessValue();
             ClasterData clasterData = GetValue(candles, candles.Count - 1);
             data.Add(clasterData);
-            Values.Add(clasterData.MaxData.Price);
-            ColorSeries.Add(GetColor(clasterData));
+            
 
         }
 
@@ -308,16 +302,12 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessAllCandle(List<Candle> candles)
         {
-            Values = new List<decimal>();
-            ColorSeries = new List<Color>();
             data = new List<ClasterData>();
             for (int i = 0; i < candles.Count; i++)
             {
                 ClasterData clasterData = GetValue(candles, i);
                 data.Add(clasterData);
-
-                Values.Add(clasterData.MaxData.Price);
-                ColorSeries.Add(GetColor(clasterData));
+                ProcessValue();
             }
         }
 
@@ -326,33 +316,15 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessLastCanlde(List<Candle> candles)
         {
-            data[data.Count - 1].update(candles[candles.Count-1].Trades);
+            data[data.Count - 1].update(candles[candles.Count - 1].Trades);
+        }
 
-            Values[Values.Count-1]  = data[data.Count - 1].MaxData.Price;
-            ColorSeries[ColorSeries.Count - 1] = GetColor(data[data.Count - 1]);
-        }
-        /// <summary>
-        /// Получить цвет по значению
-        /// </summary>
-        /// <param name="val"></param>
-        /// <returns></returns>
-        private Color GetColor(ClasterData val)
-        {
-            return ColorBase;
-            /*
-            if (val.MaxData.side == Side.Buy)
-            {
-                return ColorUp;
-            }
-            return ColorDown;
-            */
-        }
         /// <summary>
         /// взять значение индикаторм по индексу
         /// </summary>
         private ClasterData GetValue(List<Candle> candles, int index)
         {
-            if (index > candles.Count-1)
+            if (index > candles.Count - 1)
             {
                 return new ClasterData();
             }
@@ -366,8 +338,22 @@ namespace OsEngine.Charts.CandleChart.Indicators
             }
 
             ClasterData data = new ClasterData(trades);
-            return data;        
+            return data;
         }
 
+
+        /// <summary>
+        /// прогрузить новыми значениями
+        /// </summary>
+        /// <param name="decimals"></param>
+        public void ProcessDesimals(List<Decimal> decimals)
+        {
+            Values = decimals;
+        }
+        public class levlel
+        {
+            public Side levlSide;
+            public decimal Value;
+        }
     }
 }

@@ -211,6 +211,7 @@
       <DependentUpon>KalmanFilterUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="Charts\CandleChart\Indicators\Flat.cs" />
+    <Compile Include="Charts\CandleChart\Indicators\PriceLevleLine.cs" />
     <Compile Include="Charts\CandleChart\Indicators\Line.cs" />
     <Compile Include="Charts\CandleChart\Indicators\MacdHistogram.cs" />
     <Compile Include="Charts\CandleChart\Indicators\MacdHistogramUi.xaml.cs">
@@ -319,6 +320,7 @@
     <Compile Include="Entity\TimeFrameBuilder.cs" />
     <Compile Include="Entity\ClasterData.cs" />
     <Compile Include="Entity\Pattern.cs" />
+    <Compile Include="Entity\TradeSessions.cs" />
     <Compile Include="Journal\JournalUi.xaml.cs">
       <DependentUpon>JournalUi.xaml</DependentUpon>
     </Compile>

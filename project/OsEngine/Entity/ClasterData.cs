@@ -3,9 +3,9 @@
 */
 
 using System;
-using System.Data;
-using OsEngine.Market.Servers.Entity;
+using System.Threading;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OsEngine.Entity
 {
@@ -16,18 +16,50 @@ namespace OsEngine.Entity
     {
         public ClasterData(List<Trade> trades)
         {
-            //MakeDataTable();
-            if (data == null)
-            {
-                data = new List<PriseData>();
-            }
+            init();
             update(trades);
         }
         public ClasterData()
         {
-            //MakeDataTable();
-            data = new List<PriseData>();
+            init();
         }
+        private void init()
+        {
+            data = new List<PriseData>();
+
+            locker = new Object();
+            Trades_id = new List<string>();
+            MaxData = new PriseData();
+            minPrice = 99999999999;
+
+
+        }
+        /// <summary>
+        /// Максимальная цена в кластере
+        /// </summary>
+        public Decimal maxPrice;
+        /// <summary>
+        /// Минимальная цена в кластере
+        /// </summary>
+        public Decimal minPrice;
+        /// <summary>
+        /// Расстояние между минимум и максимум скластера
+        /// </summary>
+        public Decimal ClasterBody;
+        /// <summary>
+        /// Последняя обработаная сделка
+        /// </summary>
+        private int _lastTradeIndex;
+
+        private long new_trade_num {
+            get
+            {
+                _last_trade_num++;
+                return _last_trade_num;
+            }
+        }
+        private long _last_trade_num;
+        private Object locker;
         /// <summary>
         /// отработанные идентификаторы сделок
         /// </summary>
@@ -39,73 +71,85 @@ namespace OsEngine.Entity
         /// <returns></returns>
         private bool isNewTrade(Trade trade)
         {
-            if (Trades_id == null)
-            {
-                Trades_id = new List<string>();
-            }
             if (trade.Id == ""|| Trades_id.IndexOf(trade.Id) == -1)
             {
                 return true;
             }
+
             return false;
         }
         public void update(List<Trade> trades)
         {
-            if (trades==null || trades.Count == 0)
+            
+            if (trades == null || trades.Count == 0)
             {
                 return;
             }
-            if (trades[0].Id == "")
-            {
-                data = new List<PriseData>();
-            }
-            //data.Clear(); //= new List<PriseData>();
-            for (int i = 0; i < trades.Count; i++)
-            {
-                if (isNewTrade(trades[i]))
+            Parallel.For(_lastTradeIndex, trades.Count, i =>
                 {
                     add(trades[i]);
-                }
-            }
+                });
+            _lastTradeIndex = trades.Count;
         }
-        public System.Data.DataTable dataTable;
 
         /// <summary>
         /// данные объемов по ценам свечи
         /// </summary>
-        public List<PriseData> data;
+        public List<PriseData> data { get; set; }  = new List<PriseData>();
+
         /// <summary>
         /// Добавление данных в колекцию
         /// </summary>
         public void add(Trade trade)
         {
-            //дозаполняем накопленные цены
-            PriseData pd = data.Find(x => x.Price == trade.Price);
-            if (pd.Price != 0)
+            /*
+            lock (locker)
             {
-                pd.Add(trade);
+                if (trade.Id == "")
+                {
+                    trade.Id = new_trade_num.ToString();
+                    //запоминаем id сделки
+                    Trades_id.Add(trade.Id);
+                }
+                else if (!isNewTrade(trade))
+                {
+                    return;
+                }
+            }
+            */
+            //дозаполняем накопленные цены
+            PriseData pd;
+            lock (locker)
+            {
+                pd = data.Find(x => x.Price == trade.Price);
+            }
+            if (pd == null)
+            {
+                pd = new PriseData();
+                pd.Price = trade.Price;
+                lock (locker)
+                {
+                    data.Add(pd);
+                }
+            }
+            pd.Add(trade);
+            lock (locker)
+            {
                 if (MaxData.volume < pd.volume)
                 {
                     MaxData = pd;
                 }
-                return;
+                if (pd.Price > maxPrice)
+                {
+                    maxPrice = pd.Price;
+                }
+                if (pd.Price < minPrice)
+                {
+                    minPrice = pd.Price;
+                }
+                ClasterBody = maxPrice - minPrice;
             }
-            // добавляем новые цены
-            pd = new PriseData();
-            pd.Price = trade.Price;
-            pd.Add(trade);
-            data.Add(pd);
 
-            if (MaxData.volume < pd.volume)
-            {
-                MaxData = pd;
-            }
-            //запоминаем id сделки
-            if (trade.Id != "")
-            {
-                Trades_id.Add(trade.Id);
-            }
-            
         }
         /// <summary>
         /// Направление максимального объема Buy/Sell
@@ -115,8 +159,12 @@ namespace OsEngine.Entity
         /// <summary>
         /// данные конкретной цены
         /// </summary>
-        public struct PriseData
+
+        public class PriseData
         {
+            public PriseData()
+            {
+            }
             /// <summary>
             /// цена
             /// </summary>
@@ -138,26 +186,28 @@ namespace OsEngine.Entity
             /// </summary>
             private decimal volumeSell;
 
-
             public void Add(Trade trade)
             {
-                if (trade.Side == Side.Buy)
+                lock (this)
                 {
-                    volumeBuy += trade.Volume;
+                    if (trade.Side == Side.Buy)
+                    {
+                        volumeBuy += trade.Volume;
+                    }
+                    else
+                    {
+                        volumeSell += trade.Volume;
+                    }
+                    if (volumeBuy > volumeSell)
+                    {
+                        side = Side.Buy;
+                    }
+                    else
+                    {
+                        side = Side.Sell;
+                    }
+                    volume += trade.Volume;
                 }
-                else
-                {
-                    volumeSell += trade.Volume;
-                }
-                if (volumeBuy > volumeSell)
-                {
-                    side = Side.Buy;
-                }
-                else
-                {
-                    side = Side.Sell;
-                }
-                volume += trade.Volume;
 
             }
 
