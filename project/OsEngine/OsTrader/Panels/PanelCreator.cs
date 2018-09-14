@@ -466,7 +466,7 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
-
+            /*
             List<Position> openPositions = _tab.PositionsOpenAll;
             if (openPositions != null && openPositions.Count > 0)
             {
@@ -474,12 +474,23 @@ namespace OsEngine.OsTrader.Panels
             }
 
             List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x =>x.levlSide==TradeSide);
-            if (lvl != null)
+            if (lvl != null && lvl.Count>2)
             {
+                if(TradeSide == Side.Buy
+                    && lvl[lvl.Count-1].Value> lvl[lvl.Count - 2].Value)
+                {
+                    _tab.BuyAtMarket(_Volume.ValueDecimal);
+                }
+                if (TradeSide == Side.Sell
+                    && lvl[lvl.Count - 1].Value < lvl[lvl.Count - 2].Value)
+                {
+                    _tab.SellAtMarket(_Volume.ValueDecimal);
+                }
+                /*
                 for (int i=0;i< lvl.Count; i++)
                 {
-                    if (candles[candles.Count-1].Close < lvl[i].Value+ lvl[i].Value * 0.001m
-                        && candles[candles.Count - 1].Close > lvl[i].Value - lvl[i].Value * 0.001m)
+                    if (candles[candles.Count-1].Close < lvl[i].Value+ 2*_tab.Securiti.PriceStep
+                        && candles[candles.Count - 1].Close > lvl[i].Value - 2*_tab.Securiti.PriceStep)
                     {
                         if (TradeSide == Side.Buy)
                         {
@@ -493,7 +504,9 @@ namespace OsEngine.OsTrader.Panels
                         return;
                     }
                 }
-            }
+                
+            } */
+            
         }
 
 
@@ -514,15 +527,28 @@ namespace OsEngine.OsTrader.Panels
 
             return true;
         }
+        private bool CanOpenPosition()
+        {
+            if(_tab.PositionsOpenAll == null)
+            {
+                return true;
+            }
+            return _tab.PositionsOpenAll.Count == 0;
+        }
         private void LogicClosePositions()
         {
             List<Position> openPositions = _tab.PositionsOpenAll;
-            if (openPositions == null || openPositions.Count == 0)
+            if (CanOpenPosition())
             {
                 return;
             }
+            _tab.SellAtStopCanсel();
+            _tab.BuyAtStopCanсel();
+
             for (int i = 0; i < openPositions.Count && Claster.data.Count > 1; i++)
             {
+                _tab.CloseAtTrailingStop(openPositions[i], Claster.Values[Claster.Values.Count - 3] , Claster.Values[Claster.Values.Count - 3]);
+
                 if (openPositions[i].Direction == Side.Buy && Claster.data[Claster.data.Count - 1].MaxData.Price < Claster.data[Claster.data.Count - 2].MaxData.Price)
                 {
                     _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
@@ -543,34 +569,152 @@ namespace OsEngine.OsTrader.Panels
         /// <returns></returns>
         private Decimal GetStop(Position position)
         {
-            for (int i = Claster.data.Count - 1; i >= 0; i--)
+            if (position.Direction == Side.Buy)
+            {
+                List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price < position.EntryPrice);
+                lvls.Sort((a, b) => decimal.Compare(a.MaxData.Price, b.MaxData.Price));
+                if (lvls != null && lvls.Count > 1)
+                {
+                    return lvls[lvls.Count - 2].MaxData.Price;
+                }
+            }
+            if (position.Direction == Side.Sell)
+            {
+                List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price > position.EntryPrice);
+                lvls.Sort((a, b) => decimal.Compare(a.MaxData.Price, b.MaxData.Price));
+                if (lvls != null && lvls.Count > 1)
+                {
+                    return lvls[2].MaxData.Price;
+                }
+            }
+            /*
+            for (int i = Claster.data.Count - 2; i >= 0; i--)
             {
                 if (position.Direction == Side.Buy)
                 {
                     if (Claster.data[i].MaxData.Price < position.EntryPrice)
                     {
-                        return Claster.data[i].MaxData.Price - Claster.data[i].MaxData.Price;// * TralingStopPrise.ValueDecimal / 100;
+                        return Claster.data[i].MaxData.Price - 2 * _tab.Securiti.PriceStep;// * TralingStopPrise.ValueDecimal / 100;
                     }
                 }
                 else
                 {
                     if (Claster.data[i].MaxData.Price > position.EntryPrice)
                     {
-                        return Claster.data[i].MaxData.Price + Claster.data[i].MaxData.Price;// * TralingStopPrise.ValueDecimal / 100;
+                        return Claster.data[i].MaxData.Price + 2 * _tab.Securiti.PriceStep;// * TralingStopPrise.ValueDecimal / 100;
                     }
                 }
             }
-            return 0;
+            */
+            if(position.Direction == Side.Buy)
+            {
+                return position.EntryPrice - position.EntryPrice*0.01m;
+            }
+            else
+            {
+                return position.EntryPrice + position.EntryPrice * 0.01m;
+            }
+            
+        }
+        private Decimal GetStopLevel(Position position)
+        {
+            
+            if (position.Direction == Side.Buy)
+            {
+                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < position.EntryPrice && x.levlSide== position.Direction);
+                if (lvl != null&& lvl.Count>0)
+                {
+                    lvl.Sort((a, b) =>decimal.Compare(a.Value,b.Value));
+                   return lvl[lvl.Count-1].Value + 2 * _tab.Securiti.PriceStep;// _tab.CloseAtProfit(position, lvl[0].Value , lvl[0].Value);
+                }
+                
+            }
+            else
+            {
+                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > position.EntryPrice && x.levlSide == position.Direction);
+                if (lvl != null && lvl.Count > 0)
+                {
+                    lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                    return lvl[0].Value - 2 * _tab.Securiti.PriceStep;//_tab.CloseAtProfit(position, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
+                }
+
+
+            }
+            return GetStop(position);
+
+
         }
         private void _tab_PositionOpeningSuccesEvent(Position obj)
         {
 
             //выставим новые стопы
-            Decimal Localstop = GetStop(obj);
-            _tab.CloseAtTrailingStop(obj, Localstop, Localstop);
+            Decimal Localstop = GetStop(obj); 
+    //        Decimal Localstop = GetStopLevel(obj);
+             _tab.CloseAtTrailingStop(obj, Localstop, Localstop);
+            //         _tab.CloseAtProfit(obj, obj.EntryPrice * 1.01m, obj.EntryPrice * 1.005m);
+            _tab.SellAtStopCanсel();
+            _tab.BuyAtStopCanсel();
+            /*
+            if (obj.Direction == Side.Buy)
+            {
+                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > obj.EntryPrice);
+                if (lvl != null&& lvl.Count>0)
+                {
+                    lvl.Sort((a, b) =>decimal.Compare(a.Value,b.Value));
+                    _tab.CloseAtProfit(obj, lvl[0].Value , lvl[0].Value);
+                }
+            }
+            else
+            {
+                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < obj.EntryPrice);
+                if (lvl != null && lvl.Count > 0)
+                {
+                    lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                    _tab.CloseAtProfit(obj, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
+                }
+
+            }
+            */
+            
         }
+        private void OpenAtLevel()
+        {
+            if (!CanOpenPosition())
+            {
+                return;
+            }
+            PriceLevleLine.levlel lvl = PriceLevleLine.LevleData.FindLast(x => x.levlSide == TradeSide);
+            if(lvl != null)
+            {
+                if (TradeSide== Side.Buy)
+                {
+                    // покупаем по возвращению цены
+                    _tab.BuyAtStop(_Volume.ValueDecimal, lvl.Value, lvl.Value, StopActivateType.LowerOrEqyal);
+                }
+                if (TradeSide == Side.Sell)
+                {
+                    // Продаем по возвращению цены
+                    _tab.SellAtStop(_Volume.ValueDecimal, lvl.Value, lvl.Value, StopActivateType.HigherOrEqual);
+                }
 
+            }
 
+            lvl = PriceLevleLine.LevleData.FindLast(x => x.levlSide != TradeSide);
+            if (lvl != null)
+            {
+                if (TradeSide == Side.Buy)
+                {
+                    // покупаем попробитию последнего максимума
+                    _tab.BuyAtStop(_Volume.ValueDecimal, lvl.Value + lvl.Value * 0.005m, lvl.Value, StopActivateType.LowerOrEqyal);
+                }
+                if (TradeSide == Side.Sell)
+                {
+                    // Проадем попробитию последнего минимума
+                    _tab.SellAtStop(_Volume.ValueDecimal, lvl.Value - lvl.Value*0.005m, lvl.Value, StopActivateType.HigherOrEqual);
+                }
+            }
+
+        }
         private void _tab_CandleFinishedEvent(List<Candle> candles)
         {
             //Определяем направление торговли по прошлой сессии
@@ -585,7 +729,7 @@ namespace OsEngine.OsTrader.Panels
                 {
                     TradeSide = Side.Sell;
                 }
-                _tab.SetNewLogMessage("Направление торговли "+ TradeSide, LogMessageType.Signal);
+                _tab.SetNewLogMessage("Направление торговли " + TradeSide, LogMessageType.Signal);
             }
 
             if (!ValidateParams())
@@ -593,7 +737,27 @@ namespace OsEngine.OsTrader.Panels
                 return;
             }
             LogicClosePositions();
-
+            if (!CanOpenPosition())
+            {
+                return;
+            }
+            OpenAtLevel();
+            /*
+            List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.levlSide == TradeSide);
+            if (lvl != null && lvl.Count > 2)
+            {
+                if (TradeSide == Side.Buy
+                    && lvl[lvl.Count - 1].Value > lvl[lvl.Count - 2].Value)
+                {
+                    _tab.BuyAtMarket(_Volume.ValueDecimal);
+                }
+                if (TradeSide == Side.Sell
+                    && lvl[lvl.Count - 1].Value < lvl[lvl.Count - 2].Value)
+                {
+                    _tab.SellAtMarket(_Volume.ValueDecimal);
+                }
+            }
+            */
         }
     }
     public class ImpulsFlatBrake : BotPanel
