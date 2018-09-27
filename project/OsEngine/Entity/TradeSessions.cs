@@ -11,39 +11,69 @@ namespace OsEngine.Entity
 public class TradeSessions
     {
         public List<TS> Sessions;
-
+        private List<TS> SessionsAll;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sessionTypes">Список используемых сессий</param>
+        public TradeSessions(List<SessionType> sessionTypes)
+        {
+            init();
+            Sessions = new List<TS>();
+            foreach (SessionType s in sessionTypes)
+            {
+                TS tS = SessionsAll.Find(x => x.SessionType == s);
+                if (tS != null)
+                {
+                    Sessions.Add(tS);
+                }
+            }
+        }
         public TradeSessions()
         {
+            init();
             Sessions = new List<TS>();
+            foreach (TS s in SessionsAll)
+            {
+                 Sessions.Add(s);
+            }
+        }
+        private void init()
+        {
+            if (SessionsAll == null)
+            {
+                SessionsAll = new List<TS>();
+            }
 
-           TS _ts = new TS();
+            TS _ts = new TS();
             /*
             _ts.Name = "Азия";
             _ts.SessionType = SessionType.Asia;
             _ts.Open = new DateTime(1,1,1,3,0,0);
             _ts.Close = new DateTime(1,1,1,11,0,0);
-            Sessions.Add(_ts);
+            SessionsAll.Add(_ts);
 
             _ts = new TS();
             _ts.Name = "Европа";
             _ts.SessionType = SessionType.EU;
             _ts.Open = new DateTime(1, 1, 1, 9, 0, 0);
             _ts.Close = new DateTime(1, 1, 1, 17, 0, 0);
-            Sessions.Add(_ts);
+            SessionsAll.Add(_ts);
 
             _ts = new TS();
             _ts.Name = "Америка";
             _ts.SessionType = SessionType.USA;
             _ts.Open = new DateTime(1, 1, 1,15, 30, 0);
             _ts.Close = new DateTime(1, 1, 1, 23, 0, 0);
-            Sessions.Add(_ts);
+            SessionsAll.Add(_ts);
             */
             _ts = new TS();
             _ts.Name = "Мосбиржа";
-            _ts.SessionType = SessionType.USA;
+            _ts.SessionType = SessionType.RUS;
             _ts.Open = new DateTime(1, 1, 1, 10, 0, 0);
             _ts.Close = new DateTime(1, 1, 1, 19, 0, 0);
-            Sessions.Add(_ts);
+            SessionsAll.Add(_ts);
+            
 
         }
         /// <summary>
@@ -92,7 +122,7 @@ public class TradeSessions
             var tradesession = new TradeSessions();
             DateTime LastDate = tradesession.LastSessionEnd(date);
             int ind = candles.FindIndex(x => x.TimeStart > LastDate);
-            if (ind>0 && candles[ind-1].TimeStart < LastDate)
+            if (ind>0 && candles[ind-1].TimeStart <= LastDate)
             {
                 return candles[ind].Open;
             }
@@ -110,9 +140,9 @@ public class TradeSessions
             foreach(var ts in Sessions)
             {
                 testDateOpen = new DateTime(date.Year, date.Month, date.Day, ts.Open.Hour, ts.Open.Minute, ts.Open.Second);
-                if (testDateOpen < date)  
+                if (testDateOpen <= date)  
                 {
-                    if(result.Open == new DateTime() || result.Open < ts.Open)
+                    if(result.Open == new DateTime() || result.Open <= ts.Open)
                     {
                         result = ts;
                     }

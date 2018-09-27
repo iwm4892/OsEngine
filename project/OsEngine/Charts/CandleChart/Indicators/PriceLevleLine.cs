@@ -275,46 +275,53 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 }
             }
             
-            for(int i=3; i < LevleData.Count; i++)
+            for (int i=LevleData.Count-1;i>=4;i--)
             {
-                if (LevleData[i].levlSide==Side.Buy
+                if (i> LevleData.Count - 1)
+                {
+                    i = LevleData.Count - 1;
+                }
+                if (LevleData[i].levlSide == Side.Buy
 
                     && LevleData[i - 1].levlSide == Side.Sell
                     && LevleData[i - 2].levlSide == Side.Buy
                     && LevleData[i - 3].levlSide == Side.Sell
-                    && LevleData[i].Value < LevleData[i-2].Value
-                    && LevleData[i-1].Value < LevleData[i - 3].Value
+                    && LevleData[i].Value < LevleData[i - 2].Value
+                    && LevleData[i - 1].Value < LevleData[i - 3].Value
                     )
                 {
-                    LevleData.RemoveAt(i - 1);
                     LevleData.RemoveAt(i - 2);
-
-                    i--;
-                    i--;
+                    LevleData.RemoveAt(i - 2);
                 }
-                if (LevleData[i].levlSide == Side.Sell
+                else
+                {
+                    if (LevleData[i].levlSide == Side.Sell
                     && LevleData[i - 1].levlSide == Side.Buy
                     && LevleData[i - 2].levlSide == Side.Sell
                     && LevleData[i - 3].levlSide == Side.Buy
 
                     && LevleData[i].Value > LevleData[i - 2].Value
-                    && LevleData[i-1].Value > LevleData[i - 3].Value
+                    && LevleData[i - 1].Value > LevleData[i - 3].Value
                     )
-                {
-                    LevleData.RemoveAt(i - 1);
-                    LevleData.RemoveAt(i - 2);
-                    i--;
-                    i--;
+                    {
+                        LevleData.RemoveAt(i - 2);
+                        LevleData.RemoveAt(i - 2);
+                    }
                 }
-                if(LevleData[i].levlSide == LevleData[i - 1].levlSide)
+
+            }
+            
+            for(int i=1; i < LevleData.Count; i++)
+            {
+                if (LevleData[i].levlSide == LevleData[i - 1].levlSide)
                 {
                     LevleData.RemoveAt(i - 1);
                     i--;
                 }
 
             }
-            
-            
+
+
             if (LevleData.Count > 6)
             {
                 LevleData.RemoveAt(0);

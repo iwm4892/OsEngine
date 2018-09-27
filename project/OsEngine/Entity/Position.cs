@@ -929,7 +929,7 @@ namespace OsEngine.Entity
         {
             get
             {
-                return (decimal)0.00075;
+                return (decimal)0.002;
             }
 
         }

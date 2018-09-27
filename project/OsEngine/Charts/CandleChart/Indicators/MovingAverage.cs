@@ -80,7 +80,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// типичная цена (High + Low + Close) / 3
         /// </summary>
-        Typical
+        Typical,
+        /// <summary>
+        /// Расчет по объему свечки
+        /// </summary>
+        Volume
     }
 
     /// <summary>
@@ -537,6 +541,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 return (candles[index].High + candles[index].Low + candles[index].Close) / 3;
             }
+            else if (TypePointsToSearch == PriceTypePoints.Volume)
+            {
+                return candles[index].Volume;
+            }
+
             return 0;
         }
 
