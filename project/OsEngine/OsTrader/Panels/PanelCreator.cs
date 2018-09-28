@@ -439,7 +439,11 @@ namespace OsEngine.OsTrader.Panels
         private List<LineHorisontal> lines;
 
         private LineHorisontal LastSessionPriceLine;
-        
+        /// <summary>
+        /// Максимальный размер стопа (% от депозита)
+        /// </summary>
+        private StrategyParameterDecimal MaxStop;
+
         public override string GetNameStrategyType()
         {
             return "PriceLavelBot";
@@ -470,6 +474,8 @@ namespace OsEngine.OsTrader.Panels
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
             _Volume = CreateParameter("Volume", 1, 0.00m, 100, 1);
+
+            MaxStop = CreateParameter("MaxStop", 1, 0.0m, 10, 0.1m);
 
             _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
             _tab.CandleUpdateEvent += _tab_CandleUpdateEvent;
@@ -520,14 +526,14 @@ namespace OsEngine.OsTrader.Panels
         {
             decimal _Vol;
             decimal LocalStop = GetStopLevel(side, price);
-            decimal VollAll = _tab.Portfolio.ValueBegin + _tab.Portfolio.Profit;
+            decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)/price;
 
             decimal StopSize = Math.Abs((price - LocalStop)/LocalStop);
             if (StopSize <=0)
             {
                 return;
             }
-            _Vol = 0.02m * VollAll / (StopSize);
+            _Vol = (MaxStop.ValueDecimal/100) * VollAll / (StopSize);
 
 
             // нужно разбираться почему так происходит
@@ -750,11 +756,11 @@ namespace OsEngine.OsTrader.Panels
             }
             if(side == Side.Buy)
             {
-                return price - price * 0.005m;
+                return price - price * MaxStop.ValueDecimal/100;
             }
             else
             {
-                return price + price * 0.005m;
+                return price + price * MaxStop.ValueDecimal/100;
             }
             
         }
@@ -806,14 +812,16 @@ namespace OsEngine.OsTrader.Panels
                 _tab.CloseAtProfit(obj, obj.EntryPrice - (obj.ClosePrice - obj.EntryPrice) * 2, obj.EntryPrice - (obj.ClosePrice - obj.EntryPrice) * 2);
             }
             */
-            
+
+            //учтем комиссию за сделку
+            decimal fee = 2 * obj.OpenVolume * obj.EntryPrice * obj.fee;
             if (obj.Direction == Side.Buy)
             {
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > obj.EntryPrice);
                 if (lvl != null&& lvl.Count>0)
                 {
                     lvl.Sort((a, b) =>decimal.Compare(a.Value,b.Value));
-                    _tab.CloseAtProfit(obj, lvl[0].Value , lvl[0].Value);
+                    _tab.CloseAtProfit(obj, lvl[0].Value , lvl[0].Value + fee + lvl[0].Value*obj.OpenVolume*obj.fee);
                 }
             }
             else
@@ -822,7 +830,7 @@ namespace OsEngine.OsTrader.Panels
                 if (lvl != null && lvl.Count > 0)
                 {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
-                    _tab.CloseAtProfit(obj, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
+                    _tab.CloseAtProfit(obj, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value -fee - lvl[lvl.Count - 1].Value * obj.OpenVolume * obj.fee);
                 }
 
             }

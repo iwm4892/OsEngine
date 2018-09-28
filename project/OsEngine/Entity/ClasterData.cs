@@ -30,7 +30,7 @@ namespace OsEngine.Entity
             locker = new Object();
             Trades_id = new List<string>();
             MaxData = new PriseData();
-            minPrice = 99999999999;
+            minPrice = Decimal.MaxValue;
 
 
         }

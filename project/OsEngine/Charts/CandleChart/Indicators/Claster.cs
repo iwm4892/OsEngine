@@ -276,6 +276,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 ProcessAllCandle(candles);
             }
+            // чтобы память не переполнялась
+            if (data.Count > 100)
+            {
+                data[data.Count - 100] = new ClasterData();
+            }
         }
 
         /// <summary>
