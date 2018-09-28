@@ -558,6 +558,10 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
+            if (candles.Count < 2)
+            {
+                return;
+            }
             DeltaStepCheck();
             bool CanFindPattern = false;
             for (int i = 1; i <= 2; i++)
@@ -574,15 +578,6 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
-
-            /*
-            Candle lastcandle = candles[candles.Count - 1];
-            List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value <= lastcandle.High && x.Value >= lastcandle.Low);
-            if (lvl == null || lvl.Count == 0)
-            {
-                return;
-            }
-            */
 
 
             List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
