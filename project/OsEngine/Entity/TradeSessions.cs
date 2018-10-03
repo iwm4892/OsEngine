@@ -46,7 +46,7 @@ public class TradeSessions
             }
 
             TS _ts = new TS();
-            
+            /*
             _ts.Name = "Азия";
             _ts.SessionType = SessionType.Asia;
             _ts.Open = new DateTime(1,1,1,3,0,0);
@@ -66,14 +66,15 @@ public class TradeSessions
             _ts.Open = new DateTime(1, 1, 1,15, 30, 0);
             _ts.Close = new DateTime(1, 1, 1, 23, 0, 0);
             SessionsAll.Add(_ts);
-            /*
+            
+             */
             _ts = new TS();
             _ts.Name = "Мосбиржа";
             _ts.SessionType = SessionType.RUS;
             _ts.Open = new DateTime(1, 1, 1, 10, 0, 0);
             _ts.Close = new DateTime(1, 1, 1, 19, 0, 0);
             SessionsAll.Add(_ts);
-            */
+            
 
         }
         /// <summary>
