@@ -25,10 +25,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public PriceLevleLine(string uniqName, bool canDelete)
         {
             Name = uniqName;
-            TypeIndicator = IndicatorOneCandleChartType.Line;
-            ColorBase = Color.DodgerBlue;
-            PaintOn = true;
-            CanDelete = canDelete; 
+            CanDelete = canDelete;
+            init();
             Load();
         }
 
@@ -41,13 +39,20 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public PriceLevleLine(bool canDelete)
         {
             Name = Guid.NewGuid().ToString();
-
+            CanDelete = canDelete;
+            init();
+        }
+        private void init()
+        {
             TypeIndicator = IndicatorOneCandleChartType.Line;
             ColorBase = Color.DodgerBlue;
             PaintOn = true;
-            CanDelete = canDelete; 
+            linewidth = 0.01m;
         }
-
+        /// <summary>
+        /// Толщина линии (пример 0.01 = 1%)
+        /// </summary>
+        public Decimal linewidth;
         /// <summary>
         /// все значения индикатора
         /// </summary>
@@ -245,6 +250,34 @@ namespace OsEngine.Charts.CandleChart.Indicators
         }
         public List<levlel> LevleData = new List<levlel>();
 
+        private bool updateLevelData(levlel lvl)
+        {
+            levlel findlvl = LevleData.Find(x=>x.Value*(1+linewidth/2)>lvl.Value && x.Value*(1-linewidth/2)<lvl.Value);
+            if (findlvl !=null)
+            {
+                findlvl.levlSide = lvl.levlSide;
+                findlvl.Value = lvl.Value;
+                return true;
+            }
+            return false;
+        }
+        private void add(levlel el)
+        {
+            LevleData.Add(el);
+            LevleData.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+            if (LevleData.Count > 6)
+            {
+                if(el.Value == LevleData[LevleData.Count - 1].Value)
+                {
+                    LevleData.RemoveAt(0);
+                }
+                if (el.Value == LevleData[0].Value)
+                {
+                    LevleData.RemoveAt(LevleData.Count - 1);
+                }
+            }
+
+        }
         private void ProcessValue()
         {
             if (data.Count > 2)
@@ -256,8 +289,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
                     levlel el = new levlel();
                     el.levlSide = Side.Sell;
                     el.Value = data[data.Count - 2].MaxData.Price;
-                    LevleData.Add(el);
 
+                    if (!updateLevelData(el))
+                    {
+                        add(el);
+                    }
                     Values.Add(data[data.Count - 2].MaxData.Price);
                 }
 
@@ -268,13 +304,24 @@ namespace OsEngine.Charts.CandleChart.Indicators
                     levlel el = new levlel();
                     el.levlSide = Side.Buy;
                     el.Value = data[data.Count - 2].MaxData.Price;
-                    LevleData.Add(el);
+
+                    if (!updateLevelData(el))
+                    {
+                        add(el);
+                    }
 
                     Values.Add(data[data.Count - 2].MaxData.Price);
 
                 }
             }
             
+            if (LevleData.Count > 6)
+            {
+                
+                LevleData.RemoveAt(0);
+            }
+            
+            /*
             for (int i=LevleData.Count-1;i>=4;i--)
             {
                 if (i> LevleData.Count - 1)
@@ -310,23 +357,17 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 }
 
             }
+            */
             
-            for(int i=1; i < LevleData.Count; i++)
+            for (int i=1; i < LevleData.Count; i++)
             {
                 if (LevleData[i].levlSide == LevleData[i - 1].levlSide)
                 {
-                    LevleData.RemoveAt(i - 1);
-                    i--;
+             //       LevleData.RemoveAt(i - 1);
+             //       i--;
                 }
 
             }
-
-
-            if (LevleData.Count > 6)
-            {
-                LevleData.RemoveAt(0);
-            }
-
         }
         /// <summary>
         /// прогрузить только последнюю свечку

@@ -277,9 +277,9 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 ProcessAllCandle(candles);
             }
             // чтобы память не переполнялась
-            if (data.Count > 100)
+            if (data.Count > 10)
             {
-                data[data.Count - 100] = new ClasterData();
+                data[data.Count - 10] = new ClasterData();
             }
         }
 

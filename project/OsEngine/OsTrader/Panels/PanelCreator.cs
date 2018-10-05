@@ -422,6 +422,10 @@ namespace OsEngine.OsTrader.Panels
         /// </summary>
         public StrategyParameterString Regime;
         /// <summary>
+        /// Период экспоненциальной скользящей средней
+        /// </summary>
+        public StrategyParameterInt maLenth;
+        /// <summary>
         /// Проверка на близость к уровню поддержки / сопротивления
         /// </summary>
         private bool TradeLevel;
@@ -433,6 +437,10 @@ namespace OsEngine.OsTrader.Panels
         /// Направление торговли
         /// </summary>
         private Side TradeSide;
+        /// <summary>
+        /// Проскальзывание
+        /// </summary>
+        private decimal _Slipage;
 
         private MovingAverage maVolume;
 
@@ -468,14 +476,18 @@ namespace OsEngine.OsTrader.Panels
             PriceLevleLine = (PriceLevleLine)_tab.CreateCandleIndicator(PriceLevleLine, "Prime");
             PriceLevleLine.Save();
 
-            maVolume = new MovingAverage(name + "_maVolume", false) { TypePointsToSearch=PriceTypePoints.Volume, Lenght=48 };
+            maLenth = CreateParameter("maLenth", 24, 24, 48, 1);
+            maVolume = new MovingAverage(name + "_maVolume", false);
             maVolume = (MovingAverage)_tab.CreateCandleIndicator(maVolume, "New1");
+            maVolume.Lenght = maLenth.ValueInt;
+            maVolume.TypeCalculationAverage = MovingAverageTypeCalculation.Exponential;
+            maVolume.TypePointsToSearch = PriceTypePoints.Volume;
             maVolume.Save();
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
             _Volume = CreateParameter("Volume", 1, 0.00m, 100, 1);
 
-            MaxStop = CreateParameter("MaxStop", 1, 0.0m, 10, 0.1m);
+            MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
 
             _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
             _tab.CandleUpdateEvent += _tab_CandleUpdateEvent;
@@ -503,6 +515,8 @@ namespace OsEngine.OsTrader.Panels
             Claster_pattern.Save();
 
             lines = new List<LineHorisontal>();
+
+            
         }
         private void DeltaStepCheck()
         {
@@ -524,11 +538,29 @@ namespace OsEngine.OsTrader.Panels
 
         private void OpenPosition(Side side,decimal price)
         {
+            if (_Slipage == 0)
+            {
+                _Slipage = 0 * _tab.Securiti.PriceStep;
+            }
+            /*
+            List<PriceLevleLine.levlel> lvl = new List<PriceLevleLine.levlel>();
+            lvl.AddRange(PriceLevleLine.LevleData);
+            lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+            if (price>(lvl[0].Value+lvl[lvl.Count-1].Value)/2 && side == Side.Buy)
+            {
+                return;
+            }
+
+            if(price < (lvl[0].Value + lvl[lvl.Count - 1].Value) / 2 && side == Side.Sell)
+            {
+                return;
+            }
+            */
             decimal _Vol;
             decimal LocalStop = GetStopLevel(side, price);
             decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)/price;
 
-            decimal StopSize = Math.Abs((price - LocalStop)/LocalStop);
+            decimal StopSize = Math.Abs((LocalStop - price) / price);
             if (StopSize <=0)
             {
                 return;
@@ -568,7 +600,7 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
-            DeltaStepCheck();
+            
             bool CanFindPattern = false;
             for (int i = 1; i <= 2; i++)
             {
@@ -699,33 +731,34 @@ namespace OsEngine.OsTrader.Panels
             }
             return _tab.PositionsOpenAll.Count == 0;
         }
-        private void LogicClosePositions()
+        private void LogicClosePositions(List<Candle> candles)
         {
             List<Position> openPositions = _tab.PositionsOpenAll;
             if (CanOpenPosition())
             {
                 return;
             }
-            /*
-            _tab.SellAtStopCanсel();
-            _tab.BuyAtStopCanсel();
-            */
+          
+
             for (int i = 0; i < openPositions.Count && Claster.data.Count > 1; i++)
             {
-                decimal localStop = GetStop(openPositions[i].Direction,openPositions[i].EntryPrice);
+                decimal localStop = GetStop(openPositions[i].Direction, candles[candles.Count-1].Close);
 
-                _tab.CloseAtTrailingStop(openPositions[i], localStop, localStop);
-
-                if (openPositions[i].Direction == Side.Buy && Claster.data[Claster.data.Count - 1].MaxData.Price < Claster.data[Claster.data.Count - 2].MaxData.Price)
+                //_tab.CloseAtTrailingStop(openPositions[i], localStop, localStop);
+                
+                if ((openPositions[i].Direction == Side.Buy && Claster.data[Claster.data.Count - 1].MaxData.Price < Claster.data[Claster.data.Count - 2].MaxData.Price)
+                    && openPositions[i].ProfitOperationPersent > 0)// openPositions[i].EntryPrice < Claster.data[Claster.data.Count - 1].MaxData.Price)
                 {
                     _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
                     _tab.CloseAllAtMarket();
                 }
-                if (openPositions[i].Direction == Side.Sell && Claster.data[Claster.data.Count - 1].MaxData.Price > Claster.data[Claster.data.Count - 2].MaxData.Price)
+                if ((openPositions[i].Direction == Side.Sell && Claster.data[Claster.data.Count - 1].MaxData.Price > Claster.data[Claster.data.Count - 2].MaxData.Price)
+                   && openPositions[i].ProfitOperationPersent > 0)// && openPositions[i].EntryPrice > Claster.data[Claster.data.Count - 1].MaxData.Price)
                 {
                     _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
                     _tab.CloseAllAtMarket();
                 }
+                
             }
 
         }
@@ -736,6 +769,25 @@ namespace OsEngine.OsTrader.Panels
         /// <returns></returns>
         private Decimal GetStop(Side side,decimal price)
         {
+            // берем последние 6 свечек
+            List<decimal> maxVolumes = Claster.Values.GetRange(Claster.Values.Count-7,6);
+            if (side == Side.Buy)
+            {
+                List<decimal> lvl = maxVolumes.FindAll(x => x < price);
+                if(lvl !=null && lvl.Count>1)
+                {
+                    return lvl[lvl.Count - 2] - _Slipage;
+                }
+            }
+            if (side == Side.Sell)
+            {
+                List<decimal> lvl = maxVolumes.FindAll(x => x > price);
+                if (lvl != null && lvl.Count > 1)
+                {
+                    return lvl[1]+ _Slipage;
+                }
+            }
+            /*
             if (side == Side.Buy)
             {
                 List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price < price);
@@ -754,6 +806,7 @@ namespace OsEngine.OsTrader.Panels
                     return lvls[1].MaxData.Price;
                 }
             }
+            */
             if(side == Side.Buy)
             {
                 return price - price * MaxStop.ValueDecimal/100;
@@ -770,20 +823,20 @@ namespace OsEngine.OsTrader.Panels
             if (side == Side.Buy)
             {
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < price && x.levlSide == side);
-                if (lvl != null&& lvl.Count>0)
+                if (lvl != null&& lvl.Count>1)
                 {
                     lvl.Sort((a, b) =>decimal.Compare(a.Value,b.Value));
-                   return lvl[lvl.Count-1].Value + 2 * _tab.Securiti.PriceStep;// _tab.CloseAtProfit(position, lvl[0].Value , lvl[0].Value);
+                   return lvl[lvl.Count-2].Value - _Slipage;// _tab.CloseAtProfit(position, lvl[0].Value , lvl[0].Value);
                 }
                 
             }
             else
             {
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > price && x.levlSide == side);
-                if (lvl != null && lvl.Count > 0)
+                if (lvl != null && lvl.Count > 1)
                 {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
-                    return lvl[0].Value - 2 * _tab.Securiti.PriceStep;//_tab.CloseAtProfit(position, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
+                    return lvl[1].Value + _Slipage;//_tab.CloseAtProfit(position, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
                 }
 
 
@@ -812,9 +865,10 @@ namespace OsEngine.OsTrader.Panels
                 _tab.CloseAtProfit(obj, obj.EntryPrice - (obj.ClosePrice - obj.EntryPrice) * 2, obj.EntryPrice - (obj.ClosePrice - obj.EntryPrice) * 2);
             }
             */
-
+            
+            /*
             //учтем комиссию за сделку
-            decimal fee = 2 * obj.OpenVolume * obj.EntryPrice * obj.fee;
+            decimal fee = obj.OpenVolume * obj.EntryPrice * obj.fee;
             if (obj.Direction == Side.Buy)
             {
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > obj.EntryPrice);
@@ -832,9 +886,8 @@ namespace OsEngine.OsTrader.Panels
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
                     _tab.CloseAtProfit(obj, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value -fee - lvl[lvl.Count - 1].Value * obj.OpenVolume * obj.fee);
                 }
-
             }
-            
+            */
 
 
 
@@ -882,6 +935,7 @@ namespace OsEngine.OsTrader.Panels
         }
         private void _tab_CandleFinishedEvent(List<Candle> candles)
         {
+            DeltaStepCheck();
             //Определяем направление торговли по прошлой сессии
             LastSessionEndPrice = TradeSessions.LastSessionEndPrice(_tab.CandlesAll, candles[candles.Count - 1].TimeStart);
             if (LastSessionEndPrice > 0)
@@ -953,7 +1007,7 @@ namespace OsEngine.OsTrader.Panels
                 }
             }
             
-            LogicClosePositions();
+            LogicClosePositions(candles);
             if (!CanOpenPosition())
             {
                 return;
