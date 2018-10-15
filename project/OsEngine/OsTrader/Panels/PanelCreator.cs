@@ -634,26 +634,14 @@ namespace OsEngine.OsTrader.Panels
             {
                 if (signal.Count != 0 && signal[0].isPattern)
                 {
-                    _tab.SetNewLogMessage("Открытие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
+                    
                     if (signal[0].Side == TradeSide)
                     {
-                        /*
-                        if (signal[0].Side == Side.Buy)
-                        {
-                           
-                            _tab.BuyAtMarket(_Volume.ValueDecimal);
-                        }
-                        else
-                        {
-                            _tab.SellAtMarket(_Volume.ValueDecimal);
-                        }
-                        */
+                        _tab.SetNewLogMessage("Открытие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
                         OpenPosition(signal[0].Side, candles[candles.Count - 1].Close);
                     }
-
                 }
             }
-
         }
 
         private void _tab_CandleUpdateEvent(List<Candle> candles)
@@ -853,19 +841,6 @@ namespace OsEngine.OsTrader.Panels
             Decimal Localstop = GetStopLevel(obj.Direction, obj.EntryPrice);
             _tab.CloseAtTrailingStop(obj, Localstop, Localstop);
            //          _tab.CloseAtProfit(obj, obj.EntryPrice * 1.005m, obj.EntryPrice * 1.005m);
-            _tab.SellAtStopCanсel();
-            _tab.BuyAtStopCanсel();
-            /*
-            if (obj.Direction == Side.Buy)
-            {
-                _tab.CloseAtProfit(obj, obj.EntryPrice + (obj.EntryPrice - obj.ClosePrice) * 2, obj.EntryPrice + (obj.EntryPrice - obj.ClosePrice) * 2);
-            }
-            else
-            {
-                _tab.CloseAtProfit(obj, obj.EntryPrice - (obj.ClosePrice - obj.EntryPrice) * 2, obj.EntryPrice - (obj.ClosePrice - obj.EntryPrice) * 2);
-            }
-            */
-            
             /*
             //учтем комиссию за сделку
             decimal fee = obj.OpenVolume * obj.EntryPrice * obj.fee;
@@ -888,12 +863,6 @@ namespace OsEngine.OsTrader.Panels
                 }
             }
             */
-
-
-
-
-
-
         }
         private void OpenAtLevel()
         {

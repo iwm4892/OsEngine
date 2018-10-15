@@ -5,10 +5,14 @@
 using System;
 using System.Globalization;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using OsEngine.Entity;
 
-namespace OsEngine.Entity
+namespace OsEngine.Charts.CandleChart.Indicators
 {
-public class TradeSessions
+
+    public class TradeSessions : IIndicatorCandle
     {
         public List<TS> Sessions;
         private List<TS> SessionsAll;
@@ -46,7 +50,7 @@ public class TradeSessions
             }
 
             TS _ts = new TS();
-            
+            /*
             _ts.Name = "Азия";
             _ts.SessionType = SessionType.Asia;
             _ts.Open = new DateTime(1,1,1,3,0,0);
@@ -66,16 +70,226 @@ public class TradeSessions
             _ts.Open = new DateTime(1, 1, 1,15, 30, 0);
             _ts.Close = new DateTime(1, 1, 1, 23, 0, 0);
             SessionsAll.Add(_ts);
-            /*
+            */
             _ts = new TS();
             _ts.Name = "Мосбиржа";
             _ts.SessionType = SessionType.RUS;
             _ts.Open = new DateTime(1, 1, 1, 10, 0, 0);
             _ts.Close = new DateTime(1, 1, 1, 19, 0, 0);
             SessionsAll.Add(_ts);
-            */
+            
 
         }
+        /// <summary>
+        /// все значения индикатора
+        /// </summary>
+        List<List<decimal>> IIndicatorCandle.ValuesToChart
+        {
+            get
+            {
+                List<List<decimal>> list = new List<List<decimal>>();
+                list.Add(Values);
+                return list;
+            }
+        }
+
+        /// <summary>
+        /// цвета для индикатора
+        /// </summary>
+        List<Color> IIndicatorCandle.Colors
+        {
+            get
+            {
+                List<Color> colors = new List<Color>();
+                colors.Add(ColorBase);
+                return colors;
+            }
+
+        }
+
+        /// <summary>
+        /// можно ли удалить индикатор с графика. Это нужно для того чтобы у роботов нельзя было удалить 
+        /// индикаторы которые ему нужны в торговле
+        /// </summary>
+        public bool CanDelete { get; set; }
+
+        /// <summary>
+        /// тип прорисовки индикатора
+        /// </summary>
+        public IndicatorOneCandleChartType TypeIndicator
+        { get; set; }
+
+        /// <summary>
+        /// имя серии на которой индикатор прорисовывается
+        /// </summary>
+        public string NameSeries
+        { get; set; }
+
+        /// <summary>
+        /// имя области на котророй индикатор прорисовывается
+        /// </summary>
+        public string NameArea
+        { get; set; }
+
+        /// <summary>
+        /// значение индикатора
+        /// </summary>
+        public List<decimal> Values
+        { get; set; }
+
+        /// <summary>
+        /// уникальное имя индикатора
+        /// </summary>
+        public string Name
+        { get; set; }
+
+        /// <summary>
+        /// цвет для прорисовки базовой точки данных
+        /// </summary>
+        public Color ColorBase
+        { get; set; }
+
+        /// <summary>
+        /// включена ли прорисовка индикатора
+        /// </summary>
+        public bool PaintOn
+        { get; set; }
+
+        public List<Color> ColorSeries { get; set; }
+
+        /// <summary>
+        /// сохранить настройки
+        /// </summary>
+        public void Save()
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                return;
+            }
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(@"Engine\" + Name + @".txt", false))
+                {
+                    writer.WriteLine(ColorBase.ToArgb());
+                    writer.WriteLine(PaintOn);
+                    writer.Close();
+                }
+            }
+            catch (Exception)
+            {
+                // отправить в лог
+            }
+        }
+
+        /// <summary>
+        /// загрузить настройки
+        /// </summary>
+        public void Load()
+        {
+            if (!File.Exists(@"Engine\" + Name + @".txt"))
+            {
+                return;
+            }
+            try
+            {
+
+                using (StreamReader reader = new StreamReader(@"Engine\" + Name + @".txt"))
+                {
+                    ColorBase = Color.FromArgb(Convert.ToInt32(reader.ReadLine()));
+                    PaintOn = Convert.ToBoolean(reader.ReadLine());
+                    reader.ReadLine();
+
+                    reader.Close();
+                }
+
+
+            }
+            catch (Exception)
+            {
+                // отправить в лог
+            }
+        }
+
+        /// <summary>
+        /// удалить файл с настройками
+        /// </summary>
+        public void Delete()
+        {
+            if (File.Exists(@"Engine\" + Name + @".txt"))
+            {
+                File.Delete(@"Engine\" + Name + @".txt");
+            }
+        }
+
+        /// <summary>
+        /// удалить данные
+        /// </summary>
+        public void Clear()
+        {
+            if (Values != null)
+            {
+                Values.Clear();
+            }
+        }
+
+        /// <summary>
+        /// показать окно настроек
+        /// </summary>
+        public void ShowDialog()
+        {
+            // ignored. Этот тип индикатора настраивается и создаётся только из кода
+        }
+
+        /// <summary>
+        /// индикатор нужно перерисовать
+        /// </summary>
+        public event Action<IIndicatorCandle> NeadToReloadEvent;
+        /// <summary>
+        /// прогрузить индикатор свечками
+        /// </summary>
+        public void Process(List<Candle> candles)
+        {
+            if (Values == null)
+            {
+                Values = new List<decimal>();
+            }
+            if (data != null &&
+                           data.Count + 1 == candles.Count)
+            {
+                ProcessOneCandle(candles);
+            }
+            else if (data != null &&
+                data.Count == candles.Count)
+            {
+                ProcessLastCanlde(candles);
+            }
+            else
+            {
+                ProcessAllCandle(candles);
+            }
+
+
+        }
+        private void ProcessOneCandle(List<Candle> candles)
+        {
+
+        }
+        /// <summary>
+        /// прогрузить все свечи
+        /// </summary>
+        private void ProcessAllCandle(List<Candle> candles)
+        {
+
+        }
+        /// <summary>
+        /// перегрузить последнюю свечу
+        /// </summary>
+        private void ProcessLastCanlde(List<Candle> candles)
+        {
+            data[data.Count - 1].update(candles[candles.Count - 1].Trades);
+        }
+
+
         /// <summary>
         /// Проверяем началась ли каянибудь торговая сессия на указанную дату
         /// </summary>
