@@ -452,6 +452,8 @@ namespace OsEngine.OsTrader.Panels
         /// </summary>
         private StrategyParameterDecimal MaxStop;
 
+        private TradeSessions _TradeSessions;
+
         public override string GetNameStrategyType()
         {
             return "PriceLavelBot";
@@ -467,6 +469,10 @@ namespace OsEngine.OsTrader.Panels
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
+
+            _TradeSessions = new TradeSessions(name + "_TradeSessions", false);
+            _TradeSessions = (TradeSessions)_tab.CreateCandleIndicator(_TradeSessions, "Prime");
+            _TradeSessions.Save();
 
             Claster = new Claster(name + "_Claster", false);
             Claster = (Claster)_tab.CreateCandleIndicator(Claster, "Prime");
@@ -906,7 +912,10 @@ namespace OsEngine.OsTrader.Panels
         {
             DeltaStepCheck();
             //Определяем направление торговли по прошлой сессии
-            LastSessionEndPrice = TradeSessions.LastSessionEndPrice(_tab.CandlesAll, candles[candles.Count - 1].TimeStart);
+            LastSessionEndPrice = _TradeSessions.LastSessionEndPrice;
+
+            
+            //LastSessionEndPrice = TradeSessions.LastSessionEndPrice(_tab.CandlesAll, candles[candles.Count - 1].TimeStart);
             if (LastSessionEndPrice > 0)
             {
                 Side oldTradeSide = TradeSide;
@@ -922,6 +931,7 @@ namespace OsEngine.OsTrader.Panels
                 {
                     _tab.SetNewLogMessage("Направление торговли " + TradeSide, LogMessageType.Signal);
                 }
+                
                 if (LastSessionPriceLine == null)
                 {
                     LastSessionPriceLine = new LineHorisontal("LastSessionPriceLine", "Prime", false)
@@ -1244,7 +1254,7 @@ namespace OsEngine.OsTrader.Panels
         }
         private void _tabHper_CandleFinishedEvent(List<Candle> candles)
         {
-
+            /*
             //Определяем направление торговли по прошлой сессии
             LastSessionEndPrice = TradeSessions.LastSessionEndPrice(_tabHper.CandlesAll, candles[candles.Count - 1].TimeStart);
             if (LastSessionEndPrice > 0)
@@ -1258,6 +1268,7 @@ namespace OsEngine.OsTrader.Panels
                     TradeSide = Side.Sell;
                 }
             }
+            */
             //Заполняем экстремумы
             if (candles.Count > 1)
             {
@@ -1495,6 +1506,7 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
+            /*
             //Проверим началась ли новая сессия и обновим кластер цен
             if (TradeSessions.itsSessionStart(candles[candles.Count - 1].TimeStart))
             {
@@ -1502,7 +1514,7 @@ namespace OsEngine.OsTrader.Panels
                 MinLevels = new List<decimal>();
 
             }
-
+            */
 
             /*
             //Проверка близости к уровню

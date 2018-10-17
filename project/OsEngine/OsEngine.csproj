@@ -279,7 +279,7 @@
       <DependentUpon>VerticalHorizontalFilterUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="Charts\CandleChart\Indicators\Delta.cs" />
-    <Compile Include="Charts\CandleChart\Indicators\TradeSessionsind.cs" />
+    <Compile Include="Charts\CandleChart\Indicators\TradeSessions.cs" />
     <Compile Include="Charts\CandleChart\Indicators\Volume.cs" />
     <Compile Include="Charts\CandleChart\Indicators\VolumeOscillator.cs" />
     <Compile Include="Charts\CandleChart\Indicators\VolumeOscillatorUi.xaml.cs">
@@ -321,7 +321,6 @@
     <Compile Include="Entity\TimeFrameBuilder.cs" />
     <Compile Include="Entity\ClasterData.cs" />
     <Compile Include="Entity\Pattern.cs" />
-    <Compile Include="Charts\CandleChart\Indicators\TradeSessions.cs" />
     <Compile Include="Journal\JournalUi.xaml.cs">
       <DependentUpon>JournalUi.xaml</DependentUpon>
     </Compile>
