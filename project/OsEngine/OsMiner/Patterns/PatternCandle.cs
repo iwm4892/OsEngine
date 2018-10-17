@@ -247,11 +247,11 @@ namespace OsEngine.OsMiner.Patterns
                 return;
             }
 
-            Sequence = new decimal[Length][];
+            Sequence = new decimal[array.Length- 5][];
 
-            
+            Length = Sequence.Length;
 
-            for (int i = 0; i < Length; i++)
+            for (int i = 0; i < Sequence.Length; i++)
             {
                 string[] lockal = array[5+i].Split(';');
 
@@ -324,11 +324,9 @@ namespace OsEngine.OsMiner.Patterns
         public IPattern GetCopy()
         {
             PatternCandle pattern = new PatternCandle();
-            pattern.Length = Length;
-            pattern.Expand = Expand;
-            pattern.Sequence = Sequence;
-            pattern.TypeWatch = TypeWatch;
-            pattern.Weigth = Weigth;
+
+            string save = GetSaveString();
+            pattern.Load(save);
 
             return pattern;
         }

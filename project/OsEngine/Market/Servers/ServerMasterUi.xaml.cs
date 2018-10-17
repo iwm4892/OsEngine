@@ -131,6 +131,7 @@ namespace OsEngine.Market.Servers
                 _gridSources.Rows.Add(row1);
             }
 
+            bool bitfinex = false;
             bool bitMexIsOn = false;
             bool quikIsOn = false;
             bool smartcomIsOn = false;
@@ -151,6 +152,11 @@ namespace OsEngine.Market.Servers
                 ServerType type;
 
                 Enum.TryParse(row1.Cells[0].Value.ToString(), out type);
+
+                if (type == ServerType.Bitfinex)
+                {
+                    bitfinex = true;
+                }
 
                 if (type == ServerType.Binance)
                 {
@@ -219,15 +225,6 @@ namespace OsEngine.Market.Servers
                 row1.Cells[1].Value = "Disconnect";
                 _gridSources.Rows.Add(row1);
             }
-            if (plazaIsOn == false)
-            {
-                DataGridViewRow row1 = new DataGridViewRow();
-                row1.Cells.Add(new DataGridViewTextBoxCell());
-                row1.Cells[0].Value = ServerType.Plaza;
-                row1.Cells.Add(new DataGridViewTextBoxCell());
-                row1.Cells[1].Value = "Disconnect";
-                _gridSources.Rows.Add(row1);
-            }
             if (smartcomIsOn == false)
             {
                 DataGridViewRow row1 = new DataGridViewRow();
@@ -255,15 +252,7 @@ namespace OsEngine.Market.Servers
                 row1.Cells[1].Value = "Disconnect";
                 _gridSources.Rows.Add(row1);
             }
-            if (krakenIsOn == false)
-            {
-                DataGridViewRow row1 = new DataGridViewRow();
-                row1.Cells.Add(new DataGridViewTextBoxCell());
-                row1.Cells[0].Value = ServerType.Kraken;
-                row1.Cells.Add(new DataGridViewTextBoxCell());
-                row1.Cells[1].Value = "Disconnect";
-                _gridSources.Rows.Add(row1);
-            }
+
             if (binanceIsOn == false)
             {
                 DataGridViewRow row1 = new DataGridViewRow();
@@ -282,6 +271,24 @@ namespace OsEngine.Market.Servers
                 row1.Cells[1].Value = "Disconnect";
                 _gridSources.Rows.Add(row1);
             }
+            if (bitfinex == false)
+            {
+                DataGridViewRow row1 = new DataGridViewRow();
+                row1.Cells.Add(new DataGridViewTextBoxCell());
+                row1.Cells[0].Value = ServerType.Bitfinex;
+                row1.Cells.Add(new DataGridViewTextBoxCell());
+                row1.Cells[1].Value = "Disconnect";
+                _gridSources.Rows.Add(row1);
+            }
+            if (krakenIsOn == false)
+            {
+                DataGridViewRow row1 = new DataGridViewRow();
+                row1.Cells.Add(new DataGridViewTextBoxCell());
+                row1.Cells[0].Value = ServerType.Kraken;
+                row1.Cells.Add(new DataGridViewTextBoxCell());
+                row1.Cells[1].Value = "Disconnect";
+                _gridSources.Rows.Add(row1);
+            }
             if (bitStampIsOn == false)
             {
                 DataGridViewRow row1 = new DataGridViewRow();
@@ -290,7 +297,16 @@ namespace OsEngine.Market.Servers
                 row1.Cells.Add(new DataGridViewTextBoxCell());
                 row1.Cells[1].Value = "Disconnect";
                 _gridSources.Rows.Add(row1);
-            }   
+            }
+            if (plazaIsOn == false)
+            {
+                DataGridViewRow row1 = new DataGridViewRow();
+                row1.Cells.Add(new DataGridViewTextBoxCell());
+                row1.Cells[0].Value = ServerType.Plaza;
+                row1.Cells.Add(new DataGridViewTextBoxCell());
+                row1.Cells[1].Value = "Disconnect";
+                _gridSources.Rows.Add(row1);
+            }
             if (quikLuaIsOn == false)
             {
                 DataGridViewRow row1 = new DataGridViewRow();
