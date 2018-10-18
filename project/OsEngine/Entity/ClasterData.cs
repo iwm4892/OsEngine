@@ -85,17 +85,27 @@ namespace OsEngine.Entity
             {
                 return;
             }
+            
+            for(int i= _lastTradeIndex;i < trades.Count; i++)
+            {
+                add(trades[i]);
+            }
+            
+            /*
             Parallel.For(_lastTradeIndex, trades.Count, i =>
                 {
                     add(trades[i]);
                 });
+            */
+            
             _lastTradeIndex = trades.Count;
+            
         }
 
         /// <summary>
         /// данные объемов по ценам свечи
         /// </summary>
-        public List<PriseData> data { get; set; }  = new List<PriseData>();
+        public List<PriseData> data; // { get; set; }  = new List<PriseData>();
 
         /// <summary>
         /// Добавление данных в колекцию

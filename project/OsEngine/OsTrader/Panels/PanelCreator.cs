@@ -480,13 +480,14 @@ namespace OsEngine.OsTrader.Panels
 
             PriceLevleLine = new PriceLevleLine(name + "_PriceLevleLine", false);
             PriceLevleLine = (PriceLevleLine)_tab.CreateCandleIndicator(PriceLevleLine, "Prime");
+            PriceLevleLine.PaintOn = false;
             PriceLevleLine.Save();
 
             maLenth = CreateParameter("maLenth", 24, 24, 48, 1);
             maVolume = new MovingAverage(name + "_maVolume", false);
             maVolume = (MovingAverage)_tab.CreateCandleIndicator(maVolume, "New1");
             maVolume.Lenght = maLenth.ValueInt;
-            maVolume.TypeCalculationAverage = MovingAverageTypeCalculation.Exponential;
+            maVolume.TypeCalculationAverage = MovingAverageTypeCalculation.Simple;
             maVolume.TypePointsToSearch = PriceTypePoints.Volume;
             maVolume.Save();
 
@@ -530,16 +531,10 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
-            if (_tab_pattern.Connector.TimeFrameBuilder.DeltaPeriods.Periods[0].DeltaStep != (int)maVolume.Values[maVolume.Values.Count-1]/6)
+            if (_tab_pattern.Connector.DeltaPeriods != (int)maVolume.Values[maVolume.Values.Count-1]/6)
             {
-                //Заполнение параметров дельты
-                for (int i = 0; i < _tab_pattern.Connector.TimeFrameBuilder.DeltaPeriods.Periods.Count; i++)
-                {
-                    _tab_pattern.Connector.TimeFrameBuilder.DeltaPeriods.Periods[i].DeltaStep = (int)maVolume.Values[maVolume.Values.Count - 1] / 6;
-                }
-                _tab_pattern.Connector.TimeFrameBuilder.Save();
+                _tab_pattern.Connector.DeltaPeriods = (int)maVolume.Values[maVolume.Values.Count - 1] / 6;
             }
-
         }
 
         private void OpenPosition(Side side,decimal price)
@@ -931,7 +926,7 @@ namespace OsEngine.OsTrader.Panels
                 {
                     _tab.SetNewLogMessage("Направление торговли " + TradeSide, LogMessageType.Signal);
                 }
-                
+                /*
                 if (LastSessionPriceLine == null)
                 {
                     LastSessionPriceLine = new LineHorisontal("LastSessionPriceLine", "Prime", false)
@@ -946,6 +941,7 @@ namespace OsEngine.OsTrader.Panels
                     LastSessionPriceLine.Value = LastSessionEndPrice;
                 }
                 LastSessionPriceLine.Refresh();
+                */
 
             }
 
@@ -1463,6 +1459,7 @@ namespace OsEngine.OsTrader.Panels
         }
         private void DeltaStepCheck()
         {
+            /*
             if (_tabDelta.Connector.TimeFrameBuilder.DeltaPeriods.Periods[0].DeltaStep != _DeltaStep.ValueInt)
             {
                 //Заполнение параметров дельты
@@ -1471,6 +1468,7 @@ namespace OsEngine.OsTrader.Panels
                     _tabDelta.Connector.TimeFrameBuilder.DeltaPeriods.Periods[i].DeltaStep = _DeltaStep.ValueInt;
                 }
             }
+            */
 
         }
 

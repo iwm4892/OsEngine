@@ -100,6 +100,30 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
 
         }
+        /*
+        /// <summary>
+        /// Инициализация таблицы
+        /// </summary>
+        public void initTab()
+        {
+            if(_tab==null)
+            {
+                return;
+            }
+         //   _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
+
+        }
+
+        private void _tab_CandleFinishedEvent(List<Candle> candles)
+        {
+         //   UpdateDate(candles, candles.Count - 1);
+        }
+
+        /// <summary>
+        /// Таблица для обработки
+        /// </summary>
+         public OsTrader.Panels.Tab.BotTabSimple _tab;
+         */
         /// <summary>
         /// Описание торговой сессии
         /// </summary>
@@ -214,8 +238,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             get
             {
                 List<Color> colors = new List<Color>();
-                colors.Add(ColorUp);
-                colors.Add(ColorDown);
+                colors.Add(color);
                 return colors;
             }
 
@@ -430,6 +453,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public void Process(List<Candle> candles)
         {
+            
             if (Values != null &&
                            Values.Count + 1 == candles.Count)
             {
@@ -456,8 +480,12 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 Values = new List<decimal>();
                 ColorSeries = new List<Color>();
             }
-                Values.Add(candles[candles.Count - 1].Volume);
-                ColorSeries.Add(color);
+            UpdateDate(candles, candles.Count - 1);
+
+            Values.Add(LastSessionEndPrice);
+            updateNullValue();
+            ColorSeries.Add(color);
+
         }
 
         /// <summary>
@@ -468,9 +496,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
             Values = new List<decimal>();
             ColorSeries = new List<Color>();
 
-            for (int i = 0; i < candles.Count; i++)
+            for(int i = 0; i < candles.Count; i++)
             {
-                Values.Add(candles[i].Volume);
+                UpdateDate(candles, i);
+                Values.Add(LastSessionEndPrice);
+                updateNullValue();
                 ColorSeries.Add(color);
             }
         }
@@ -480,10 +510,15 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessLastCanlde(List<Candle> candles)
         {
-            Values[Values.Count-1] = (candles[candles.Count - 1].Volume);
-            ColorSeries[ColorSeries.Count - 1] = color;
+            updateNullValue();
         }
-
+        private void updateNullValue()
+        {
+            if (Values!=null && Values.Count > 1 && Values[Values.Count - 1] == 0)
+            {
+                Values[Values.Count - 1] = Values[Values.Count - 2];
+            }
+        }
         private void UpdateDate(List<Candle> candles,int i)
         {
             LastSessionEndDate = GetLastSessionEndDate(candles[i].TimeStart);
