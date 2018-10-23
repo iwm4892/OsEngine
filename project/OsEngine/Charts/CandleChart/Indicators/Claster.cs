@@ -30,8 +30,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
             ColorUp = Color.DodgerBlue;
             ColorDown = Color.DarkRed;
             */
+
             PaintOn = true;
             CanDelete = canDelete;
+            data = new List<ClasterData>();
             Load();
         }
 
@@ -52,6 +54,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             */
             PaintOn = true;
             CanDelete = canDelete;
+            data = new List<ClasterData>();
         }
         
         /// <summary>

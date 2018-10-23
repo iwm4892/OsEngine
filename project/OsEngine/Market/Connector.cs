@@ -249,7 +249,7 @@ namespace OsEngine.Market
         /// <summary>
         /// объект сохраняющий в себе настройки для построения свечек
         /// </summary>
-        private TimeFrameBuilder _timeFrameBuilder;
+        public TimeFrameBuilder _timeFrameBuilder;
 
         /// <summary>
         /// способ создания свечей: из тиков или из стаканов

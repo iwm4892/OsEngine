@@ -169,6 +169,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public enum DayType
         {
             /// <summary>
+            /// Тип дня не определен
+            /// </summary>
+            UnKnown,
+            /// <summary>
             /// Нетрендовый день
             /// </summary>
             NontrendDay,
@@ -213,6 +217,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// Тип дня (для текушей сессии)
         /// </summary>
         public DayType TypeOfDay;
+        /// <summary>
+        /// Направления торговли
+        /// </summary>
+        public List<Side> TradeSide;
         /// <summary>
         /// Цвет индикатора
         /// </summary>
@@ -380,6 +388,31 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// нужно перерисовать индикатор
         /// </summary>
         public event Action<IIndicatorCandle> NeadToReloadEvent;
+        /// <summary>
+        /// Проверить можно ли сейчас торговать
+        /// </summary>
+        /// <returns></returns>
+        private bool GetCanTrade(List<Candle> candles, int i)
+        {
+            if (SessionNow.Name == null)
+            {
+                return false;
+            }
+            DateTime testDate = new DateTime(1, 1, 1, candles[i].TimeStart.Hour, candles[i].TimeStart.Minute, candles[i].TimeStart.Second);
+            // не торгуем первые полтора часа сессии
+            DateTime endOfStartSession = SessionNow.Open.AddHours(1).AddMinutes(30);
+            if (testDate >= SessionNow.Open && testDate<= endOfStartSession)
+            {
+                TypeOfDay = DayType.UnKnown;
+                return false;
+            }
+            // не торгуем последний час сесии
+            if(testDate >= SessionNow.Close.AddHours(-1))
+            {
+                return false;
+            }
+            return true;
+        }
 
         // вычисления
         /// <summary>
@@ -399,19 +432,20 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <returns></returns>
         public DateTime GetLastSessionEndDate(DateTime date)
         {
-
-            TS ts = SessionOnTime(date);
-           
-            if (ts.Open==DateTime.MinValue)
+            if (SessionNow == null)
+            {
+                SessionNow = SessionOnTime(date);
+            }
+            if (SessionNow.Open==DateTime.MinValue)
             {
                 // ошибка сессия не найдена
                 return DateTime.MinValue;
             }
-            DateTime testDate = new DateTime(date.Year, date.Month, date.Day, ts.Close.Hour, ts.Close.Minute, ts.Close.Second);
+            DateTime testDate = new DateTime(date.Year, date.Month, date.Day, SessionNow.Close.Hour, SessionNow.Close.Minute, SessionNow.Close.Second);
 
             return testDate.AddDays(-1);
         }
-        public Decimal GetLastSessionEndPrice(List<Candle> candles, DateTime date)
+        private Decimal GetLastSessionEndPrice(List<Candle> candles, DateTime date)
         {
             if (LastSessionEndDate == DateTime.MinValue)
             {
@@ -424,6 +458,53 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 return candles[ind].Open;
             }
             return 0;
+        }
+        private DayType GetDayType(List<Candle> candles, int i)
+        {
+
+            if(TypeOfDay == DayType.UnKnown)
+            {
+                DateTime OpenSessionStart = new DateTime(candles[i].TimeStart.Year, candles[i].TimeStart.Month, candles[i].TimeStart.Day, SessionNow.Open.Hour, SessionNow.Open.Minute, SessionNow.Open.Second);
+                // Окончание открытия сессии
+                DateTime EndOfStartSession = OpenSessionStart.AddHours(1).AddMinutes(30);
+                    
+                if(candles[i].TimeStart >= EndOfStartSession)
+                {
+                    List<Candle> StartSessionCandles = candles.FindAll(x=>x.TimeStart>= OpenSessionStart && x.TimeStart < EndOfStartSession);
+                    if (StartSessionCandles != null && StartSessionCandles.Count > 2)
+                    {
+                    if (
+                            (StartSessionCandles[0].Close< StartSessionCandles[1].Close
+                            && StartSessionCandles[1].Close< StartSessionCandles[2].Close)
+                            || (StartSessionCandles[0].Close > StartSessionCandles[1].Close
+                            && StartSessionCandles[1].Close > StartSessionCandles[2].Close)
+                            )
+
+                        {
+                            return DayType.TrendDay;
+                        }
+                    }
+                }
+                return TypeOfDay;
+            }
+            
+            return DayType.UnKnown;
+        }
+        public List<Side> GetTradeSyde(List<Candle> candles, int i)
+        {
+            List<Side> result = new List<Side>();
+            if (TypeOfDay == DayType.TrendDay)
+            {
+                if (candles[i].Close > LastSessionEndPrice)
+                {
+                    result.Add(Side.Buy);
+                }
+                else
+                {
+                    result.Add(Side.Sell);
+                }
+            }
+            return result;
         }
         /// <summary>
         /// Получение текущей сесии
@@ -521,8 +602,12 @@ namespace OsEngine.Charts.CandleChart.Indicators
         }
         private void UpdateDate(List<Candle> candles,int i)
         {
+            SessionNow = SessionOnTime(candles[i].TimeStart);
+            CanTrade = GetCanTrade(candles, i);
+            TypeOfDay = GetDayType(candles, i);
             LastSessionEndDate = GetLastSessionEndDate(candles[i].TimeStart);
             LastSessionEndPrice = GetLastSessionEndPrice(candles, candles[i].TimeStart);
+            TradeSide = GetTradeSyde(candles, i);
         }
 
     }
