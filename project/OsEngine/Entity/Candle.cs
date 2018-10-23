@@ -232,6 +232,8 @@ namespace OsEngine.Entity
                 return _stringToSave;
             }
         }
+        //+++++ Данные Кластера
+        public ClasterData ClasterData;
 
     }
 

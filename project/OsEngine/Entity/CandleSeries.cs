@@ -238,6 +238,9 @@ namespace OsEngine.Entity
                 { CandlesAll[CandlesAll.Count - 1].Trades = new List<Trade>(); }
 
                 CandlesAll[CandlesAll.Count - 1].Trades.Add(trades[i]);
+                //+++
+                UpdateClasterDate(CandlesAll[CandlesAll.Count - 1]);
+                //----
             }
 
             _lastTradeIndex = trades.Count;
@@ -268,6 +271,10 @@ namespace OsEngine.Entity
                     CandlesAll[CandlesAll.Count-1].Trades = new List<Trade>();
                 }
                 CandlesAll[CandlesAll.Count-1].Trades.Add(trades[i]);
+                //+++
+                UpdateClasterDate(CandlesAll[CandlesAll.Count - 1]);
+                //----
+
             }
             UpdateChangeCandle();
 
@@ -1400,6 +1407,15 @@ namespace OsEngine.Entity
 // для тестера
 
         public TesterDataType TypeTesterData;
+        //++++++
+        private void UpdateClasterDate(Candle candle)
+        {
+            if (candle.ClasterData == null)
+            {
+                candle.ClasterData = new ClasterData();
+            }
+            candle.ClasterData.update(candle.Trades);
+        }
     }
 
     /// <summary>
