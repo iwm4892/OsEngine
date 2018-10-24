@@ -86,6 +86,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             _ts.Open = new DateTime(1, 1, 1,15, 30, 0);
             _ts.Close = new DateTime(1, 1, 1, 23, 0, 0);
             SessionsAll.Add(_ts);
+
             */
             _ts = new TS();
             _ts.Name = "Мосбиржа";
@@ -93,7 +94,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             _ts.Open = new DateTime(1, 1, 1, 10, 0, 0);
             _ts.Close = new DateTime(1, 1, 1, 19, 0, 0);
             SessionsAll.Add(_ts);
-
+            
             color = Color.Blue;
             TypeIndicator = IndicatorOneCandleChartType.Line;
             PaintOn = true;
@@ -221,6 +222,15 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// Направления торговли
         /// </summary>
         public List<Side> TradeSide;
+
+        /// <summary>
+        /// Максимальный уровень по сесии
+        /// </summary>
+        public decimal MaxSessionPrice;
+        /// <summary>
+        /// Минимальный уровень по сессии
+        /// </summary>
+        public decimal MinSessionPrice;
         /// <summary>
         /// Цвет индикатора
         /// </summary>
@@ -608,6 +618,27 @@ namespace OsEngine.Charts.CandleChart.Indicators
             LastSessionEndDate = GetLastSessionEndDate(candles[i].TimeStart);
             LastSessionEndPrice = GetLastSessionEndPrice(candles, candles[i].TimeStart);
             TradeSide = GetTradeSyde(candles, i);
+            UpdateMinMax(candles, i);
+        }
+        private void UpdateMinMax(List<Candle> candles, int i)
+        {
+            if (itsSessionStart(candles[i].TimeStart))
+            {
+                MaxSessionPrice = LastSessionEndPrice;
+                MinSessionPrice = LastSessionEndPrice;
+            }
+            else
+            {
+                if (candles[i].ClasterData.MaxData.Price > MaxSessionPrice)
+                {
+                    MaxSessionPrice = candles[i].ClasterData.MaxData.Price;
+                }
+                if (candles[i].ClasterData.MaxData.Price < MinSessionPrice)
+                {
+                    MinSessionPrice = candles[i].ClasterData.MaxData.Price;
+                }
+
+            }
         }
 
     }

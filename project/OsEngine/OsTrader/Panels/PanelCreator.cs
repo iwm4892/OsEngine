@@ -68,8 +68,6 @@ namespace OsEngine.OsTrader.Panels
 
             result.Add("Robot");
             result.Add("FirstBot");
-
-            result.Add("ImpulsFlatBrake");
             result.Add("PriceLavelBot");
 
             return result;
@@ -451,7 +449,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// Проскальзывание
         /// </summary>
-        private decimal _Slipage;
+        private StrategyParameterInt _Slipage;
+        private decimal Slipage;
 
         private MovingAverage maVolume;
 
@@ -468,6 +467,13 @@ namespace OsEngine.OsTrader.Panels
         /// Текущий расчитанный стоп
         /// </summary>
         private decimal LastStop;
+        /// <summary>
+        /// Риск потерь за день
+        /// </summary>
+        private decimal RiskOnDay;
+
+        private MovingAverage mA;
+
 
         public override string GetNameStrategyType()
         {
@@ -506,14 +512,22 @@ namespace OsEngine.OsTrader.Panels
             maVolume.TypePointsToSearch = PriceTypePoints.Volume;
             maVolume.Save();
 
+            mA = new MovingAverage(name + "mA", false) { Lenght=9};
+            mA = (MovingAverage)_tab.CreateCandleIndicator(mA, "New2");
+            mA.Save();
+
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
             _Volume = CreateParameter("Volume", 1, 0.00m, 100, 1);
 
             MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
+            
+            _Slipage = CreateParameter("_Slipage",1,1,20,1);
 
             _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
             _tab.CandleUpdateEvent += _tab_CandleUpdateEvent;
             _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
+
+            _tab.FirstTickToDayEvent += _tab_FirstTickToDayEvent;
             /*
             Thread closerThread = new Thread(updLevls);
             closerThread.IsBackground = true;
@@ -561,6 +575,12 @@ namespace OsEngine.OsTrader.Panels
 
             
         }
+
+        private void _tab_FirstTickToDayEvent(Trade obj)
+        {
+            RiskOnDay = 0;
+        }
+
         /// <summary>
         /// Открытие по паттерну
         /// </summary>
@@ -604,7 +624,6 @@ namespace OsEngine.OsTrader.Panels
             {
                 if (signal.Count != 0 && signal[0].isPattern)
                 {
-
                     if (signal[0].Side == TradeSide)
                     {
                         _tab.SetNewLogMessage("Открытие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
@@ -653,10 +672,7 @@ namespace OsEngine.OsTrader.Panels
 
         private void OpenPosition(Side side,decimal price)
         {
-            if (_Slipage == 0)
-            {
-                _Slipage = 10 * _tab.Securiti.PriceStep;
-            }
+            Slipage = _Slipage.ValueInt * _tab.Securiti.PriceStep;
 
             /*
             List<PriceLevleLine.levlel> lvl = new List<PriceLevleLine.levlel>();
@@ -776,6 +792,14 @@ namespace OsEngine.OsTrader.Panels
             {
                 return false;
             }
+            if (RiskOnDay <-1 * MaxStop.ValueDecimal / 100)
+            {
+                return false;
+            }
+            if ((_TradeSessions.MaxSessionPrice - _TradeSessions.MinSessionPrice) / _TradeSessions.MinSessionPrice < MaxStop.ValueDecimal / 100)
+            {
+                return false;
+            }
 
             return true;
         }
@@ -798,23 +822,26 @@ namespace OsEngine.OsTrader.Panels
 
             for (int i = 0; i < openPositions.Count && candles.Count > 1; i++)
             {
-                decimal localStop = GetStop(openPositions[i].Direction, candles[candles.Count-1].Close);
+                //    decimal localStop = GetStop(openPositions[i].Direction, candles[candles.Count-1].Close);
 
-                //_tab.CloseAtTrailingStop(openPositions[i], localStop, localStop);
-                
-                if ((openPositions[i].Direction == Side.Buy && candles[candles.Count - 1].ClasterData.MaxData.Price < candles[candles.Count - 2].ClasterData.MaxData.Price)
-                    && openPositions[i].ProfitOperationPersent > 0)// openPositions[i].EntryPrice < Claster.data[Claster.data.Count - 1].MaxData.Price)
+                _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count-1], mA.Values[mA.Values.Count - 1]);
+                /*
+                if (candles[candles.Count - 1].IsUp != candles[candles.Count - 2].IsUp)
                 {
-                    _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
-                    _tab.CloseAllAtMarket();
+                    if ((openPositions[i].Direction == Side.Buy && candles[candles.Count - 1].ClasterData.MaxData.Price < candles[candles.Count - 2].ClasterData.MaxData.Price)
+                        && openPositions[i].ProfitOperationPersent > 0)// openPositions[i].EntryPrice < Claster.data[Claster.data.Count - 1].MaxData.Price)
+                    {
+                        _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
+                        _tab.CloseAllAtMarket();
+                    }
+                    if ((openPositions[i].Direction == Side.Sell && candles[candles.Count - 1].ClasterData.MaxData.Price > candles[candles.Count - 2].ClasterData.MaxData.Price)
+                       && openPositions[i].ProfitOperationPersent > 0)// && openPositions[i].EntryPrice > Claster.data[Claster.data.Count - 1].MaxData.Price)
+                    {
+                        _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
+                        _tab.CloseAllAtMarket();
+                    }
                 }
-                if ((openPositions[i].Direction == Side.Sell && candles[candles.Count - 1].ClasterData.MaxData.Price > candles[candles.Count - 2].ClasterData.MaxData.Price)
-                   && openPositions[i].ProfitOperationPersent > 0)// && openPositions[i].EntryPrice > Claster.data[Claster.data.Count - 1].MaxData.Price)
-                {
-                    _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
-                    _tab.CloseAllAtMarket();
-                }
-                
+                */
             }
 
         }
@@ -826,13 +853,14 @@ namespace OsEngine.OsTrader.Panels
         private Decimal GetStop(Side side,decimal price)
         {
             // берем последние 6 свечек
-            List<decimal> maxVolumes = Claster.Values.GetRange(Claster.Values.Count-7,6);
+            List<decimal> maxVolumes = Claster.Values.GetRange(Claster.Values.Count-21,20);
+            maxVolumes.Sort((a, b) => decimal.Compare(a, b));
             if (side == Side.Buy)
             {
                 List<decimal> lvl = maxVolumes.FindAll(x => x < price);
                 if(lvl !=null && lvl.Count>1)
                 {
-                    return lvl[lvl.Count - 2] - _Slipage;
+                    return lvl[lvl.Count - 2] - Slipage;
                 }
             }
             if (side == Side.Sell)
@@ -840,7 +868,7 @@ namespace OsEngine.OsTrader.Panels
                 List<decimal> lvl = maxVolumes.FindAll(x => x > price);
                 if (lvl != null && lvl.Count > 1)
                 {
-                    return lvl[1]+ _Slipage;
+                    return lvl[1]+ Slipage;
                 }
             }
             /*
@@ -875,24 +903,40 @@ namespace OsEngine.OsTrader.Panels
         }
         private Decimal GetStopLevel(Side side, decimal price)
         {
-            
+
             if (side == Side.Buy)
             {
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < price && x.levlSide == side);
-                if (lvl != null&& lvl.Count>1)
-                {
-                    lvl.Sort((a, b) =>decimal.Compare(a.Value,b.Value));
-                   return lvl[lvl.Count-2].Value - _Slipage;// _tab.CloseAtProfit(position, lvl[0].Value , lvl[0].Value);
+                if (lvl != null) {
+                    lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                    if (lvl.Count > 1)
+                    {
+                        return lvl[lvl.Count - 2].Value - Slipage;// _tab.CloseAtProfit(position, lvl[0].Value , lvl[0].Value);
+                    }
+                    if (lvl.Count > 0)
+                    {
+                        return lvl[lvl.Count - 1].Value - Slipage;// _tab.CloseAtProfit(position, lvl[0].Value , lvl[0].Value);
+                    }
+
                 }
-                
+
             }
             else
             {
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > price && x.levlSide == side);
-                if (lvl != null && lvl.Count > 1)
+                if (lvl != null)
                 {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
-                    return lvl[1].Value + _Slipage;//_tab.CloseAtProfit(position, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
+                    if (lvl != null && lvl.Count > 1)
+                    {
+                        lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                        return lvl[1].Value + Slipage;//_tab.CloseAtProfit(position, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
+                    }
+                    if (lvl != null && lvl.Count > 0)
+                    {
+                        lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                        return lvl[0].Value + Slipage;//_tab.CloseAtProfit(position, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
+                    }
                 }
 
 
@@ -991,6 +1035,28 @@ namespace OsEngine.OsTrader.Panels
                 if (oldTradeSide != TradeSide)
                 {
                     _tab.SetNewLogMessage("Направление торговли " + TradeSide, LogMessageType.Signal);
+                }
+            }
+            for (int i = _tab.PositionsCloseAll.Count - 1; i >= 0; i--)
+            {
+                if(candles[candles.Count - 1].TimeStart.DayOfYear!= candles[candles.Count - 2].TimeStart.DayOfYear)
+                {
+                    RiskOnDay = 0;
+                }
+                
+                if (_tab.PositionsCloseAll[i].TimeClose.DayOfYear == candles[candles.Count - 1].TimeStart.DayOfYear)
+                {
+                    /*
+                    if (_tab.PositionsCloseAll[i].ProfitOperationPersent < 0)
+                    {
+                        RiskOnDay += -1*_tab.PositionsCloseAll[i].ProfitPortfolioPersent;
+                    }
+                    */
+                //    RiskOnDay += _tab.PositionsCloseAll[i].ProfitPortfolioPersent;
+                }
+                else
+                {
+                    break;
                 }
             }
 

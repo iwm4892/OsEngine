@@ -47,7 +47,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             TypeIndicator = IndicatorOneCandleChartType.Line;
             ColorBase = Color.DodgerBlue;
             PaintOn = true;
-            linewidth = 0.1m;
+            linewidth = 0.2m;
             Atr = new Atr(false) {Lenght =5,};
         }
         /// <summary>
@@ -287,47 +287,46 @@ namespace OsEngine.Charts.CandleChart.Indicators
             }
 
         }
-        private void ProcessValue(List<Candle> candles)
+        private void ProcessValue(List<Candle> candles,int i)
         {
-            if (candles.Count > 2)
+            Values.Add(candles[i].ClasterData.MaxData.Price);
+            if (i > 3)
             {
-                if (candles[candles.Count - 1].ClasterData.MaxData.Price <= candles[candles.Count - 2].ClasterData.MaxData.Price
-                    && candles[candles.Count - 3].ClasterData.MaxData.Price <= candles[candles.Count - 2].ClasterData.MaxData.Price
-                    && candles[candles.Count - 1].ClasterData.MaxData.Price != candles[candles.Count - 3].ClasterData.MaxData.Price
+                if (candles[i].ClasterData.MaxData.Price <= candles[i-1].ClasterData.MaxData.Price
+                    && candles[i-2].ClasterData.MaxData.Price <= candles[i-1].ClasterData.MaxData.Price
+                    && candles[i].ClasterData.MaxData.Price != candles[i-2].ClasterData.MaxData.Price
                     )
                 {
                     levlel el = new levlel();
                     el.levlSide = Side.Sell;
-                    el.Value = candles[candles.Count - 2].ClasterData.MaxData.Price;
+                    el.Value = candles[i-1].ClasterData.MaxData.Price;
 
                     if (!updateLevelData(el))
                     {
                         add(el);
                     }
-                    Values.Add(candles[candles.Count - 2].ClasterData.MaxData.Price);
                 }
 
-                if (candles[candles.Count - 1].ClasterData.MaxData.Price >= candles[candles.Count - 2].ClasterData.MaxData.Price
-                    && candles[candles.Count - 3].ClasterData.MaxData.Price >= candles[candles.Count - 2].ClasterData.MaxData.Price
-                    && candles[candles.Count - 1].ClasterData.MaxData.Price != candles[candles.Count - 3].ClasterData.MaxData.Price
+                if (candles[i].ClasterData.MaxData.Price >= candles[i-1].ClasterData.MaxData.Price
+                    && candles[i-2].ClasterData.MaxData.Price >= candles[i-1].ClasterData.MaxData.Price
+                    && candles[i].ClasterData.MaxData.Price != candles[i-2].ClasterData.MaxData.Price
                     )
                 {
                     levlel el = new levlel();
                     el.levlSide = Side.Buy;
-                    el.Value = candles[candles.Count - 2].ClasterData.MaxData.Price;
+                    el.Value = candles[i-1].ClasterData.MaxData.Price;
 
                     if (!updateLevelData(el))
                     {
                         add(el);
                     }
-
-                    Values.Add(candles[candles.Count - 2].ClasterData.MaxData.Price);
-
                 }
             }
 
-
-            /*
+            DeleteCorrection();
+        }
+        private void DeleteCorrection()
+        {
             for (int i = LevleData.Count - 1; i >= 4; i--)
             {
                 if (i > LevleData.Count - 1)
@@ -375,7 +374,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 }
 
             }
-            */
         }
         /// <summary>
         /// прогрузить только последнюю свечку
@@ -387,7 +385,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 LevleData = new List<levlel>();
                 LastDay = candles[candles.Count - 1].TimeStart.Date;
             }
-            ProcessValue(candles);
+            ProcessValue(candles, candles.Count - 1);
 
         }
 
@@ -403,7 +401,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                     LevleData = new List<levlel>();
                     LastDay = candles[i].TimeStart.Date;
                 }
-                ProcessValue(candles);
+                ProcessValue(candles,i);
             }
         }
 
