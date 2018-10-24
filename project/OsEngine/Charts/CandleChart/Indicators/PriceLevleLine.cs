@@ -47,7 +47,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
             TypeIndicator = IndicatorOneCandleChartType.Line;
             ColorBase = Color.DodgerBlue;
             PaintOn = true;
-            linewidth = 0.02m;
+            linewidth = 0.1m;
+            Atr = new Atr(false) {Lenght =5,};
         }
         /// <summary>
         /// Толщина линии (пример 0.01 = 1%)
@@ -218,27 +219,25 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public event Action<IIndicatorCandle> NeadToReloadEvent;
 
-        #region Кластера
-        public List<ClasterData> data;
-        #endregion 
-
         private DateTime LastDay;
         /// <summary>
         /// прогрузить индикатор свечками
         /// </summary>
         public void Process(List<Candle> candles)
         {
+            Atr.Process(candles);
+
             if (Values == null)
             {
                 Values = new List<decimal>();
             }
-            if (data != null &&
-                           data.Count + 1 == candles.Count)
+            if (Values != null &&
+                           Values.Count + 1 == candles.Count)
             {
                 ProcessOneCandle(candles);
             }
-            else if (data != null &&
-                data.Count == candles.Count)
+            else if (Values != null &&
+                Values.Count == candles.Count)
             {
                 ProcessLastCanlde(candles);
             }
@@ -249,11 +248,18 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
 
         }
+        /// <summary>
+        /// Уровни Разворота максимального объема торгов по свечке
+        /// </summary>
         public List<levlel> LevleData = new List<levlel>();
+        /// <summary>
+        /// Индикатор АТР
+        /// </summary>
+        public Atr Atr;
 
         private bool updateLevelData(levlel lvl)
         {
-            levlel findlvl = LevleData.Find(x => x.Value * (1 + linewidth / 2) > lvl.Value && x.Value * (1 - linewidth / 2) < lvl.Value);
+            levlel findlvl = LevleData.Find(x => x.Value + (linewidth*Atr.Values[Atr.Values.Count-1] / 2) > lvl.Value && x.Value - (linewidth* Atr.Values[Atr.Values.Count - 1] / 2) < lvl.Value);
             if (findlvl != null)
             {
                 findlvl.levlSide = lvl.levlSide;
@@ -281,41 +287,41 @@ namespace OsEngine.Charts.CandleChart.Indicators
             }
 
         }
-        private void ProcessValue()
+        private void ProcessValue(List<Candle> candles)
         {
-            if (data.Count > 2)
+            if (candles.Count > 2)
             {
-                if (data[data.Count - 1].MaxData.Price <= data[data.Count - 2].MaxData.Price
-                    && data[data.Count - 3].MaxData.Price <= data[data.Count - 2].MaxData.Price
-                    && data[data.Count - 1].MaxData.Price != data[data.Count - 3].MaxData.Price
+                if (candles[candles.Count - 1].ClasterData.MaxData.Price <= candles[candles.Count - 2].ClasterData.MaxData.Price
+                    && candles[candles.Count - 3].ClasterData.MaxData.Price <= candles[candles.Count - 2].ClasterData.MaxData.Price
+                    && candles[candles.Count - 1].ClasterData.MaxData.Price != candles[candles.Count - 3].ClasterData.MaxData.Price
                     )
                 {
                     levlel el = new levlel();
                     el.levlSide = Side.Sell;
-                    el.Value = data[data.Count - 2].MaxData.Price;
+                    el.Value = candles[candles.Count - 2].ClasterData.MaxData.Price;
 
                     if (!updateLevelData(el))
                     {
                         add(el);
                     }
-                    Values.Add(data[data.Count - 2].MaxData.Price);
+                    Values.Add(candles[candles.Count - 2].ClasterData.MaxData.Price);
                 }
 
-                if (data[data.Count - 1].MaxData.Price >= data[data.Count - 2].MaxData.Price
-                    && data[data.Count - 3].MaxData.Price >= data[data.Count - 2].MaxData.Price
-                    && data[data.Count - 1].MaxData.Price != data[data.Count - 3].MaxData.Price
+                if (candles[candles.Count - 1].ClasterData.MaxData.Price >= candles[candles.Count - 2].ClasterData.MaxData.Price
+                    && candles[candles.Count - 3].ClasterData.MaxData.Price >= candles[candles.Count - 2].ClasterData.MaxData.Price
+                    && candles[candles.Count - 1].ClasterData.MaxData.Price != candles[candles.Count - 3].ClasterData.MaxData.Price
                     )
                 {
                     levlel el = new levlel();
                     el.levlSide = Side.Buy;
-                    el.Value = data[data.Count - 2].MaxData.Price;
+                    el.Value = candles[candles.Count - 2].ClasterData.MaxData.Price;
 
                     if (!updateLevelData(el))
                     {
                         add(el);
                     }
 
-                    Values.Add(data[data.Count - 2].MaxData.Price);
+                    Values.Add(candles[candles.Count - 2].ClasterData.MaxData.Price);
 
                 }
             }
@@ -376,19 +382,12 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessOneCandle(List<Candle> candles)
         {
-            if (data == null)
-            {
-                data = new List<ClasterData>();
-
-            }
             if (LastDay != candles[candles.Count - 1].TimeStart.Date)
             {
                 LevleData = new List<levlel>();
                 LastDay = candles[candles.Count - 1].TimeStart.Date;
             }
-            ProcessValue();
-            ClasterData clasterData = GetValue(candles, candles.Count - 1);
-            data.Add(clasterData);
+            ProcessValue(candles);
 
         }
 
@@ -397,7 +396,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessAllCandle(List<Candle> candles)
         {
-            data = new List<ClasterData>();
             for (int i = 0; i < candles.Count; i++)
             {
                 if (LastDay != candles[i].TimeStart.Date)
@@ -405,9 +403,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                     LevleData = new List<levlel>();
                     LastDay = candles[i].TimeStart.Date;
                 }
-                ClasterData clasterData = GetValue(candles, i);
-                data.Add(clasterData);
-                ProcessValue();
+                ProcessValue(candles);
             }
         }
 
@@ -416,7 +412,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessLastCanlde(List<Candle> candles)
         {
-            data[data.Count - 1].update(candles[candles.Count - 1].Trades);
+            Values[Values.Count - 1] = candles[candles.Count - 1].ClasterData.MaxData.Price;
         }
 
         /// <summary>

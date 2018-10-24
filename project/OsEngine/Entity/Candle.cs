@@ -233,7 +233,26 @@ namespace OsEngine.Entity
             }
         }
         //+++++ Данные Кластера
-        public ClasterData ClasterData;
+        /// <summary>
+        /// Данные по кластеру цен
+        /// </summary>
+        private ClasterData _ClasterData;
+        /// <summary>
+        /// Данные по кластеру цен
+        /// </summary>
+        public ClasterData ClasterData
+        {
+            get
+            {
+                if (_ClasterData == null)
+                {
+                    _ClasterData = new ClasterData();
+                }
+                return _ClasterData;
+            }
+        }
+
+
 
     }
 

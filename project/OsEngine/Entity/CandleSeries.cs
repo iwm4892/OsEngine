@@ -1410,10 +1410,6 @@ namespace OsEngine.Entity
         //++++++
         private void UpdateClasterDate(Candle candle)
         {
-            if (candle.ClasterData == null)
-            {
-                candle.ClasterData = new ClasterData();
-            }
             candle.ClasterData.update(candle.Trades);
         }
     }

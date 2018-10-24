@@ -162,6 +162,10 @@ namespace OsEngine.Entity
         /// Размер нижней тени
         /// </summary>
         public decimal lowShadow;
+        /// <summary>
+        /// Данные кластера свечи
+        /// </summary>
+        public ClasterData ClasterData;
 
         public CandleData(Candle candle)
         {
@@ -178,6 +182,7 @@ namespace OsEngine.Entity
                 hiShadow = candle.High - candle.Open;
                 lowShadow = candle.Low - candle.Close;
             }
+            ClasterData = candle.ClasterData;
         }
     }
     public class Trap_pattern : Pattern
@@ -196,8 +201,8 @@ namespace OsEngine.Entity
         {
             CandleData cData = new CandleData(Candles[Candles.Count - 1]);
             if (Candles[Candles.Count - 1].IsUp 
-                && Candles[Candles.Count - 1].Open > Claster.data[Claster.data.Count - 1].MaxData.Price
-                && Claster.data[Claster.data.Count - 1].MaxData.side == Side.Sell
+                && Candles[Candles.Count - 1].Open > Candles[Candles.Count - 1].ClasterData.MaxData.Price
+                && Candles[Candles.Count - 1].ClasterData.MaxData.side == Side.Sell
                 && Delta.Values[Delta.Values.Count - 1] > 0
                 )
             {
@@ -205,8 +210,8 @@ namespace OsEngine.Entity
                 Side = Side.Buy;
             }
             if (Candles[Candles.Count - 1].IsDown
-                && Candles[Candles.Count - 1].Open < Claster.data[Claster.data.Count - 1].MaxData.Price
-                && Claster.data[Claster.data.Count - 1].MaxData.side == Side.Buy
+                && Candles[Candles.Count - 1].Open < Candles[Candles.Count - 1].ClasterData.MaxData.Price
+                && Candles[Candles.Count - 1].ClasterData.MaxData.side == Side.Buy
                 && Delta.Values[Delta.Values.Count - 1] < 0
                 )
             {
@@ -234,7 +239,7 @@ namespace OsEngine.Entity
 
             if (Candles[Candles.Count - 2].IsUp && Candles[Candles.Count - 1].IsDown
                 && Delta.Values[Delta.Values.Count - 1] < 0
-                && Claster.data[Claster.data.Count - 1].MaxData.Price <= (Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].Low) / 3 + Candles[Candles.Count - 1].Low)
+                && Candles[Candles.Count - 1].ClasterData.MaxData.Price <= (Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].Low) / 3 + Candles[Candles.Count - 1].Low)
             {
                 isPattern = true;
                 Side = Side.Sell;
@@ -258,7 +263,7 @@ namespace OsEngine.Entity
         {
             if (Candles[Candles.Count - 2].IsDown && Candles[Candles.Count - 1].IsUp
                 && Delta.Values[Delta.Values.Count - 1] > 0
-                && Claster.data[Claster.data.Count - 1].MaxData.Price >= (+Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].Low) / 3)
+                && Candles[Candles.Count - 1].ClasterData.MaxData.Price >= (+Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].High - Candles[Candles.Count - 1].Low) / 3)
             {
                 isPattern = true;
                 Side = Side.Buy;
@@ -303,7 +308,7 @@ namespace OsEngine.Entity
             if (Candles[Candles.Count - 1].IsUp
                 && cData.hiShadow ==0//< cData.candleSize * (decimal)0.1
             //    && cData.lowShadow > cData.candleSize * (decimal)0.3
-                && Claster.data[Claster.data.Count - 1].MaxData.Price <= Candles[Candles.Count - 1].Open +(cData.candleBody * (decimal)0.3)
+                && cData.ClasterData.MaxData.Price <= Candles[Candles.Count - 1].Open +(cData.candleBody * (decimal)0.3)
                 && Delta.Values[Delta.Values.Count - 1] > 0
                 && Volume.Values[Volume.Values.Count-2]<= Volume.Values[Volume.Values.Count - 1]
                 )
@@ -314,7 +319,7 @@ namespace OsEngine.Entity
             if (Candles[Candles.Count - 1].IsDown
                 && cData.lowShadow ==0//< cData.candleSize * (decimal)0.1
             //    && cData.hiShadow > cData.candleSize * (decimal)0.3
-                && Claster.data[Claster.data.Count - 1].MaxData.Price >= Candles[Candles.Count - 1].Open - (cData.candleBody * (decimal)0.3)
+                && cData.ClasterData.MaxData.Price >= Candles[Candles.Count - 1].Open - (cData.candleBody * (decimal)0.3)
                 && Delta.Values[Delta.Values.Count - 1] < 0
                 && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1])
             {
@@ -362,8 +367,8 @@ namespace OsEngine.Entity
             if (Candles[Candles.Count - 1].IsUp != Candles[Candles.Count - 2].IsUp)
             {
                 if(Candles[Candles.Count - 2].IsUp
-                    && Claster.data[Claster.data.Count - 2].MaxData.Price >= Candles[Candles.Count - 2].Close - (cData1.candleBody * (decimal)0.3)
-                    && Claster.data[Claster.data.Count - 1].MaxData.Price <= Candles[Candles.Count - 1].Close + (cData2.candleBody * (decimal)0.3)
+                    && cData1.ClasterData.MaxData.Price >= Candles[Candles.Count - 2].Close - (cData1.candleBody * (decimal)0.3)
+                    && cData2.ClasterData.MaxData.Price <= Candles[Candles.Count - 1].Close + (cData2.candleBody * (decimal)0.3)
                     && Delta.Values[Delta.Values.Count - 2] > 0
                     && Delta.Values[Delta.Values.Count - 1] < 0
                    && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
@@ -373,8 +378,8 @@ namespace OsEngine.Entity
                     Side = Side.Sell;
                 }
                 if (Candles[Candles.Count - 1].IsUp
-                    && Claster.data[Claster.data.Count - 2].MaxData.Price <= Candles[Candles.Count - 2].Close + (cData1.candleBody * (decimal)0.3)
-                    && Claster.data[Claster.data.Count - 1].MaxData.Price >= Candles[Candles.Count - 1].Close - (cData2.candleBody * (decimal)0.3)
+                    && cData1.ClasterData.MaxData.Price <= Candles[Candles.Count - 2].Close + (cData1.candleBody * (decimal)0.3)
+                    && cData2.ClasterData.MaxData.Price >= Candles[Candles.Count - 1].Close - (cData2.candleBody * (decimal)0.3)
                     && Delta.Values[Delta.Values.Count - 2] < 0
                     && Delta.Values[Delta.Values.Count - 1] > 0
 //                    && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
