@@ -49,6 +49,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             PaintOn = true;
             linewidth = 0.2m;
             Atr = new Atr(false) {Lenght =5,};
+            LevleData = new List<levlel>();
         }
         /// <summary>
         /// Толщина линии (пример 0.01 = 1%)
@@ -251,7 +252,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// Уровни Разворота максимального объема торгов по свечке
         /// </summary>
-        public List<levlel> LevleData = new List<levlel>();
+        public List<levlel> LevleData;// = new List<levlel>();
         /// <summary>
         /// Индикатор АТР
         /// </summary>
@@ -323,7 +324,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 }
             }
 
-            DeleteCorrection();
+         //   DeleteCorrection();
         }
         private void DeleteCorrection()
         {
@@ -382,7 +383,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         {
             if (LastDay != candles[candles.Count - 1].TimeStart.Date)
             {
-                LevleData = new List<levlel>();
+             //   LevleData = new List<levlel>();
                 LastDay = candles[candles.Count - 1].TimeStart.Date;
             }
             ProcessValue(candles, candles.Count - 1);
@@ -398,7 +399,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 if (LastDay != candles[i].TimeStart.Date)
                 {
-                    LevleData = new List<levlel>();
+              //      LevleData = new List<levlel>();
                     LastDay = candles[i].TimeStart.Date;
                 }
                 ProcessValue(candles,i);

@@ -473,6 +473,23 @@ namespace OsEngine.OsTrader.Panels
         private decimal RiskOnDay;
 
         private MovingAverage mA;
+        /// <summary>
+        /// Использовать Азиатскую сессию
+        /// </summary>
+        private StrategyParameterBool SessionAsia;
+        /// <summary>
+        /// Использовать Европейскую сессию
+        /// </summary>
+        private StrategyParameterBool SessionEU;
+        /// <summary>
+        /// Использовать Американскую сессию
+        /// </summary>
+        private StrategyParameterBool SessionUSA;
+        /// <summary>
+        /// Использовать Российскую сессию
+        /// </summary>
+        private StrategyParameterBool SessionRUS;
+
 
 
         public override string GetNameStrategyType()
@@ -488,10 +505,18 @@ namespace OsEngine.OsTrader.Panels
         public PriceLavelBot(string name)
             : base(name)
         {
+            this.ParametrsChangeByUser += PriceLavelBot_ParametrsChangeByUser;
+
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
 
-            _TradeSessions = new TradeSessions(name + "_TradeSessions", false);
+            SessionAsia = CreateParameter("Торговать Азию", false);
+            SessionEU = CreateParameter("Торговать Европу", false);
+            SessionUSA = CreateParameter("Торговать Америку", false);
+            SessionRUS = CreateParameter("Торговать Россию", false);
+
+
+            _TradeSessions = new TradeSessions(name + "_TradeSessions", false, GetListSessionTypes());
             _TradeSessions = (TradeSessions)_tab.CreateCandleIndicator(_TradeSessions, "Prime");
             _TradeSessions.Save();
 
@@ -522,6 +547,11 @@ namespace OsEngine.OsTrader.Panels
             MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
             
             _Slipage = CreateParameter("_Slipage",1,1,20,1);
+
+
+
+
+
 
             _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
             _tab.CandleUpdateEvent += _tab_CandleUpdateEvent;
@@ -575,6 +605,37 @@ namespace OsEngine.OsTrader.Panels
             closerThread.Start();
 
         }
+        private List<TradeSessions.SessionType> GetListSessionTypes()
+        {
+            List<TradeSessions.SessionType> _result = new List<TradeSessions.SessionType>();
+            if (SessionAsia.ValueBool)
+            {
+                _result.Add(TradeSessions.SessionType.Asia);
+            }
+            if (SessionEU.ValueBool)
+            {
+                _result.Add(TradeSessions.SessionType.EU);
+            }
+            if (SessionRUS.ValueBool)
+            {
+                _result.Add(TradeSessions.SessionType.RUS);
+            }
+            if (SessionUSA.ValueBool)
+            {
+                _result.Add(TradeSessions.SessionType.USA);
+            }
+            return _result;
+        }
+        private void Fillsession()
+        {
+            List<TradeSessions.SessionType> _result = GetListSessionTypes();
+            _TradeSessions.FillSessions(_result);
+        }
+        private void PriceLavelBot_ParametrsChangeByUser()
+        {
+            Fillsession();
+        }
+
         private void CloseFailPosition()
         {
             while (true)
@@ -716,7 +777,7 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
-            decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)*price;
+            decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)/price;
 
             decimal StopSize = Math.Abs((LastStop - price) / price);
             if (StopSize <=0)
@@ -845,8 +906,8 @@ namespace OsEngine.OsTrader.Panels
             {
                 //    decimal localStop = GetStop(openPositions[i].Direction, candles[candles.Count-1].Close);
 
-         //       _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count-1], mA.Values[mA.Values.Count - 1]);
-                
+                _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count-1], mA.Values[mA.Values.Count - 1]);
+             /*   
                 if (candles[candles.Count - 1].IsUp != candles[candles.Count - 2].IsUp)
                 {
                     if ((openPositions[i].Direction == Side.Buy && candles[candles.Count - 1].ClasterData.MaxData.Price < candles[candles.Count - 2].ClasterData.MaxData.Price)
@@ -868,6 +929,7 @@ namespace OsEngine.OsTrader.Panels
 
                     }
                 }
+                */
                 
             }
 
@@ -1079,7 +1141,7 @@ namespace OsEngine.OsTrader.Panels
                         RiskOnDay += -1*_tab.PositionsCloseAll[i].ProfitPortfolioPersent;
                     }
                     */
-                //    RiskOnDay += _tab.PositionsCloseAll[i].ProfitPortfolioPersent;
+                    RiskOnDay += _tab.PositionsCloseAll[i].ProfitPortfolioPersent;
                 }
                 else
                 {

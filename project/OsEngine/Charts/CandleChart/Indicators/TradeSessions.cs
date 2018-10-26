@@ -24,16 +24,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         {
 
             init();
-            Sessions = new List<TS>();
-            foreach (SessionType s in sessionTypes)
-            {
-                TS tS = SessionsAll.Find(x => x.SessionType == s);
-                if (tS != null)
-                {
-                    Sessions.Add(tS);
-                }
-            }
-
+            FillSessions(sessionTypes);
             Name = uniqName;
             CanDelete = canDelete;
             
@@ -55,6 +46,19 @@ namespace OsEngine.Charts.CandleChart.Indicators
             foreach (TS s in SessionsAll)
             {
                 Sessions.Add(s);
+            }
+
+        }
+        public void FillSessions(List<SessionType> sessionTypes)
+        {
+            Sessions = new List<TS>();
+            foreach (SessionType s in sessionTypes)
+            {
+                TS tS = SessionsAll.Find(x => x.SessionType == s);
+                if (tS != null)
+                {
+                    Sessions.Add(tS);
+                }
             }
 
         }
@@ -86,15 +90,15 @@ namespace OsEngine.Charts.CandleChart.Indicators
             _ts.Open = new DateTime(1, 1, 1,16, 30, 0);
             _ts.Close = new DateTime(1, 1, 1, 23, 0, 0);
             SessionsAll.Add(_ts);
-
-            /*
+            
+            
             _ts = new TS();
             _ts.Name = "Мосбиржа";
             _ts.SessionType = SessionType.RUS;
             _ts.Open = new DateTime(1, 1, 1, 10, 0, 0);
             _ts.Close = new DateTime(1, 1, 1, 19, 0, 0);
             SessionsAll.Add(_ts);
-            */
+            
             color = Color.Blue;
             TypeIndicator = IndicatorOneCandleChartType.Line;
             PaintOn = true;
