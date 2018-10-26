@@ -66,7 +66,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             }
 
             TS _ts = new TS();
-            /*
+            
             _ts.Name = "Азия";
             _ts.SessionType = SessionType.Asia;
             _ts.Open = new DateTime(1,1,1,3,0,0);
@@ -83,18 +83,18 @@ namespace OsEngine.Charts.CandleChart.Indicators
             _ts = new TS();
             _ts.Name = "Америка";
             _ts.SessionType = SessionType.USA;
-            _ts.Open = new DateTime(1, 1, 1,15, 30, 0);
+            _ts.Open = new DateTime(1, 1, 1,16, 30, 0);
             _ts.Close = new DateTime(1, 1, 1, 23, 0, 0);
             SessionsAll.Add(_ts);
 
-            */
+            /*
             _ts = new TS();
             _ts.Name = "Мосбиржа";
             _ts.SessionType = SessionType.RUS;
             _ts.Open = new DateTime(1, 1, 1, 10, 0, 0);
             _ts.Close = new DateTime(1, 1, 1, 19, 0, 0);
             SessionsAll.Add(_ts);
-            
+            */
             color = Color.Blue;
             TypeIndicator = IndicatorOneCandleChartType.Line;
             PaintOn = true;
@@ -622,6 +622,25 @@ namespace OsEngine.Charts.CandleChart.Indicators
         }
         private void UpdateMinMax(List<Candle> candles, int i)
         {
+            if (i > 0)
+            {
+                if (candles[i].TimeStart.Date != candles[i - 1].TimeStart.Date)
+                {
+                    MaxSessionPrice = candles[i].ClasterData.MaxData.Price;
+                    MinSessionPrice = candles[i].ClasterData.MaxData.Price;
+                }
+
+                if (candles[i].ClasterData.MaxData.Price > MaxSessionPrice)
+                {
+                    MaxSessionPrice = candles[i].ClasterData.MaxData.Price;
+                }
+                if (candles[i].ClasterData.MaxData.Price < MinSessionPrice)
+                {
+                    MinSessionPrice = candles[i].ClasterData.MaxData.Price;
+                }
+
+            }
+            /*
             if (itsSessionStart(candles[i].TimeStart))
             {
                 MaxSessionPrice = LastSessionEndPrice;
@@ -639,6 +658,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 }
 
             }
+            */
         }
 
     }

@@ -513,7 +513,7 @@ namespace OsEngine.OsTrader.Panels
             maVolume.Save();
 
             mA = new MovingAverage(name + "mA", false) { Lenght=9};
-            mA = (MovingAverage)_tab.CreateCandleIndicator(mA, "New2");
+            mA = (MovingAverage)_tab.CreateCandleIndicator(mA, "Prime");
             mA.Save();
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
@@ -528,11 +528,8 @@ namespace OsEngine.OsTrader.Panels
             _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
 
             _tab.FirstTickToDayEvent += _tab_FirstTickToDayEvent;
-            /*
-            Thread closerThread = new Thread(updLevls);
-            closerThread.IsBackground = true;
-            closerThread.Start();
-            */
+            
+            
 
             //Младший тайм фрейм
             TabCreate(BotTabType.Simple);
@@ -571,11 +568,35 @@ namespace OsEngine.OsTrader.Panels
             Claster_delta.Save();
 
 
-        //    lines = new List<LineHorisontal>();
+            //    lines = new List<LineHorisontal>();
 
-            
+            Thread closerThread = new Thread(CloseFailPosition);
+            closerThread.IsBackground = true;
+            closerThread.Start();
+
         }
+        private void CloseFailPosition()
+        {
+            while (true)
+            {
+                Thread.Sleep(1000);
 
+                if (MainWindow.ProccesIsWorked == false)
+                {
+                    return;
+                }
+
+                for (int i = 0; i < _tab.PositionsCloseAll.Count; i++)
+                {
+                    if (_tab.PositionsCloseAll[i].State != PositionStateType.ClosingFail)
+                    {
+                        continue;
+                    }
+                    _tab.CloseAtMarket(_tab.PositionsCloseAll[i], _tab.PositionsCloseAll[i].OpenVolume);
+                }
+            }
+
+        }
         private void _tab_FirstTickToDayEvent(Trade obj)
         {
             RiskOnDay = 0;
@@ -695,7 +716,7 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
-            decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)/price;
+            decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)*price;
 
             decimal StopSize = Math.Abs((LastStop - price) / price);
             if (StopSize <=0)
@@ -796,7 +817,7 @@ namespace OsEngine.OsTrader.Panels
             {
                 return false;
             }
-            if ((_TradeSessions.MaxSessionPrice - _TradeSessions.MinSessionPrice) / _TradeSessions.MinSessionPrice < MaxStop.ValueDecimal / 100)
+            if (_TradeSessions.MinSessionPrice==0 || (_TradeSessions.MaxSessionPrice - _TradeSessions.MinSessionPrice) / _TradeSessions.MinSessionPrice < MaxStop.ValueDecimal / 100)
             {
                 return false;
             }
@@ -824,24 +845,30 @@ namespace OsEngine.OsTrader.Panels
             {
                 //    decimal localStop = GetStop(openPositions[i].Direction, candles[candles.Count-1].Close);
 
-                _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count-1], mA.Values[mA.Values.Count - 1]);
-                /*
+         //       _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count-1], mA.Values[mA.Values.Count - 1]);
+                
                 if (candles[candles.Count - 1].IsUp != candles[candles.Count - 2].IsUp)
                 {
                     if ((openPositions[i].Direction == Side.Buy && candles[candles.Count - 1].ClasterData.MaxData.Price < candles[candles.Count - 2].ClasterData.MaxData.Price)
-                        && openPositions[i].ProfitOperationPersent > 0)// openPositions[i].EntryPrice < Claster.data[Claster.data.Count - 1].MaxData.Price)
+                    //    && openPositions[i].ProfitOperationPersent > 0
+                        )// openPositions[i].EntryPrice < Claster.data[Claster.data.Count - 1].MaxData.Price)
                     {
-                        _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
-                        _tab.CloseAllAtMarket();
+                     //   _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
+                        //   _tab.CloseAllAtMarket();
+                        _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count - 1], mA.Values[mA.Values.Count - 1]);
+
                     }
                     if ((openPositions[i].Direction == Side.Sell && candles[candles.Count - 1].ClasterData.MaxData.Price > candles[candles.Count - 2].ClasterData.MaxData.Price)
-                       && openPositions[i].ProfitOperationPersent > 0)// && openPositions[i].EntryPrice > Claster.data[Claster.data.Count - 1].MaxData.Price)
+                     //  && openPositions[i].ProfitOperationPersent > 0
+                       )// && openPositions[i].EntryPrice > Claster.data[Claster.data.Count - 1].MaxData.Price)
                     {
-                        _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
-                        _tab.CloseAllAtMarket();
+                        //    _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
+                        //    _tab.CloseAllAtMarket();
+                        _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count - 1], mA.Values[mA.Values.Count - 1]);
+
                     }
                 }
-                */
+                
             }
 
         }
@@ -1059,13 +1086,13 @@ namespace OsEngine.OsTrader.Panels
                     break;
                 }
             }
+            ///Отрисовка линий
+            PriceLevleLine.PaintLevleData(TabsSimple);
 
             if (!ValidateParams())
             {
                 return;
             }
-            ///Отрисовка линий
-            PriceLevleLine.PaintLevleData(TabsSimple);
 
             LogicClosePositions(candles);
             if (!CanOpenPosition())
