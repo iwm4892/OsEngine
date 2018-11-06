@@ -1164,7 +1164,7 @@ namespace OsEngine.OsTrader.Panels
             // если трендовый день то открываемся сразу
             if(_TradeSessions.TypeOfDay== TradeSessions.DayType.TrendDay)
             {
-                OpenPosition(_TradeSessions.TradeSide[0], candles[candles.Count - 1].Close);
+             //   OpenPosition(_TradeSessions.TradeSide[0], candles[candles.Count - 1].Close);
             }
             //OpenAtLevel();
         }

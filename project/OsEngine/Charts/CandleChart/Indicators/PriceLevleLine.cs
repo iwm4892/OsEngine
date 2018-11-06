@@ -47,8 +47,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
             TypeIndicator = IndicatorOneCandleChartType.Line;
             ColorBase = Color.DodgerBlue;
             PaintOn = true;
-            linewidth = 0.2m;
-            Atr = new Atr(false) {Lenght =5,};
+            linewidth = 0.005m;
+        //    Atr = new Atr(false) {Lenght =30,};
             LevleData = new List<levlel>();
         }
         /// <summary>
@@ -226,7 +226,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public void Process(List<Candle> candles)
         {
-            Atr.Process(candles);
+        //    Atr.Process(candles);
 
             if (Values == null)
             {
@@ -256,11 +256,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// Индикатор АТР
         /// </summary>
-        public Atr Atr;
+     //   public Atr Atr;
 
         private bool updateLevelData(levlel lvl)
         {
-            levlel findlvl = LevleData.Find(x => x.Value + (linewidth*Atr.Values[Atr.Values.Count-1] / 2) > lvl.Value && x.Value - (linewidth* Atr.Values[Atr.Values.Count - 1] / 2) < lvl.Value);
+            levlel findlvl = LevleData.Find(x => x.Value + (linewidth * x.Value / 2) > lvl.Value && x.Value - (linewidth * x.Value / 2) < lvl.Value);
             if (findlvl != null)
             {
                 findlvl.levlSide = lvl.levlSide;
