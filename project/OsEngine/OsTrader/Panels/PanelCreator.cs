@@ -490,7 +490,7 @@ namespace OsEngine.OsTrader.Panels
         /// </summary>
         private StrategyParameterBool SessionRUS;
 
-
+        private StrategyParameterString DepoCurrency;
 
         public override string GetNameStrategyType()
         {
@@ -548,7 +548,7 @@ namespace OsEngine.OsTrader.Panels
             
             _Slipage = CreateParameter("_Slipage",1,1,20,1);
 
-
+            DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
 
 
@@ -730,13 +730,13 @@ namespace OsEngine.OsTrader.Panels
         private void _tab_pattern_CandleFinishedEvent(List<Candle> candles)
         {
             List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
-            indicators.Add(delta_delta);
-            indicators.Add(Volume_delta);
-            indicators.Add(Claster_delta);
+            indicators.Add(delta_pattern);
+            indicators.Add(Volume_pattern);
+            indicators.Add(Claster_pattern);
             // открытие позиций по патерну
             List<string> patterns = new List<string>();
             patterns.Add("Metla_pattern"); //сигналка
-            patterns.Add("Trap_pattern");
+        //    patterns.Add("Trap_pattern");
             OpenByPattrn(indicators, candles, patterns);
         }
 
@@ -751,33 +751,28 @@ namespace OsEngine.OsTrader.Panels
                 _tab_delta.Connector._timeFrameBuilder.DeltaPeriods = (int)maVolume.Values[maVolume.Values.Count - 1] / 6;
             }
         }
-
+        private decimal GetPrice(decimal price)
+        {
+            if (DepoCurrency.ValueString == "Currency2")
+            {
+                return price;
+            }
+            else
+            {
+                return 1 / price;
+            }
+        }
         private void OpenPosition(Side side,decimal price)
         {
             Slipage = _Slipage.ValueInt * _tab.Securiti.PriceStep;
 
-            /*
-            List<PriceLevleLine.levlel> lvl = new List<PriceLevleLine.levlel>();
-            lvl.AddRange(PriceLevleLine.LevleData);
-            lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
-            if (price>(lvl[0].Value+lvl[lvl.Count-1].Value)/2 && side == Side.Buy)
-            {
-                return;
-            }
-
-            if(price < (lvl[0].Value + lvl[lvl.Count - 1].Value) / 2 && side == Side.Sell)
-            {
-                return;
-            }
-            */
-            
             decimal _Vol;
             LastStop = GetStopLevel(side, price);
             if (LastStop == 0)
             {
                 return;
             }
-            decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)/price;
+            decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)/GetPrice(price);
 
             decimal StopSize = Math.Abs((LastStop - price) / price);
             if (StopSize <=0)
@@ -855,7 +850,7 @@ namespace OsEngine.OsTrader.Panels
             
         }
 
-
+        
         private bool ValidateParams()
         {
             if (Regime.ValueString == "Off")
@@ -905,9 +900,11 @@ namespace OsEngine.OsTrader.Panels
             for (int i = 0; i < openPositions.Count && candles.Count > 1; i++)
             {
                 //    decimal localStop = GetStop(openPositions[i].Direction, candles[candles.Count-1].Close);
-
-                _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count-1], mA.Values[mA.Values.Count - 1]);
-             /*   
+                if (openPositions[i].EntryPrice!=0 && Math.Abs((candles[candles.Count-1].Close - openPositions[i].EntryPrice) / openPositions[i].EntryPrice) > 2 * openPositions[i].fee)
+                {
+                    _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count - 1], mA.Values[mA.Values.Count - 1]);
+                }
+                /*   
                 if (candles[candles.Count - 1].IsUp != candles[candles.Count - 2].IsUp)
                 {
                     if ((openPositions[i].Direction == Side.Buy && candles[candles.Count - 1].ClasterData.MaxData.Price < candles[candles.Count - 2].ClasterData.MaxData.Price)
@@ -995,7 +992,7 @@ namespace OsEngine.OsTrader.Panels
 
             if (side == Side.Buy)
             {
-                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < price && x.levlSide == side);
+                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < price);//&& x.levlSide == side);
                 if (lvl != null) {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
                     if (lvl.Count > 1)
@@ -1012,7 +1009,7 @@ namespace OsEngine.OsTrader.Panels
             }
             else
             {
-                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > price && x.levlSide == side);
+                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > price);// && x.levlSide == side);
                 if (lvl != null)
                 {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
@@ -1141,7 +1138,7 @@ namespace OsEngine.OsTrader.Panels
                         RiskOnDay += -1*_tab.PositionsCloseAll[i].ProfitPortfolioPersent;
                     }
                     */
-                    RiskOnDay += _tab.PositionsCloseAll[i].ProfitPortfolioPersent;
+         //           RiskOnDay += _tab.PositionsCloseAll[i].ProfitPortfolioPersent;
                 }
                 else
                 {
