@@ -413,7 +413,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// все открытые, частично открытые и открывающиеся позиции принадлежащие боту. 
         /// </summary>
         public List<Position> PositionsOpenAll
-         {
+        {
             get {return _journal.OpenPositions; }
         }
 
@@ -440,6 +440,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             get { return _journal.LastPosition; }
         }
+
         /// <summary>
         /// взять все открытые позиции шорт
         /// </summary>
@@ -488,6 +489,40 @@ namespace OsEngine.OsTrader.Panels.Tab
         }
 
         /// <summary>
+        /// нетто позиция набранная роботом
+        /// </summary>
+        public decimal VolumeNetto
+        {
+            get
+            {
+                try
+                {
+                    List<Position> openPos = PositionsOpenAll;
+
+                    decimal volume = 0;
+
+                    for (int i = 0; openPos != null && i < openPos.Count; i++)
+                    {
+                        if (openPos[i].Direction == Side.Buy)
+                        {
+                            volume += openPos[i].OpenVolume;
+                        }
+                        else // if (openPos[i].Direction == Side.Sell)
+                        {
+                            volume -= openPos[i].OpenVolume;
+                        }
+                    }
+                    return volume;
+                }
+                catch (Exception error)
+                {
+                    SetNewLogMessage(error.ToString(),LogMessageType.Error);
+                    return 0;
+                }
+            }
+        }
+
+        /// <summary>
         /// проверить были ли закрытые позиции на текущем баре
         /// </summary>
         public bool CheckTradeClosedThisBar()
@@ -508,16 +543,14 @@ namespace OsEngine.OsTrader.Panels.Tab
 
             Candle lastCandle = CandlesAll[CandlesAll.Count - 1];
 
-
-
             foreach (Position position in allClosedPositions)
             {
                 if (position.TimeClose >= lastCandle.TimeStart)
                 {
-                    return (true);
+                    return true;
                 }
             }
-            return (false);
+            return false;
         }
 
         /// <summary>
@@ -3523,6 +3556,12 @@ namespace OsEngine.OsTrader.Panels.Tab
             {
                 return;
             }
+
+            if (_chartMaster == null)
+            {
+                return;
+            }
+
             _chartMaster.SetTick(trades);
 
             Trade trade = trades[trades.Count - 1];
@@ -3614,7 +3653,11 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// <param name="time">новое время</param>
         void StrategOneSecurity_TimeServerChangeEvent(DateTime time)
         {
-            _manualControl.ServerTime = time;
+            if (_manualControl != null)
+            {
+                _manualControl.ServerTime = time;
+            }
+            
             if (ServerTimeChangeEvent != null)
             {
                 ServerTimeChangeEvent(time);

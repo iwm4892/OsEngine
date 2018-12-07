@@ -1174,13 +1174,13 @@ namespace OsEngine.Market.Servers.Optimizer
                 if (TypeTesterData == TesterDataType.MarketDepthAllCandleState ||
                     TypeTesterData == TesterDataType.MarketDepthOnlyReadyCandle)
                 {
-                    timeFrameBuilder.CandleCreateType = CandleSeriesCreateDataType.MarketDepth;
+                    timeFrameBuilder.CandleMarketDataType = CandleMarketDataType.MarketDepth;
                 }
 
                 if (TypeTesterData == TesterDataType.TickAllCandleState ||
                     TypeTesterData == TesterDataType.TickOnlyReadyCandle)
                 {
-                    timeFrameBuilder.CandleCreateType = CandleSeriesCreateDataType.Tick;
+                    timeFrameBuilder.CandleMarketDataType = CandleMarketDataType.Tick;
                 }
 
                 CandleSeries series = new CandleSeries(timeFrameBuilder, security);
@@ -2069,7 +2069,7 @@ namespace OsEngine.Market.Servers.Optimizer
                     NewTradesEvent(lastTradesSeries,0,0);
                 }
 
-                LastCandle.State = CandleStates.Finished;
+                LastCandle.State = CandleState.Finished;
 
                 if (NewCandleEvent != null)
                 {
@@ -2082,7 +2082,7 @@ namespace OsEngine.Market.Servers.Optimizer
                 LastCandle.TimeStart < now)
             {
                 LastCandle = Candles[_lastCandleIndex];
-                LastCandle.State = CandleStates.Finished;
+                LastCandle.State = CandleState.Finished;
                 _lastCandleIndex++;
             }
 
@@ -2100,7 +2100,7 @@ namespace OsEngine.Market.Servers.Optimizer
                     NewTradesEvent(lastTradesSeries,0,0);
                 }
 
-                LastCandle.State = CandleStates.Finished;
+                LastCandle.State = CandleState.Finished;
 
                 if (NewCandleEvent != null)
                 {

@@ -10,7 +10,6 @@ using OsEngine.Market.Servers;
 
 namespace OsEngine.OsData
 {
-
     /// <summary>
     /// Логика взаимодействия для OsDataSetUi.xaml
     /// </summary>
@@ -88,8 +87,8 @@ namespace OsEngine.OsData
             DatePickerTimeStart.SelectedDate = _set.TimeStart;
             DatePickerTimeEnd.SelectedDate = _set.TimeEnd;
 
-            ComboBoxCandleCreateType.Items.Add(CandleSeriesCreateDataType.Tick);
-            ComboBoxCandleCreateType.Items.Add(CandleSeriesCreateDataType.MarketDepth);
+            ComboBoxCandleCreateType.Items.Add(CandleMarketDataType.Tick);
+            ComboBoxCandleCreateType.Items.Add(CandleMarketDataType.MarketDepth);
             ComboBoxCandleCreateType.SelectedItem = _set.CandleCreateType;
 
             CheckBoxNeadToUpDate.IsChecked = _set.NeadToUpdate;
@@ -340,14 +339,13 @@ namespace OsEngine.OsData
         private void ReloadSecuritiesOnTable()
         {
             _grid.Rows.Clear();
-            List<string> names = _set.SecuritiesNames;
+            List<SecurityToLoad> names = _set.SecuritiesNames;
 
             for (int i = 0;names != null &&  i < names.Count; i++)
             {
                 DataGridViewRow row = new DataGridViewRow();
                 row.Cells.Add(new DataGridViewTextBoxCell());
-                row.Cells[0].Value = names[i];
-
+                row.Cells[0].Value = names[i].Name;
                 _grid.Rows.Insert(0, row);
             }
         }

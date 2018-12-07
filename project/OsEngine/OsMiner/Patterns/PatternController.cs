@@ -125,9 +125,9 @@ namespace OsEngine.OsMiner.Patterns
             ProfitOrderIsOn = Convert.ToBoolean(array[6]);
             ExitFromSomeCandlesIsOn = Convert.ToBoolean(array[7]);
             TrailingStopIsOn = Convert.ToBoolean(array[8]);
-            StopOrderValue = Convert.ToInt32(array[9]);
-            ProfitOrderValue = Convert.ToInt32(array[10]);
-            TreilingStopValue = Convert.ToInt32(array[11]);
+            StopOrderValue = Convert.ToDecimal(array[9]);
+            ProfitOrderValue = Convert.ToDecimal(array[10]);
+            TreilingStopValue = Convert.ToDecimal(array[11]);
             ExitFromSomeCandlesValue = Convert.ToInt32(array[12]);
             SecurityToInter = array[13];
             WeigthToInter = Convert.ToDecimal(array[14]);
@@ -418,17 +418,17 @@ namespace OsEngine.OsMiner.Patterns
         /// <summary>
         /// величина стопОрдера
         /// </summary>
-        public int StopOrderValue;
+        public decimal StopOrderValue;
 
         /// <summary>
         /// величина профит ордера
         /// </summary>
-        public int ProfitOrderValue;
+        public decimal ProfitOrderValue;
 
         /// <summary>
         /// величина трейлинг стопа
         /// </summary>
-        public int TreilingStopValue;
+        public decimal TreilingStopValue;
 
         /// <summary>
         /// количество свечек после которого сработает выход через N свечек
@@ -519,19 +519,25 @@ namespace OsEngine.OsMiner.Patterns
         /// </summary>
         public void TestCurrentPatterns()
         {
-            Test(PatternsToOpen, PatternsToClose);
-            PaintPatternsColorSeries();
-
-            if (PositionsInTrades.Count != 0)
+            try
             {
-                _chart.SetPosition(PositionsInTrades);
-            }
+                Test(PatternsToOpen, PatternsToClose);
+                PaintPatternsColorSeries();
 
-            if (BackTestEndEvent != null)
-            {
-                BackTestEndEvent(GetShortReport());
+                if (PositionsInTrades.Count != 0)
+                {
+                    _chart.SetPosition(PositionsInTrades);
+                }
+
+                if (BackTestEndEvent != null)
+                {
+                    BackTestEndEvent(GetShortReport());
+                }
             }
-            
+            catch (Exception error)
+            {
+                SendNewLogMessage(error.ToString(),LogMessageType.Error);
+            }
         }
 
         /// <summary>
@@ -577,7 +583,7 @@ namespace OsEngine.OsMiner.Patterns
 
             if (patternsToInter.Count != candlesParallelPatternsToInter.Count)
             {
-                SendNewLogMessage("К паттрнам на ОТКРЫТИЕ не удалось найти всех нужных серий данных. Перейдите в соответствующую вкладку и назначте всем паттернам серию данных.",LogMessageType.Error);
+                SendNewLogMessage("К паттрнам на ОТКРЫТИЕ не удалось найти всех нужных серий данных. Перейдите в соответствующую вкладку и назначте всем паттернам серию данных.", LogMessageType.Error);
                 return;
             }
 
@@ -600,7 +606,7 @@ namespace OsEngine.OsMiner.Patterns
 
             int indexWithPosition = 0;
 
-            for (int i = 0; i < candlesToTrade.Candles.Count-1; i++)
+            for (int i = 0; i < candlesToTrade.Candles.Count - 1; i++)
             {// первый цикл ищет входы
 
                 if (LotsCount == LotsCountType.One && indexWithPosition > i)
@@ -608,23 +614,23 @@ namespace OsEngine.OsMiner.Patterns
                     continue;
                 }
 
-                if (CheckInter(PatternsToOpen, candlesParallelPatternsToInter, i, candlesToTrade.Candles[i].TimeStart,WeigthToInter) == false)
+                if (CheckInter(PatternsToOpen, candlesParallelPatternsToInter, i, candlesToTrade.Candles[i].TimeStart, WeigthToInter) == false)
                 {
                     continue;
                 }
 
-                Position position = CreatePosition(candlesToTrade.Candles[i+1].Open, candlesToTrade.Security, i,
-                    candlesToTrade.Candles[i+1].TimeStart);
+                Position position = CreatePosition(candlesToTrade.Candles[i + 1].Open, candlesToTrade.Security, i,
+                    candlesToTrade.Candles[i + 1].TimeStart);
 
                 if (StopOrderIsOn)
                 {
                     if (position.Direction == Side.Buy)
                     {
-                        position.StopOrderPrice = position.EntryPrice - candlesToTrade.Security.PriceStep*StopOrderValue;
+                        position.StopOrderPrice = position.EntryPrice - position.EntryPrice * (StopOrderValue / 100);
                     }
                     else
                     {
-                        position.StopOrderPrice = position.EntryPrice + candlesToTrade.Security.PriceStep * StopOrderValue;
+                        position.StopOrderPrice = position.EntryPrice + position.EntryPrice * (StopOrderValue / 100);
                     }
                 }
 
@@ -632,11 +638,11 @@ namespace OsEngine.OsMiner.Patterns
                 {
                     if (position.Direction == Side.Buy)
                     {
-                        position.ProfitOrderPrice = position.EntryPrice + candlesToTrade.Security.PriceStep * ProfitOrderValue;
+                        position.ProfitOrderPrice = position.EntryPrice + position.EntryPrice * (ProfitOrderValue / 100);
                     }
                     else
                     {
-                        position.ProfitOrderPrice = position.EntryPrice - candlesToTrade.Security.PriceStep * ProfitOrderValue;
+                        position.ProfitOrderPrice = position.EntryPrice - position.EntryPrice * (ProfitOrderValue / 100);
                     }
                 }
 
@@ -644,28 +650,49 @@ namespace OsEngine.OsMiner.Patterns
                 {
                     if (position.Direction == Side.Buy)
                     {
-                        position.StopOrderRedLine = position.EntryPrice - candlesToTrade.Security.PriceStep * TreilingStopValue;
+                        position.StopOrderRedLine = position.EntryPrice - position.EntryPrice * (TreilingStopValue / 100);
                     }
                     else
                     {
-                        position.StopOrderRedLine = position.EntryPrice + candlesToTrade.Security.PriceStep * TreilingStopValue;
+                        position.StopOrderRedLine = position.EntryPrice + position.EntryPrice * (TreilingStopValue / 100);
                     }
                 }
 
-                for (int i2 = i; i2 < candlesToTrade.Candles.Count-1; i2++)
+                for (int i2 = i; i2 < candlesToTrade.Candles.Count - 1; i2++)
                 {// второй  цикл ищет выходы
+
+                    if (TrailingStopIsOn)
+                    {
+                        if (position.Direction == Side.Buy)
+                        {
+                            decimal price = candlesToTrade.Candles[i2].Close - candlesToTrade.Candles[i2].Close * TreilingStopValue / 100;
+                            if (price > position.StopOrderRedLine)
+                            {
+                                position.StopOrderRedLine = price;
+                            }
+                        }
+                        else
+                        {
+                            decimal price = candlesToTrade.Candles[i2].Close + candlesToTrade.Candles[i2].Close * TreilingStopValue / 100;
+                            if (price < position.StopOrderRedLine)
+                            {
+                                position.StopOrderRedLine = price;
+                            }
+                        }
+                    }
+
                     if (CheckExit(position, patternsToExit, candlesParallelPatternsToExit, i2, candlesToTrade.Candles[i2].TimeStart, candlesToTrade.Candles[i2].Close, candlesToTrade) == false)
                     {
                         continue;
                     }
+
                     indexWithPosition = i2;
-                    ClosePosition(position, i2, candlesToTrade.Candles[i2+1].TimeStart, candlesToTrade.Candles[i2+1].Open);
+                    ClosePosition(position, i2, candlesToTrade.Candles[i2 + 1].TimeStart, candlesToTrade.Candles[i2 + 1].Open);
 
                     PositionsInTrades.Add(position);
                     break;
                 }
             }
-
         }
 
         /// <summary>
@@ -1066,83 +1093,103 @@ namespace OsEngine.OsMiner.Patterns
         /// </summary>
         private void MiningThreadPlace()
         {
-            int curNum = 0;
-
-            MinerCandleSeries mySeries = CandleSeries.Find(ser => ser.Security.Name == SecurityToInter);
-            _testResults = new List<TestResult>();
-
-            while (true)
+            try
             {
-                curNum++;
-                _curIndex = curNum;
+                MinerCandleSeries mySeries = CandleSeries.Find(ser => ser.Security.Name == SecurityToInter);
+                _testResults = new List<TestResult>();
+                int curNum = 0;
 
-                if (_neadToStopMining)
+                if (_curTempPatternType == PatternType.Candle)
                 {
-                    StopMiningProcces();
-                    return;
+                    curNum += ((PatternCandle)GetTempPattern(_curTempPatternType)).Length + 3;
+                }
+                if (_curTempPatternType == PatternType.Indicators)
+                {
+                    curNum += ((PatternIndicators)GetTempPattern(_curTempPatternType)).Length + 3;
+                }
+                if (_curTempPatternType == PatternType.Volume)
+                {
+                    curNum += ((PatternVolume)GetTempPattern(_curTempPatternType)).Length + 3;
                 }
 
-                if (curNum >= mySeries.Candles.Count)
+                while (true)
                 {
-                    StopMiningProcces();
-                    MessageBox.Show("Поиск паттернов завершён. Мы проверили все данные");
-                    return;
-                }
+                    curNum++;
+                    _curIndex = curNum;
 
-                decimal profit = 0;
-
-                for (int i = 0; i < PositionsInTrades.Count; i++)
-                {
-                    profit += PositionsInTrades[i].ProfitOperationPunkt;
-                }
-
-                decimal mO = 0;
-                
-                if(PositionsInTrades.Count != 0)
-                {
-                    mO = profit / PositionsInTrades.Count;
-                }
-
-                if (MiningMo < Math.Abs(mO) &&
-                    MiningDealsCount < PositionsInTrades.Count &&
-                    MiningProfit < Math.Abs(profit))
-                {
-                    StopMiningProcces();
-                    return;
-                }
-
-              
-                GetPatternToIndex();
-                BackTestTempPattern(false);
-                TestResult result = new TestResult();
-
-                result.Pattern = GetTempPattern(_curTempPatternType).GetCopy();
-                result.Positions = PositionsInTrades;
-                result.ShortReport = GetShortReport();
-                result.SummProfit = _lastProfit;
-                result.Mo = _lastMo;
-
-                if (_testResults.Count == 0)
-                {
-                    _testResults.Add(result);
-                }
-                else
-                {
-                    bool isInArray = false;
-                    for (int i = 0; i < _testResults.Count; i++)
+                    if (_neadToStopMining)
                     {
-                        if (_testResults[i].SummProfit < result.SummProfit)
-                        {
-                            isInArray = true;
-                            _testResults.Insert(i, result);
-                            break;
-                        }
+                        StopMiningProcces();
+                        return;
                     }
-                    if (isInArray == false)
+
+                    if (curNum >= mySeries.Candles.Count)
+                    {
+                        StopMiningProcces();
+                        MessageBox.Show("Поиск паттернов завершён. Мы проверили все данные");
+                        return;
+                    }
+
+                    decimal profit = 0;
+
+                    for (int i = 0; i < PositionsInTrades.Count; i++)
+                    {
+                        profit += PositionsInTrades[i].ProfitOperationPunkt;
+                    }
+
+                    decimal mO = 0;
+
+                    if (PositionsInTrades.Count != 0)
+                    {
+                        mO = profit / PositionsInTrades.Count;
+                    }
+
+                    if (MiningMo < Math.Abs(mO) &&
+                        MiningDealsCount < PositionsInTrades.Count &&
+                        MiningProfit < Math.Abs(profit))
+                    {
+                        StopMiningProcces();
+                        return;
+                    }
+
+
+                    GetPatternToIndex();
+                    BackTestTempPattern(false);
+                    TestResult result = new TestResult();
+
+                    result.Pattern = GetTempPattern(_curTempPatternType).GetCopy();
+                    result.Positions = PositionsInTrades;
+                    result.ShortReport = GetShortReport();
+                    result.SummProfit = _lastProfit;
+                    result.Mo = _lastMo;
+
+                    if (_testResults.Count == 0)
                     {
                         _testResults.Add(result);
                     }
+                    else
+                    {
+                        bool isInArray = false;
+                        for (int i = 0; i < _testResults.Count; i++)
+                        {
+                            if (_testResults[i].SummProfit < result.SummProfit)
+                            {
+                                isInArray = true;
+                                _testResults.Insert(i, result);
+                                break;
+                            }
+                        }
+                        if (isInArray == false)
+                        {
+                            _testResults.Add(result);
+                        }
+                    }
                 }
+            }
+            catch (Exception error)
+            {
+                SendNewLogMessage(error.ToString(),LogMessageType.Error);
+                _worker = null;
             }
         }
 
@@ -1332,51 +1379,58 @@ namespace OsEngine.OsMiner.Patterns
         /// <param name="neadToPaint">нужно ли прорисовывать результаты тестов</param>
         public void BackTestTempPattern(bool neadToPaint)
         {
-            IPattern pattern = GetTempPattern(_curTempPatternType);
-            pattern.Weigth = WeigthToTempPattern;
-            pattern.Expand = ExpandToTempPattern;
+            try
+            {
+                IPattern pattern = GetTempPattern(_curTempPatternType);
+                pattern.Weigth = WeigthToTempPattern;
+                pattern.Expand = ExpandToTempPattern;
 
-            if (pattern.Weigth == 0)
-            {
-                return;
-            }
-            if (pattern.Expand == 0)
-            {
-                return;
-            }
-
-            if (PlaceToUsePattern == UsePatternType.OpenPosition)
-            {
-                PatternsToOpen.Add(pattern);
-            }
-            else
-            {
-                PatternsToClose.Add(pattern);
-            }
-
-            Test(PatternsToOpen, PatternsToClose);
-
-            if (PlaceToUsePattern == UsePatternType.OpenPosition)
-            {
-                PatternsToOpen.Remove(pattern);
-            }
-            else
-            {
-                PatternsToClose.Remove(pattern);
-            }
-
-            if (BackTestEndEvent != null)
-            {
-                BackTestEndEvent(GetShortReport());
-            }
-
-            if (neadToPaint)
-            {
-                if (PositionsInTrades.Count != 0)
+                if (pattern.Weigth == 0)
                 {
-                    _chart.SetPosition(PositionsInTrades);
+                    return;
                 }
-                PaintPatternsColorSeries();
+                if (pattern.Expand == 0)
+                {
+                    return;
+                }
+
+                if (PlaceToUsePattern == UsePatternType.OpenPosition)
+                {
+                    PatternsToOpen.Add(pattern);
+                }
+                else
+                {
+                    PatternsToClose.Add(pattern);
+                }
+
+                Test(PatternsToOpen, PatternsToClose);
+
+                if (PlaceToUsePattern == UsePatternType.OpenPosition)
+                {
+                    PatternsToOpen.Remove(pattern);
+                }
+                else
+                {
+                    PatternsToClose.Remove(pattern);
+                }
+
+                if (BackTestEndEvent != null)
+                {
+                    BackTestEndEvent(GetShortReport());
+                }
+
+                if (neadToPaint)
+                {
+                    if (PositionsInTrades.Count != 0)
+                    {
+                        _chart.SetPosition(PositionsInTrades);
+                    }
+                    PaintPatternsColorSeries();
+                }
+            }
+            catch (Exception error)
+            {
+                SendNewLogMessage(error.ToString(), LogMessageType.Error);
             }
         }
 
@@ -1441,6 +1495,11 @@ namespace OsEngine.OsMiner.Patterns
 
             _chart.Clear();
             _chart.StartPaint(_chartHost,_rectChart);
+
+            if (CandleSeries == null)
+            {
+                return;
+            }
 
             MinerCandleSeries series = CandleSeries.Find(ser => ser.Security.Name == SecurityToInter);
 

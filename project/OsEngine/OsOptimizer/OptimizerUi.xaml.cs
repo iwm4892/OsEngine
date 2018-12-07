@@ -748,6 +748,8 @@ namespace OsEngine.OsOptimizer
                 timeFrame.Add(TimeFrame.Min30.ToString());
                 timeFrame.Add(TimeFrame.Hour1.ToString());
                 timeFrame.Add(TimeFrame.Hour2.ToString());
+
+
             }
 
 

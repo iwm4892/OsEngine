@@ -46,7 +46,7 @@ namespace OsEngine.Entity
         /// <summary>
         /// статус завершённости свечи
         /// </summary>
-        public CandleStates State;
+        public CandleState State;
 
         /// <summary>
         /// трейды составляющие эту свечу
@@ -103,88 +103,19 @@ namespace OsEngine.Entity
 
             TimeStart = new DateTime(year, month, day, hour, minute, second);
 
-            string[] shit = sIn[2].Split('.');
-            if (shit.Length == 2)
-            {
-                if (!Decimal.TryParse(shit[0] + '.' + shit[1], out Open))
-                {
-                    Open = Convert.ToDecimal(shit[0] + ',' + shit[1]);
-                }
-            }
-            else
-            {
-                Open = Convert.ToDecimal(shit[0]);
-            }
-
-            shit = sIn[3].Split('.');
-
-            if (shit.Length == 2)
-            {
-                if (!Decimal.TryParse(shit[0] + '.' + shit[1], out High))
-                {
-                    High = Convert.ToDecimal(shit[0] + ',' + shit[1]);
-                }
-            }
-            else
-            {
-                High = Convert.ToDecimal(shit[0]);
-            }
-
-            shit = sIn[4].Split('.');
-            if (shit.Length == 2)
-            {
-                if (!Decimal.TryParse(shit[0] + '.' + shit[1], out Low))
-                {
-                    Low = Convert.ToDecimal(shit[0] + ',' + shit[1]);
-                }
-            }
-            else
-            {
-                Low = Convert.ToDecimal(shit[0]);
-            }
-
-            shit = sIn[5].Split('.');
-            if (shit.Length == 2)
-            {
-                if (!Decimal.TryParse(shit[0] + '.' + shit[1], out Close))
-                {
-                    Close = Convert.ToDecimal(shit[0] + ',' + shit[1]);
-                }
-            }
-            else
-            {
-                Close = Convert.ToDecimal(shit[0]);
-            }
-
-            shit = sIn[6].Split('.');
+            Open = Convert.ToDecimal(sIn[2].Replace(",", CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator), CultureInfo.InvariantCulture);
+            High = Convert.ToDecimal(sIn[3].Replace(",", CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator), CultureInfo.InvariantCulture);
+            Low = Convert.ToDecimal(sIn[4].Replace(",", CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator), CultureInfo.InvariantCulture);
+            Close = Convert.ToDecimal(sIn[5].Replace(",", CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator), CultureInfo.InvariantCulture);
 
             try
             {
-                if (Convert.ToInt32(shit[0]) == 0)
-                {
-                    Volume = 1;
-                }
-                else
-                {
-                    if (shit.Length == 2 && Convert.ToDecimal(shit[1]) != 0)
-                    {
-                        if (!Decimal.TryParse(shit[0] + '.' + shit[1], out Volume))
-                        {
-                            Volume = Convert.ToDecimal(shit[0] + ',' + shit[1]);
-                        }
-                    }
-                    else
-                    {
-                        Volume = Convert.ToDecimal(shit[0]);
-                    }
-                }
-
+                Volume = Convert.ToDecimal(sIn[6].Replace(",", CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator), CultureInfo.InvariantCulture);
             }
             catch (Exception)
             {
                 Volume = 1;
             }
-
         }
 
         /// <summary>
@@ -290,24 +221,45 @@ namespace OsEngine.Entity
                // result += TimeStart.Date.ToString("yyyyMMdd") + ",";
                 //result += TimeStart.TimeOfDay.ToString("HHmmss") + ",";
 
-                result += Open.ToString(new CultureInfo("en-US")) + ",";
-                result += High.ToString(new CultureInfo("en-US")) + ",";
-                result += Low.ToString(new CultureInfo("en-US")) + ",";
-                result += Close.ToString(new CultureInfo("en-US")) + ",";
-                result += Volume.ToString(new CultureInfo("en-US"));
+                result += Open.ToString(CultureInfo.InvariantCulture) + ",";
+                result += High.ToString(CultureInfo.InvariantCulture) + ",";
+                result += Low.ToString(CultureInfo.InvariantCulture) + ",";
+                result += Close.ToString(CultureInfo.InvariantCulture) + ",";
+                result += Volume.ToString(CultureInfo.InvariantCulture);
 
                 _stringToSave = result;
 
                 return _stringToSave;
             }
         }
+        //+++++ Данные Кластера
+        /// <summary>
+        /// Данные по кластеру цен
+        /// </summary>
+        private ClasterData _ClasterData;
+        /// <summary>
+        /// Данные по кластеру цен
+        /// </summary>
+        public ClasterData ClasterData
+        {
+            get
+            {
+                if (_ClasterData == null)
+                {
+                    _ClasterData = new ClasterData();
+                }
+                return _ClasterData;
+            }
+        }
+
+
 
     }
 
     /// <summary>
     /// состояние формирования свечи
     /// </summary>
-    public enum CandleStates
+    public enum CandleState
     {
         /// <summary>
         /// завершено

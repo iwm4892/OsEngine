@@ -120,10 +120,9 @@ namespace OsEngine.OsMiner.Patterns
         public IPattern GetCopy()
         {
             PatternTime pattern = new PatternTime();
-            pattern.StartTime = StartTime;
-            pattern.EndTime = EndTime;
-            pattern.Expand = Expand;
-            pattern.Weigth = Weigth;
+
+            string save = GetSaveString();
+            pattern.Load(save);
 
             return pattern;
         }

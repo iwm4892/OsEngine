@@ -17,7 +17,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
     /// </summary>
     public class PriceLevleLine : IIndicatorCandle
     {
-       /// <summary>
+        /// <summary>
         /// конструктор
         /// </summary>
         /// <param name="uniqName">уникальное имя</param>
@@ -25,10 +25,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public PriceLevleLine(string uniqName, bool canDelete)
         {
             Name = uniqName;
-            TypeIndicator = IndicatorOneCandleChartType.Line;
-            ColorBase = Color.DodgerBlue;
-            PaintOn = true;
-            CanDelete = canDelete; 
+            CanDelete = canDelete;
+            init();
             Load();
         }
 
@@ -41,13 +39,22 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public PriceLevleLine(bool canDelete)
         {
             Name = Guid.NewGuid().ToString();
-
+            CanDelete = canDelete;
+            init();
+        }
+        private void init()
+        {
             TypeIndicator = IndicatorOneCandleChartType.Line;
             ColorBase = Color.DodgerBlue;
             PaintOn = true;
-            CanDelete = canDelete; 
+            linewidth = 0.02m;
+        //    Atr = new Atr(false) {Lenght =30,};
+            LevleData = new List<levlel>();
         }
-
+        /// <summary>
+        /// Толщина линии (пример 0.01 = 1%)
+        /// </summary>
+        public Decimal linewidth;
         /// <summary>
         /// все значения индикатора
         /// </summary>
@@ -102,7 +109,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// значение индикатора
         /// </summary>
-        public List<decimal> Values 
+        public List<decimal> Values
         { get; set; }
 
         /// <summary>
@@ -123,7 +130,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public bool PaintOn
         { get; set; }
 
-       public List<Color> ColorSeries { get; set; }
+        public List<Color> ColorSeries { get; set; }
 
         /// <summary>
         /// сохранить настройки
@@ -205,7 +212,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public void ShowDialog()
         {
-           // ignored. Этот тип индикатора настраивается и создаётся только из кода
+            // ignored. Этот тип индикатора настраивается и создаётся только из кода
         }
 
         /// <summary>
@@ -213,26 +220,25 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public event Action<IIndicatorCandle> NeadToReloadEvent;
 
-        #region Кластера
-        public List<ClasterData> data;
-        #endregion 
-
+        private DateTime LastDay;
         /// <summary>
         /// прогрузить индикатор свечками
         /// </summary>
         public void Process(List<Candle> candles)
         {
+        //    Atr.Process(candles);
+
             if (Values == null)
             {
                 Values = new List<decimal>();
             }
-            if (data != null &&
-                           data.Count + 1 == candles.Count)
+            if (Values != null &&
+                           Values.Count + 1 == candles.Count)
             {
                 ProcessOneCandle(candles);
             }
-            else if (data != null &&
-                data.Count == candles.Count)
+            else if (Values != null &&
+                Values.Count == candles.Count)
             {
                 ProcessLastCanlde(candles);
             }
@@ -243,41 +249,88 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
 
         }
-        public List<levlel> LevleData = new List<levlel>();
+        /// <summary>
+        /// Уровни Разворота максимального объема торгов по свечке
+        /// </summary>
+        public List<levlel> LevleData;// = new List<levlel>();
+        /// <summary>
+        /// Индикатор АТР
+        /// </summary>
+     //   public Atr Atr;
 
-        private void ProcessValue()
+        private bool updateLevelData(levlel lvl)
         {
-            if (data.Count > 2)
+            levlel findlvl = LevleData.Find(x => x.Value + (linewidth * x.Value / 2) > lvl.Value && x.Value - (linewidth * x.Value / 2) < lvl.Value);
+            if (findlvl != null)
             {
-                if (data[data.Count - 1].MaxData.Price < data[data.Count - 2].MaxData.Price
-                    && data[data.Count - 3].MaxData.Price < data[data.Count - 2].MaxData.Price
+                findlvl.levlSide = lvl.levlSide;
+                findlvl.Value = lvl.Value;
+                return true;
+            }
+            return false;
+        }
+        private void add(levlel el)
+        {
+
+            LevleData.Add(el);
+            LevleData.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+            if (LevleData.Count > 6)
+            {
+                decimal avg = (LevleData[LevleData.Count - 1].Value + LevleData[0].Value) / 2;
+                if (el.Value > avg)
+                {
+                    LevleData.RemoveAt(0);
+                }
+                if (el.Value < avg)
+                {
+                    LevleData.RemoveAt(LevleData.Count - 1);
+                }
+            }
+
+        }
+        private void ProcessValue(List<Candle> candles,int i)
+        {
+            Values.Add(candles[i].ClasterData.MaxData.Price);
+            if (i > 3)
+            {
+                if (candles[i].ClasterData.MaxData.Price <= candles[i-1].ClasterData.MaxData.Price
+                    && candles[i-2].ClasterData.MaxData.Price <= candles[i-1].ClasterData.MaxData.Price
+                    && candles[i].ClasterData.MaxData.Price != candles[i-2].ClasterData.MaxData.Price
                     )
                 {
                     levlel el = new levlel();
                     el.levlSide = Side.Sell;
-                    el.Value = data[data.Count - 2].MaxData.Price;
-                    LevleData.Add(el);
+                    el.Value = candles[i-1].ClasterData.MaxData.Price;
 
-                    Values.Add(data[data.Count - 2].MaxData.Price);
+                    if (!updateLevelData(el))
+                    {
+                        add(el);
+                    }
                 }
 
-                if (data[data.Count - 1].MaxData.Price > data[data.Count - 2].MaxData.Price
-                    && data[data.Count - 3].MaxData.Price > data[data.Count - 2].MaxData.Price
+                if (candles[i].ClasterData.MaxData.Price >= candles[i-1].ClasterData.MaxData.Price
+                    && candles[i-2].ClasterData.MaxData.Price >= candles[i-1].ClasterData.MaxData.Price
+                    && candles[i].ClasterData.MaxData.Price != candles[i-2].ClasterData.MaxData.Price
                     )
                 {
                     levlel el = new levlel();
                     el.levlSide = Side.Buy;
-                    el.Value = data[data.Count - 2].MaxData.Price;
-                    LevleData.Add(el);
+                    el.Value = candles[i-1].ClasterData.MaxData.Price;
 
-                    Values.Add(data[data.Count - 2].MaxData.Price);
-
+                    if (!updateLevelData(el))
+                    {
+                        add(el);
+                    }
                 }
             }
-            
-            for (int i=LevleData.Count-1;i>=4;i--)
+
+         //   DeleteCorrection();
+        }
+        private void DeleteCorrection()
+        {
+            for (int i = LevleData.Count - 1; i >= 4; i--)
             {
-                if (i> LevleData.Count - 1)
+                if (i > LevleData.Count - 1)
                 {
                     i = LevleData.Count - 1;
                 }
@@ -310,8 +363,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 }
 
             }
-            
-            for(int i=1; i < LevleData.Count; i++)
+
+            // исправление однонаправленности экстремумов
+
+            for (int i = 1; i < LevleData.Count; i++)
             {
                 if (LevleData[i].levlSide == LevleData[i - 1].levlSide)
                 {
@@ -320,28 +375,18 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 }
 
             }
-
-
-            if (LevleData.Count > 6)
-            {
-                LevleData.RemoveAt(0);
-            }
-
         }
         /// <summary>
         /// прогрузить только последнюю свечку
         /// </summary>
         private void ProcessOneCandle(List<Candle> candles)
         {
-            if (data == null)
+            if (LastDay != candles[candles.Count - 1].TimeStart.Date)
             {
-                data = new List<ClasterData>();
-
+             //   LevleData = new List<levlel>();
+                LastDay = candles[candles.Count - 1].TimeStart.Date;
             }
-            ProcessValue();
-            ClasterData clasterData = GetValue(candles, candles.Count - 1);
-            data.Add(clasterData);
-            
+            ProcessValue(candles, candles.Count - 1);
 
         }
 
@@ -350,12 +395,14 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessAllCandle(List<Candle> candles)
         {
-            data = new List<ClasterData>();
             for (int i = 0; i < candles.Count; i++)
             {
-                ClasterData clasterData = GetValue(candles, i);
-                data.Add(clasterData);
-                ProcessValue();
+                if (LastDay != candles[i].TimeStart.Date)
+                {
+              //      LevleData = new List<levlel>();
+                    LastDay = candles[i].TimeStart.Date;
+                }
+                ProcessValue(candles,i);
             }
         }
 
@@ -364,7 +411,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessLastCanlde(List<Candle> candles)
         {
-            data[data.Count - 1].update(candles[candles.Count - 1].Trades);
+            Values[Values.Count - 1] = candles[candles.Count - 1].ClasterData.MaxData.Price;
         }
 
         /// <summary>
@@ -402,6 +449,59 @@ namespace OsEngine.Charts.CandleChart.Indicators
         {
             public Side levlSide;
             public decimal Value;
+        }
+
+        /// <summary>
+        /// Список Горизонтальных линий для визуализации уровней
+        /// </summary>
+        private List<Elements.LineHorisontal> lines;
+
+        public void PaintLevleData(List<OsTrader.Panels.Tab.BotTabSimple> _tabs)
+        {
+            if(lines == null)
+            {
+                lines = new List<Elements.LineHorisontal>();
+            }
+            for (int i = 0; i < LevleData.Count; i++)
+            {
+                Elements.LineHorisontal line = lines.Find(x => x.Value == LevleData[i].Value);
+                if (line != null)
+                {
+                }
+                else
+                {
+                    line = new Elements.LineHorisontal("line" + LevleData[i].Value.ToString(), "Prime", false)
+                    {
+                        Color = Color.Yellow,
+                        Value = LevleData[i].Value,
+                    };
+                    lines.Add(line);
+                    for (int ind=0; ind < _tabs.Count; ind++) {
+                        _tabs[ind].SetChartElement(line);
+                    }
+
+                }
+            }
+            for (int i = 0; i < lines.Count; i++)
+            {
+                levlel lvl = LevleData.Find(x => x.Value == lines[i].Value);
+                if (lvl == null)
+                {
+                    for (int ind = 0; ind < _tabs.Count; ind++)
+                    {
+                        _tabs[ind].DeleteChartElement(lines[i]);
+                    }
+                    lines.RemoveAt(i);
+                }
+                else
+                {
+                    lines[i].Refresh();
+                }
+
+            }
+
+            
+
         }
     }
 }
