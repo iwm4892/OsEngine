@@ -867,7 +867,7 @@ namespace OsEngine.OsTrader.Panels
             }
             if (!_TradeSessions.CanTrade)
             {
-                return false;
+            //    return false;
             }
             if (RiskOnDay <-1 * MaxStop.ValueDecimal / 100)
             {

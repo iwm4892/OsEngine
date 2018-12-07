@@ -47,7 +47,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             TypeIndicator = IndicatorOneCandleChartType.Line;
             ColorBase = Color.DodgerBlue;
             PaintOn = true;
-            linewidth = 0.01m;
+            linewidth = 0.02m;
         //    Atr = new Atr(false) {Lenght =30,};
             LevleData = new List<levlel>();
         }
