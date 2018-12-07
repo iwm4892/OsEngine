@@ -431,9 +431,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 return new ClasterData();
             }
-
-            ClasterData data = new ClasterData(trades);
-            return data;
+            return candles[index].ClasterData;
         }
 
 

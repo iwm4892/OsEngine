@@ -250,7 +250,7 @@ namespace OsEngine.OsTrader.Panels
         /// </summary>
         private StrategyParameterDecimal _Volume;
         /// <summary>
-        /// Индикатор кластер объемов по ценам
+        /// Индикатор кластера цен
         /// </summary>
         private Claster Claster;
         /// <summary>
@@ -261,10 +261,6 @@ namespace OsEngine.OsTrader.Panels
         /// Индикатор объема
         /// </summary>
         private Volume Volume_pattern;
-        /// <summary>
-        /// Индикатор кластер объемов по ценам
-        /// </summary>
-        private Claster Claster_pattern;
 
         /// <summary>
         /// Индикатор дельты
@@ -274,10 +270,6 @@ namespace OsEngine.OsTrader.Panels
         /// Индикатор объема
         /// </summary>
         private Volume Volume_delta;
-        /// <summary>
-        /// Индикатор кластер объемов по ценам
-        /// </summary>
-        private Claster Claster_delta;
 
         /// <summary>
         /// Индикатор уровней
@@ -369,6 +361,11 @@ namespace OsEngine.OsTrader.Panels
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
 
+            Claster = new Claster(name + "Claster", false);
+            Claster = (Claster)_tab.CreateCandleIndicator(Claster, "Prime");
+            Claster.Save();
+
+
             SessionAsia = CreateParameter("Торговать Азию", false);
             SessionEU = CreateParameter("Торговать Европу", false);
             SessionUSA = CreateParameter("Торговать Америку", false);
@@ -378,10 +375,6 @@ namespace OsEngine.OsTrader.Panels
             _TradeSessions = new TradeSessions(name + "_TradeSessions", false, GetListSessionTypes());
             _TradeSessions = (TradeSessions)_tab.CreateCandleIndicator(_TradeSessions, "Prime");
             _TradeSessions.Save();
-
-            Claster = new Claster(name + "_Claster", false);
-            Claster = (Claster)_tab.CreateCandleIndicator(Claster, "Prime");
-            Claster.Save();
 
             PriceLevleLine = new PriceLevleLine(name + "_PriceLevleLine", false);
             PriceLevleLine = (PriceLevleLine)_tab.CreateCandleIndicator(PriceLevleLine, "Prime");
@@ -434,9 +427,6 @@ namespace OsEngine.OsTrader.Panels
             Volume_pattern = (Volume)_tab_pattern.CreateCandleIndicator(Volume_pattern, "New2");
             Volume_pattern.Save();
 
-            Claster_pattern = new Claster(name + "_Claster", false);
-            Claster_pattern = (Claster)_tab_pattern.CreateCandleIndicator(Claster_pattern, "Prime");
-            Claster_pattern.Save();
 
             //график Дельты
             TabCreate(BotTabType.Simple);
@@ -452,9 +442,6 @@ namespace OsEngine.OsTrader.Panels
             Volume_delta = (Volume)_tab_delta.CreateCandleIndicator(Volume_delta, "New2");
             Volume_delta.Save();
 
-            Claster_delta = new Claster(name + "delta_Claster", false);
-            Claster_delta = (Claster)_tab_delta.CreateCandleIndicator(Claster_delta, "Prime");
-            Claster_delta.Save();
 
 
             //    lines = new List<LineHorisontal>();
@@ -579,7 +566,6 @@ namespace OsEngine.OsTrader.Panels
             List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
             indicators.Add(delta_delta);
             indicators.Add(Volume_delta);
-            indicators.Add(Claster_delta);
             // открытие позиций по патерну
             List<string> patterns = new List<string>();
             patterns.Add("Signal_pattern"); //сигналка
@@ -591,7 +577,6 @@ namespace OsEngine.OsTrader.Panels
             List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
             indicators.Add(delta_pattern);
             indicators.Add(Volume_pattern);
-            indicators.Add(Claster_pattern);
             // открытие позиций по патерну
             List<string> patterns = new List<string>();
             patterns.Add("Metla_pattern"); //сигналка

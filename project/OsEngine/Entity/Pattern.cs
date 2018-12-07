@@ -43,7 +43,7 @@ namespace OsEngine.Entity
     {
         public Volume Volume;
         public Delta Delta;
-        public Claster Claster;
+//        public Claster Claster;
 
 
         public Pattern()
@@ -87,7 +87,7 @@ namespace OsEngine.Entity
                 {
                     case "Delta": Delta = (Delta)indicators[i]; break;
                     case "Volume": Volume = (Volume)indicators[i]; break;
-                    case "Claster": Claster = (Claster)indicators[i]; break;
+                 //   case "Claster": Claster = (Claster)indicators[i]; break;
                 }
             }
 
