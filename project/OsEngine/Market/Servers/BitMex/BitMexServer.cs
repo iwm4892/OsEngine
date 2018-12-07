@@ -2,19 +2,17 @@
  *Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
 */
 
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Threading;
 using Newtonsoft.Json;
 using OsEngine.Entity;
 using OsEngine.Logging;
 using OsEngine.Market.Servers.BitMex.BitMexEntity;
 using OsEngine.Market.Servers.Entity;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Globalization;
-using System.IO;
-using System.Threading;
-
 
 namespace OsEngine.Market.Servers.BitMex
 {
@@ -58,7 +56,7 @@ namespace OsEngine.Market.Servers.BitMex
             ordersExecutor.IsBackground = true;
             ordersExecutor.Start();
 
-            _logMaster = new Log("BitMexServer");
+            _logMaster = new Log("BitMexServer", StartProgram.IsOsTrader);
             _logMaster.Listen(this);
 
             _serverStatusNead = ServerConnectStatus.Disconnect;
@@ -139,9 +137,23 @@ namespace OsEngine.Market.Servers.BitMex
         /// </summary>
         public void ShowDialog()
         {
-            BitMexServerUi ui = new BitMexServerUi(this, _logMaster);
-            ui.ShowDialog();
+            if (_ui == null)
+            {
+                _ui = new BitMexServerUi(this, _logMaster);
+                _ui.Show();
+                _ui.Closing += (sender, args) => { _ui = null; };
+            }
+            else
+            {
+                _ui.Activate();
+            }
+           
         }
+
+        /// <summary>
+        /// окно управления элемента
+        /// </summary>
+        private BitMexServerUi _ui;
 
         /// <summary>
         /// адрес сервера по которому нужно соединяться с сервером
@@ -1029,7 +1041,7 @@ namespace OsEngine.Market.Servers.BitMex
 
                     _candles = null;
 
-                    CandleSeries series = new CandleSeries(timeFrameBuilder, security)
+                    CandleSeries series = new CandleSeries(timeFrameBuilder, security,StartProgram.IsOsTrader)
                     {
                         CandlesAll = _candles
                     };
@@ -1467,8 +1479,8 @@ namespace OsEngine.Market.Servers.BitMex
                             {
                                 _bidAskToSend.Enqueue(new BidAskSender
                                 {
-                                    Ask = myDepth.Bids[0].Price,
-                                    Bid = myDepth.Asks[0].Price,
+                                    Bid= myDepth.Bids[0].Price,
+                                    Ask = myDepth.Asks[0].Price,
                                     Security = quotes.data[0].symbol != null
                                         ? GetSecurityForName(quotes.data[0].symbol)
                                         : null
@@ -1753,8 +1765,8 @@ namespace OsEngine.Market.Servers.BitMex
                 {
                     _bidAskToSend.Enqueue(new BidAskSender
                     {
-                        Ask = myDepth.Bids[0].Price,
-                        Bid = myDepth.Asks[0].Price,
+                        Bid = myDepth.Bids[0].Price,
+                        Ask = myDepth.Asks[0].Price,
                         Security = GetSecurityForName(myDepth.SecurityNameCode)
                     });
                 }
@@ -2137,7 +2149,9 @@ namespace OsEngine.Market.Servers.BitMex
 
                     if (myOrders[i].orderQty != null)
                     {
-                        order.Volume = (int)myOrders[i].orderQty;
+                        order.Volume = Convert.ToDecimal(myOrders[i].orderQty.Replace(",",
+                                CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator),
+                            CultureInfo.InvariantCulture);
                     }
 
                     order.Comment = myOrders[i].text;
@@ -2314,7 +2328,9 @@ namespace OsEngine.Market.Servers.BitMex
 
                             if (myOrder.data[i].orderQty != null)
                             {
-                                order.Volume = (int)myOrder.data[i].orderQty;
+                                order.Volume = Convert.ToDecimal(myOrder.data[i].orderQty.Replace(",",
+                                        CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator),
+                                    CultureInfo.InvariantCulture);
                             }
 
                             order.Comment = myOrder.data[i].text;
@@ -2411,7 +2427,7 @@ namespace OsEngine.Market.Servers.BitMex
 
                             if (needOrder != null)
                             {
-                                if (myOrder.data[i].workingIndicator)
+                                if (Convert.ToBoolean(myOrder.data[i].workingIndicator))
                                 {
                                     needOrder.State = OrderStateType.Activ;
                                 }
@@ -2432,14 +2448,25 @@ namespace OsEngine.Market.Servers.BitMex
                                 if (myOrder.data[i].ordStatus == "PartiallyFilled")
                                 {
                                     needOrder.State = OrderStateType.Patrial;
-                                    needOrder.VolumeExecute = myOrder.data[i].cumQty;
+                                    if (myOrder.data[i].cumQty != null)
+                                    {
+                                        needOrder.VolumeExecute = Convert.ToDecimal(myOrder.data[i].cumQty.Replace(",",
+                                                CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator),
+                                            CultureInfo.InvariantCulture);
+                                    }
+
                                     SendLogMessage("Апи. Ордер частично исполнен. Номер " + needOrder.NumberUser, LogMessageType.System);
                                 }
 
                                 if (myOrder.data[i].ordStatus == "Filled")
                                 {
                                     needOrder.State = OrderStateType.Done;
-                                    needOrder.VolumeExecute = myOrder.data[i].cumQty;
+                                    if (myOrder.data[i].cumQty != null)
+                                    {
+                                        needOrder.VolumeExecute = Convert.ToDecimal(myOrder.data[i].cumQty.Replace(",",
+                                                CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator),
+                                            CultureInfo.InvariantCulture);
+                                    }
                                     SendLogMessage("Апи. Ордер исполнен. Номер " + needOrder.NumberUser, LogMessageType.System);
                                 }
                                 if (_myTrades != null &&

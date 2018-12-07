@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using OsEngine.Entity;
 using OsEngine.Logging;
+using OsEngine.Market;
 using OsEngine.Market.Servers;
 using MessageBox = System.Windows.Forms.MessageBox;
 using Point = System.Drawing.Point;
@@ -45,7 +46,7 @@ namespace OsEngine.OsData
             _comboBoxTimeFrame = comboBoxTimeFrame;
             _rectangle = rectangle;
 
-            _log = new Log("OsDataMaster");
+            _log = new Log("OsDataMaster", StartProgram.IsOsData);
             _log.StartPaint(hostLog);
             _log.Listen(this);
 
@@ -61,12 +62,16 @@ namespace OsEngine.OsData
             ServerMaster.ServerCreateEvent += ServerMaster_ServerCreateEvent;
         }
 
-        void ServerMaster_ServerCreateEvent()
+        void ServerMaster_ServerCreateEvent(IServer server)
         {
             List<IServer> servers = ServerMaster.GetServers();
 
             for (int i = 0; i < servers.Count; i++)
             {
+                if (servers[i].ServerType == ServerType.Optimizer)
+                {
+                    continue;
+                }
                 servers[i].ConnectStatusChangeEvent -= ServerStatusChangeEvent;
                 servers[i].LogMessageEvent -= OsDataMaster_LogMessageEvent;
 

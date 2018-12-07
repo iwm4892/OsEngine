@@ -22,20 +22,11 @@ namespace OsEngine.Market.Servers
         ServerType ServerType { get;}
 
 //сервис
+
         /// <summary>
         /// показать настройки
         /// </summary>
         void ShowDialog();
-
-        /// <summary>
-        /// показать бумаги
-        /// </summary>
-        void ShowSecuritiesDialog();
-
-        /// <summary>
-        /// сохранить настройки в файл
-        /// </summary>
-        void Save();
 
 // подключение/отключение
         /// <summary>

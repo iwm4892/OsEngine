@@ -8,6 +8,7 @@ using System.Windows.Media;
 using OsEngine.Entity;
 using OsEngine.Journal;
 using OsEngine.Logging;
+using OsEngine.Market;
 using OsEngine.Market.Servers.Tester;
 using OsEngine.OsTrader.Panels;
 using MessageBox = System.Windows.MessageBox;
@@ -756,7 +757,7 @@ namespace OsEngine.OsOptimizer
             int countTab = 0;
             string nameBot = _master.StrategyName;
 
-            BotPanel bot = PanelCreator.GetStrategyForName(nameBot, "");
+            BotPanel bot = PanelCreator.GetStrategyForName(nameBot, "",StartProgram.IsOsOptimizer);
             if (bot == null)
             {
                 return;
@@ -909,7 +910,7 @@ namespace OsEngine.OsOptimizer
             int countTab = 0;
             string nameBot = _master.StrategyName;
 
-            BotPanel bot = PanelCreator.GetStrategyForName(nameBot, "");
+            BotPanel bot = PanelCreator.GetStrategyForName(nameBot, "", StartProgram.IsOsOptimizer);
             _master.TabsIndexNamesAndTimeFrames = new List<TabIndexEndTimeFrame>();
 
             if (bot == null)
@@ -1905,7 +1906,7 @@ namespace OsEngine.OsOptimizer
                     panelsJournal.Add(botPanel);
                 
 
-                _journalUi = new JournalUi(panelsJournal);
+                _journalUi = new JournalUi(panelsJournal,StartProgram.IsOsOptimizer);
                 _journalUi.Closed += _journalUi_Closed;
                 _journalUi.Show();
             }

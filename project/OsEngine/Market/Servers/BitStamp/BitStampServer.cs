@@ -2,17 +2,16 @@
  *Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
 */
 
-using OsEngine.Entity;
-using OsEngine.Logging;
-using OsEngine.Market.Servers.Entity;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
+using OsEngine.Entity;
+using OsEngine.Logging;
 using OsEngine.Market.Servers.BitStamp.BitStampEntity;
-
+using OsEngine.Market.Servers.Entity;
 
 namespace OsEngine.Market.Servers.BitStamp
 {
@@ -56,7 +55,7 @@ namespace OsEngine.Market.Servers.BitStamp
             ordersExecutor.IsBackground = true;
             ordersExecutor.Start();
 
-            _logMaster = new Log("BitStampServer");
+            _logMaster = new Log("BitStampServer", StartProgram.IsOsTrader);
             _logMaster.Listen(this);
 
             _serverStatusNead = ServerConnectStatus.Disconnect;
@@ -116,9 +115,23 @@ namespace OsEngine.Market.Servers.BitStamp
         /// </summary>
         public void ShowDialog()
         {
-            BitStampServerUi ui = new BitStampServerUi(this, _logMaster);
-            ui.ShowDialog();
+            if (_ui == null)
+            {
+                _ui = new BitStampServerUi(this, _logMaster);
+                _ui.Show();
+                _ui.Closing += (sender, args) => { _ui = null; };
+            }
+            else
+            {
+                _ui.Activate();
+            }
+            
         }
+
+        /// <summary>
+        /// окно управления элемента
+        /// </summary>
+        private BitStampServerUi _ui;
 
         /// <summary>
         /// публичный ключ пользователя
@@ -962,7 +975,7 @@ namespace OsEngine.Market.Servers.BitStamp
                         return null;
                     }
 
-                    CandleSeries series = new CandleSeries(timeFrameBuilder, security);
+                    CandleSeries series = new CandleSeries(timeFrameBuilder, security, StartProgram.IsOsTrader);
 
                     _clientBitStamp.SubscribleTradesAndDepths(security);
 

@@ -12,7 +12,7 @@ using OsEngine.Charts.CandleChart.Elements;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Entity;
 using OsEngine.Logging;
-using OsEngine.Market.Servers;
+using OsEngine.Market;
 using OsEngine.OsTrader.Panels.PanelsGui;
 using OsEngine.OsTrader.Panels.SingleRobots;
 using OsEngine.OsTrader.Panels.Tab;
@@ -73,6 +73,7 @@ namespace OsEngine.OsTrader.Panels
             return result;
         }
 
+<<<<<<< HEAD
         public static BotPanel GetStrategyForName(string nameClass, string name)
         {
 
@@ -1013,25 +1014,44 @@ namespace OsEngine.OsTrader.Panels
         }
 
         private void DeltaStepCheck()
+=======
+        public static BotPanel GetStrategyForName(string nameClass, string name, StartProgram startProgram)
+>>>>>>> pr/4
         {
             if (maVolume.Values.Count == 0)
             {
+<<<<<<< HEAD
                 return;
+=======
+                bot = new PatternTrader(name, startProgram);
+>>>>>>> pr/4
             }
             if (_tab_delta.Connector._timeFrameBuilder.DeltaPeriods != (int)maVolume.Values[maVolume.Values.Count-1]/6)
             {
+<<<<<<< HEAD
                 _tab_delta.Connector._timeFrameBuilder.DeltaPeriods = (int)maVolume.Values[maVolume.Values.Count - 1] / 6;
+=======
+                bot = new HighFrequencyTrader(name, startProgram);
+>>>>>>> pr/4
             }
         }
         private decimal GetPrice(decimal price)
         {
             if (DepoCurrency.ValueString == "Currency2")
             {
+<<<<<<< HEAD
                 return price;
+=======
+                bot = new BotWhithTwoTimeFrame(name, startProgram);
+>>>>>>> pr/4
             }
             else
             {
+<<<<<<< HEAD
                 return 1 / price;
+=======
+                bot = new PivotPointsRobot(name, startProgram);
+>>>>>>> pr/4
             }
         }
         private void OpenPosition(Side side,decimal price)
@@ -1042,14 +1062,22 @@ namespace OsEngine.OsTrader.Panels
             LastStop = GetStopLevel(side, price);
             if (LastStop == 0)
             {
+<<<<<<< HEAD
                 return;
+=======
+                bot = new StrategyEngineCandle(name, startProgram);
+>>>>>>> pr/4
             }
             decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)/GetPrice(price);
 
             decimal StopSize = Math.Abs((LastStop - price) / price);
             if (StopSize <=0)
             {
+<<<<<<< HEAD
                 return;
+=======
+                bot = new StrategyBillWilliams(name, startProgram);
+>>>>>>> pr/4
             }
             _Vol = (MaxStop.ValueDecimal/100) * VollAll / (StopSize);
 
@@ -1058,16 +1086,28 @@ namespace OsEngine.OsTrader.Panels
             
             if (_Vol > VollAll)
             {
+<<<<<<< HEAD
                 _Vol= VollAll;
+=======
+                bot = new StrategyLevermor(name, startProgram);
+>>>>>>> pr/4
             }
             
             if (side == Side.Buy)
             {
+<<<<<<< HEAD
                 _tab.BuyAtMarket(_Vol);
+=======
+                bot = new MarketMakerBot(name, startProgram);
+>>>>>>> pr/4
             }
             else
             {
+<<<<<<< HEAD
                 _tab.SellAtMarket(_Vol);
+=======
+                bot = new StrategyBollinger(name, startProgram);
+>>>>>>> pr/4
             }
 
 
@@ -1077,6 +1117,7 @@ namespace OsEngine.OsTrader.Panels
         {
             if (!ValidateParams())
             {
+<<<<<<< HEAD
                 return;
             }
             /*
@@ -1084,11 +1125,15 @@ namespace OsEngine.OsTrader.Panels
             if (openPositions != null && openPositions.Count > 0)
             {
                 return;
+=======
+                bot = new PairTraderSimple(name, startProgram);
+>>>>>>> pr/4
             }
 
             List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x =>x.levlSide==TradeSide);
             if (lvl != null && lvl.Count>2)
             {
+<<<<<<< HEAD
                 if(TradeSide == Side.Buy
                     && lvl[lvl.Count-1].Value> lvl[lvl.Count - 2].Value)
                 {
@@ -1128,26 +1173,49 @@ namespace OsEngine.OsTrader.Panels
             if (Regime.ValueString == "Off")
             {
                 return false;
+=======
+                bot = new RsiTrade(name, startProgram);
+>>>>>>> pr/4
             }
             if (_tab.CandlesAll == null || _tab.CandlesAll.Count < 2 )
             {
+<<<<<<< HEAD
                 return false;
+=======
+                bot = new StochasticTrade(name, startProgram);
+>>>>>>> pr/4
             }
             if (LastSessionEndPrice == 0)
             {
+<<<<<<< HEAD
                 return false;
+=======
+                bot = new BollingerTrade(name, startProgram);
+>>>>>>> pr/4
             }
             if (!_TradeSessions.CanTrade)
             {
+<<<<<<< HEAD
             //    return false;
+=======
+                bot = new TrixTrade(name, startProgram);
+>>>>>>> pr/4
             }
             if (RiskOnDay <-1 * MaxStop.ValueDecimal / 100)
             {
+<<<<<<< HEAD
                 return false;
+=======
+                bot = new CciTrade(name, startProgram);
+>>>>>>> pr/4
             }
             if (_TradeSessions.MinSessionPrice==0 || (_TradeSessions.MaxSessionPrice - _TradeSessions.MinSessionPrice) / _TradeSessions.MinSessionPrice < MaxStop.ValueDecimal / 100)
             {
+<<<<<<< HEAD
                 return false;
+=======
+                bot = new ParabolicSarTrade(name, startProgram);
+>>>>>>> pr/4
             }
 
             return true;
@@ -1156,7 +1224,11 @@ namespace OsEngine.OsTrader.Panels
         {
             if(_tab.PositionsOpenAll == null)
             {
+<<<<<<< HEAD
                 return true;
+=======
+                bot = new PriceChannelTrade(name, startProgram);
+>>>>>>> pr/4
             }
             return _tab.PositionsOpenAll.Count == 0;
         }
@@ -1165,12 +1237,17 @@ namespace OsEngine.OsTrader.Panels
             List<Position> openPositions = _tab.PositionsOpenAll;
             if (CanOpenPosition())
             {
+<<<<<<< HEAD
                 return;
+=======
+                bot = new MacdTrade(name, startProgram);
+>>>>>>> pr/4
             }
           
 
             for (int i = 0; i < openPositions.Count && candles.Count > 1; i++)
             {
+<<<<<<< HEAD
                 //    decimal localStop = GetStop(openPositions[i].Direction, candles[candles.Count-1].Close);
                 if (openPositions[i].EntryPrice!=0 && Math.Abs((candles[candles.Count-1].Close - openPositions[i].EntryPrice) / openPositions[i].EntryPrice) > 2 * openPositions[i].fee)
                 {
@@ -1200,6 +1277,9 @@ namespace OsEngine.OsTrader.Panels
                 }
                 */
                 
+=======
+                bot = new BbPowerTrade(name, startProgram);
+>>>>>>> pr/4
             }
 
         }
@@ -1217,47 +1297,71 @@ namespace OsEngine.OsTrader.Panels
             maxVolumes.Sort((a, b) => decimal.Compare(a, b));
             if (side == Side.Buy)
             {
+<<<<<<< HEAD
                 List<decimal> lvl = maxVolumes.FindAll(x => x < price);
                 if(lvl !=null && lvl.Count>1)
                 {
                     return lvl[lvl.Count - 2] - Slipage;
                 }
+=======
+                bot = new RviTrade(name, startProgram);
+>>>>>>> pr/4
             }
             if (side == Side.Sell)
             {
+<<<<<<< HEAD
                 List<decimal> lvl = maxVolumes.FindAll(x => x > price);
                 if (lvl != null && lvl.Count > 1)
                 {
                     return lvl[1]+ Slipage;
                 }
+=======
+                bot = new WilliamsRangeTrade(name, startProgram);
+>>>>>>> pr/4
             }
             /*
             if (side == Side.Buy)
             {
+<<<<<<< HEAD
                 List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price < price);
                 lvls.Sort((a, b) => decimal.Compare(a.MaxData.Price, b.MaxData.Price));
                 if (lvls != null && lvls.Count > 1)
                 {
                     return lvls[lvls.Count - 2].MaxData.Price;
                 }
+=======
+                bot = new MacdTrail(name, startProgram);
+>>>>>>> pr/4
             }
             if (side == Side.Sell)
             {
+<<<<<<< HEAD
                 List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price > price);
                 lvls.Sort((a, b) => decimal.Compare(a.MaxData.Price, b.MaxData.Price));
                 if (lvls != null && lvls.Count > 1)
                 {
                     return lvls[1].MaxData.Price;
                 }
+=======
+                bot = new SmaStochastic(name, startProgram);
+>>>>>>> pr/4
             }
             */
             if(side == Side.Buy)
             {
+<<<<<<< HEAD
                 return price - price * MaxStop.ValueDecimal/100;
+=======
+                bot = new MomentumMacd(name, startProgram);
+>>>>>>> pr/4
             }
             else
             {
+<<<<<<< HEAD
                 return price + price * MaxStop.ValueDecimal/100;
+=======
+                bot = new PinBarTrade(name, startProgram);
+>>>>>>> pr/4
             }
             
         }
@@ -1266,6 +1370,7 @@ namespace OsEngine.OsTrader.Panels
 
             if (side == Side.Buy)
             {
+<<<<<<< HEAD
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < price);//&& x.levlSide == side);
                 if (lvl != null) {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
@@ -1280,9 +1385,13 @@ namespace OsEngine.OsTrader.Panels
 
                 }
 
+=======
+                bot = new PairRsiTrade(name, startProgram);
+>>>>>>> pr/4
             }
             else
             {
+<<<<<<< HEAD
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > price);// && x.levlSide == side);
                 if (lvl != null)
                 {
@@ -1319,15 +1428,22 @@ namespace OsEngine.OsTrader.Panels
                     lvl.Sort((a, b) =>decimal.Compare(a.Value,b.Value));
                     _tab.CloseAtProfit(obj, lvl[0].Value , lvl[0].Value + fee + lvl[0].Value*obj.OpenVolume*obj.fee);
                 }
+=======
+                bot = new Robot(name, startProgram);
+>>>>>>> pr/4
             }
             else
             {
+<<<<<<< HEAD
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < obj.EntryPrice);
                 if (lvl != null && lvl.Count > 0)
                 {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
                     _tab.CloseAtProfit(obj, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value -fee - lvl[lvl.Count - 1].Value * obj.OpenVolume * obj.fee);
                 }
+=======
+                bot = new FirstBot(name, startProgram);
+>>>>>>> pr/4
             }
             */
         }
@@ -1336,11 +1452,16 @@ namespace OsEngine.OsTrader.Panels
         {
             if (!CanOpenPosition())
             {
+<<<<<<< HEAD
                 return;
+=======
+                bot = new TwoLegArbitrage(name, startProgram);
+>>>>>>> pr/4
             }
             PriceLevleLine.levlel lvl = PriceLevleLine.LevleData.FindLast(x => x.levlSide == TradeSide);
             if(lvl != null)
             {
+<<<<<<< HEAD
                 if (TradeSide== Side.Buy)
                 {
                     // покупаем по возвращению цены
@@ -1352,11 +1473,15 @@ namespace OsEngine.OsTrader.Panels
                     _tab.SellAtStop(_Volume.ValueDecimal, lvl.Value, lvl.Value, StopActivateType.HigherOrEqual);
                 }
 
+=======
+                bot = new OneLegArbitration(name, startProgram);
+>>>>>>> pr/4
             }
 
             lvl = PriceLevleLine.LevleData.FindLast(x => x.levlSide != TradeSide);
             if (lvl != null)
             {
+<<<<<<< HEAD
                 if (TradeSide == Side.Buy)
                 {
                     // покупаем попробитию последнего максимума
@@ -1367,6 +1492,9 @@ namespace OsEngine.OsTrader.Panels
                     // Проадем попробитию последнего минимума
                     _tab.SellAtStop(_Volume.ValueDecimal, lvl.Value - lvl.Value*0.005m, lvl.Value, StopActivateType.HigherOrEqual);
                 }
+=======
+                bot = new ThreeSoldier(name, startProgram);
+>>>>>>> pr/4
             }
 
         }
@@ -1380,6 +1508,7 @@ namespace OsEngine.OsTrader.Panels
             //LastSessionEndPrice = TradeSessions.LastSessionEndPrice(_tab.CandlesAll, candles[candles.Count - 1].TimeStart);
             if (LastSessionEndPrice > 0)
             {
+<<<<<<< HEAD
                 Side oldTradeSide = TradeSide;
                 if (LastSessionEndPrice < candles[candles.Count - 1].Open)
                 {
@@ -1393,9 +1522,13 @@ namespace OsEngine.OsTrader.Panels
                 {
                     _tab.SetNewLogMessage("Направление торговли " + TradeSide, LogMessageType.Signal);
                 }
+=======
+                bot = new BollingerOutburst(name, startProgram);
+>>>>>>> pr/4
             }
             for (int i = _tab.PositionsCloseAll.Count - 1; i >= 0; i--)
             {
+<<<<<<< HEAD
                 if(candles[candles.Count - 1].TimeStart.DayOfYear!= candles[candles.Count - 2].TimeStart.DayOfYear)
                 {
                     RiskOnDay = 0;
@@ -1415,24 +1548,39 @@ namespace OsEngine.OsTrader.Panels
                 {
                     break;
                 }
+=======
+                bot = new RsiContrtrend(name, startProgram);
+>>>>>>> pr/4
             }
             ///Отрисовка линий
             PriceLevleLine.PaintLevleData(TabsSimple);
 
             if (!ValidateParams())
             {
+<<<<<<< HEAD
                 return;
+=======
+                bot = new PriceChannelVolatility(name, startProgram);
+>>>>>>> pr/4
             }
 
             LogicClosePositions(candles);
             if (!CanOpenPosition())
             {
+<<<<<<< HEAD
                 return;
+=======
+                bot = new PriceChannelBreak(name, startProgram);
+>>>>>>> pr/4
             }
             // если трендовый день то открываемся сразу
             if(_TradeSessions.TypeOfDay== TradeSessions.DayType.TrendDay)
             {
+<<<<<<< HEAD
              //   OpenPosition(_TradeSessions.TradeSide[0], candles[candles.Count - 1].Close);
+=======
+                bot = new PairTraderSpreadSma(name, startProgram);
+>>>>>>> pr/4
             }
             //OpenAtLevel();
         }
@@ -1455,8 +1603,8 @@ namespace OsEngine.OsTrader.Panels
         //На нашем Ютуб канале есть видео о том как я делаю этого бота:https://www.youtube.com/playlist?list=PL76DtREkiCATe28yPbAT_5em1JqA4xEiB
         //Однако там не всё сделано, т.к. я кое-что доработал для реальной торговли
 
-        public HighFrequencyTrader(string name)
-            : base(name)
+        public HighFrequencyTrader(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -1552,7 +1700,7 @@ namespace OsEngine.OsTrader.Panels
                 return;
             }
 
-            if (ServerMaster.StartProgram == ServerStartProgramm.IsOsTrader &&
+            if (StartProgram == StartProgram.IsOsTrader &&
                 _lastCheckTime.AddSeconds(1) > DateTime.Now)
             { // в реальной торговле, проверяем стакан раз в секунду
                 return;
@@ -1582,7 +1730,7 @@ namespace OsEngine.OsTrader.Panels
                 positionBuy.State != PositionStateType.Open &&
                 positionBuy.State != PositionStateType.Closing)
             {
-                if (ServerMaster.StartProgram == ServerStartProgramm.IsOsTrader)
+                if (StartProgram == StartProgram.IsOsTrader)
                 { // в реальной торговле отправляем позицию на отзыв в массив, 
                     // который обрабатывается отдельным потоком, ожидая когда у ордеров позиции
                     // вернутся номера ордеров, прежде чем мы их будем пытаться отозвать
@@ -1619,7 +1767,7 @@ namespace OsEngine.OsTrader.Panels
                 positionSell.State != PositionStateType.Open &&
                 positionSell.State != PositionStateType.Closing)
             {
-                if (ServerMaster.StartProgram == ServerStartProgramm.IsOsTrader)
+                if (StartProgram == StartProgram.IsOsTrader)
                 {
                     _positionsToClose.Add(positionSell);
                     // в реальной торговле отправляем позицию на отзыв в массив, 
@@ -1664,7 +1812,7 @@ namespace OsEngine.OsTrader.Panels
                 {
                     continue;
                 }
-                if (ServerMaster.StartProgram == ServerStartProgramm.IsOsTrader)
+                if (StartProgram == StartProgram.IsOsTrader)
                 {
                     // в реальной торговле отправляем позицию на отзыв в массив, 
                     // который обрабатывается отдельным потоком, ожидая когда у ордеров позиции
@@ -1739,8 +1887,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public StrategyBillWilliams(string name)
-            : base(name)
+        public StrategyBillWilliams(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -1903,7 +2051,7 @@ namespace OsEngine.OsTrader.Panels
                 return;
             }
 
-            if (ServerMaster.StartProgram == ServerStartProgramm.IsOsTrader
+            if (StartProgram == StartProgram.IsOsTrader
                 && DateTime.Now.Hour < 10)
             {
                 return;
@@ -2073,8 +2221,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public StrategyLevermor(string name)
-            : base(name)
+        public StrategyLevermor(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -2227,7 +2375,7 @@ namespace OsEngine.OsTrader.Panels
                 return;
             }
 
-            if (ServerMaster.StartProgram == ServerStartProgramm.IsOsTrader
+            if (StartProgram == StartProgram.IsOsTrader
                 && DateTime.Now.Hour < 10)
             {
                 return;
@@ -2415,8 +2563,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public RviTrade(string name)
-            : base(name)
+        public RviTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -2597,8 +2745,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public TwoLegArbitrage(string name)
-            : base(name)
+        public TwoLegArbitrage(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Index);
             _tab1 = TabsIndex[0];
@@ -2823,8 +2971,8 @@ namespace OsEngine.OsTrader.Panels
             ui.ShowDialog();
         }
 
-        public Robot(string name)
-            : base(name)
+        public Robot(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -2886,8 +3034,8 @@ namespace OsEngine.OsTrader.Panels
             MessageBox.Show("У данной стратегии пока нет настроек");
         }
 
-        public FirstBot(string name)
-            : base(name)
+        public FirstBot(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -2937,7 +3085,8 @@ namespace OsEngine.OsTrader.Panels
 
     public class BotWhithTwoTimeFrame : BotPanel
     {
-        public BotWhithTwoTimeFrame(string name) : base(name)
+        public BotWhithTwoTimeFrame(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             TabsSimple[0].CandleFinishedEvent += BotWhithTwoTimeFrame_CandleFinishedEvent;
@@ -3026,8 +3175,8 @@ namespace OsEngine.OsTrader.Panels
         /// <param name="_ma">MovingAverage</param>
         /// <param name="Slipage">Проскальзывание</param>
         /// <param name="VolumeFix">Объем для первого входа</param>
-        public OneLegArbitration(string name)
-            : base(name)
+        public OneLegArbitration(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Index);
             _tab1 = TabsIndex[0];
@@ -3291,8 +3440,8 @@ namespace OsEngine.OsTrader.Panels
         /// <param name="minHeightSoldier">минимальный размер тела свечи в паттрене</param>
         /// <param name="procHeightSto">процент от общей высоты паттрена на стоплос от точки входа</param>
         /// <param name="procHeightTake">процент от общей высоты паттрена на тейкпрофит от точки входа</param>
-        public ThreeSoldier(string name)
-            : base(name)
+        public ThreeSoldier(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -3551,8 +3700,8 @@ namespace OsEngine.OsTrader.Panels
         /// <param name="_bollinger">BollingerBands</param>
         /// <param name="Slipage">Проскальзывание</param>
         /// <param name="VolumeFix">Объем для первого входа</param>
-        public BollingerOutburst(string name)
-            : base(name)
+        public BollingerOutburst(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -3801,8 +3950,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public PriceChannelBreak(string name)
-            : base(name)
+        public PriceChannelBreak(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -4036,8 +4185,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public PriceChannelVolatility(string name)
-            : base(name)
+        public PriceChannelVolatility(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -4383,8 +4532,8 @@ namespace OsEngine.OsTrader.Panels
         /// <param name="_rsi">RSI</param>
         /// <param name="Slipage">Проскальзывание</param>
         /// <param name="VolumeFix">Объем для первого входа</param>
-        public RsiContrtrend(string name)
-            : base(name)
+        public RsiContrtrend(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -4665,8 +4814,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public StrategyEngineCandle(string name)
-            : base(name)
+        public StrategyEngineCandle(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             //создание вкладки
             TabCreate(BotTabType.Simple);
@@ -4698,8 +4847,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public PairTraderSimple(string name)
-            : base(name)
+        public PairTraderSimple(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab1 = TabsSimple[0];
@@ -5122,8 +5271,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public PairTraderSpreadSma(string name)
-            : base(name)
+        public PairTraderSpreadSma(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab1 = TabsSimple[0];
@@ -5378,7 +5527,7 @@ namespace OsEngine.OsTrader.Panels
                 return;
             }
 
-            if (!(ServerMaster.StartProgram == ServerStartProgramm.IsTester) && DateTime.Now.Hour < 10)
+            if (StartProgram == StartProgram.IsOsTrader && DateTime.Now.Hour < 10)
             {
                 return;
             }
@@ -5496,8 +5645,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public RsiTrade(string name)
-            : base(name)
+        public RsiTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -5784,8 +5933,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public StochasticTrade(string name)
-            : base(name)
+        public StochasticTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -6062,8 +6211,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public BollingerTrade(string name)
-            : base(name)
+        public BollingerTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -6305,8 +6454,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public TrixTrade(string name)
-            : base(name)
+        public TrixTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -6551,8 +6700,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public CciTrade(string name)
-            : base(name)
+        public CciTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -6822,8 +6971,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public ParabolicSarTrade(string name)
-            : base(name)
+        public ParabolicSarTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -7064,8 +7213,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public PriceChannelTrade(string name)
-            : base(name)
+        public PriceChannelTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -7309,8 +7458,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public BbPowerTrade(string name)
-            : base(name)
+        public BbPowerTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -7561,8 +7710,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public MacdTrade(string name)
-            : base(name)
+        public MacdTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -7797,8 +7946,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public WilliamsRangeTrade(string name)
-            : base(name)
+        public WilliamsRangeTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -8068,8 +8217,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public MacdTrail(string name)
-            : base(name)
+        public MacdTrail(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -8321,8 +8470,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public SmaStochastic(string name)
-            : base(name)
+        public SmaStochastic(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -8584,8 +8733,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public MomentumMacd(string name)
-            : base(name)
+        public MomentumMacd(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -8836,8 +8985,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public PinBarTrade(string name)
-            : base(name)
+        public PinBarTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
@@ -9086,8 +9235,8 @@ namespace OsEngine.OsTrader.Panels
         /// <summary>
         /// конструктор
         /// </summary>
-        public PairRsiTrade(string name)
-            : base(name)
+        public PairRsiTrade(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab1 = TabsSimple[0];
@@ -9356,7 +9505,8 @@ namespace OsEngine.OsTrader.Panels
         /// конструктор
         /// </summary>
         /// <param name="name"></param>
-        public PivotPointsRobot(string name) : base(name)
+        public PivotPointsRobot(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
