@@ -63,18 +63,18 @@ namespace OsEngine.OsTrader.Panels
             result.Add("PriceChannelVolatility");
             result.Add("RsiContrtrend");
             result.Add("PairTraderSpreadSma");
-            result.Add("RedSwift");
             // роботы с инструкцией по созданию
 
             result.Add("Robot");
             result.Add("FirstBot");
+
+            //++++
             result.Add("PriceLavelBot");
 
             return result;
         }
 
-<<<<<<< HEAD
-        public static BotPanel GetStrategyForName(string nameClass, string name)
+        public static BotPanel GetStrategyForName(string nameClass, string name, StartProgram startProgram)
         {
 
             BotPanel bot = null;
@@ -82,306 +82,163 @@ namespace OsEngine.OsTrader.Panels
 
             if (nameClass == "PatternTrader")
             {
-                bot = new PatternTrader(name);
+                bot = new PatternTrader(name, startProgram);
             }
             if (nameClass == "HighFrequencyTrader")
             {
-                bot = new HighFrequencyTrader(name);
+                bot = new HighFrequencyTrader(name, startProgram);
             }
             if (nameClass == "TwoTimeFrameBot")
             {
-                bot = new BotWhithTwoTimeFrame(name);
+                bot = new BotWhithTwoTimeFrame(name, startProgram);
             }
             if (nameClass == "PivotPointsRobot")
             {
-                bot = new PivotPointsRobot(name);
+                bot = new PivotPointsRobot(name, startProgram);
             }
             if (nameClass == "Engine")
             {
-                bot = new StrategyEngineCandle(name);
+                bot = new StrategyEngineCandle(name, startProgram);
             }
             if (nameClass == "Williams Band")
             {
-                bot = new StrategyBillWilliams(name);
+                bot = new StrategyBillWilliams(name, startProgram);
             }
             if (nameClass == "Levermor")
             {
-                bot = new StrategyLevermor(name);
+                bot = new StrategyLevermor(name, startProgram);
             }
             if (nameClass == "MarketMakerBot")
             {
-                bot = new MarketMakerBot(name);
+                bot = new MarketMakerBot(name, startProgram);
             }
             if (nameClass == "Bollinger")
             {
-                bot = new StrategyBollinger(name);
+                bot = new StrategyBollinger(name, startProgram);
             }
             if (nameClass == "PairTraderSimple")
             {
-                bot = new PairTraderSimple(name);
+                bot = new PairTraderSimple(name, startProgram);
             }
 
             // под релиз
             if (nameClass == "RsiTrade")
             {
-                bot = new RsiTrade(name);
+                bot = new RsiTrade(name, startProgram);
             }
             if (nameClass == "StochasticTrade")
             {
-                bot = new StochasticTrade(name);
+                bot = new StochasticTrade(name, startProgram);
             }
             if (nameClass == "BollingerTrade")
             {
-                bot = new BollingerTrade(name);
+                bot = new BollingerTrade(name, startProgram);
             }
             if (nameClass == "TRIXTrade")
             {
-                bot = new TrixTrade(name);
+                bot = new TrixTrade(name, startProgram);
             }
             if (nameClass == "CCITrade")
             {
-                bot = new CciTrade(name);
+                bot = new CciTrade(name, startProgram);
             }
             if (nameClass == "ParabolicSarTrade")
             {
-                bot = new ParabolicSarTrade(name);
+                bot = new ParabolicSarTrade(name, startProgram);
             }
             if (nameClass == "PriceChannelTrade")
             {
-                bot = new PriceChannelTrade(name);
+                bot = new PriceChannelTrade(name, startProgram);
             }
             if (nameClass == "MACDTrade")
             {
-                bot = new MacdTrade(name);
+                bot = new MacdTrade(name, startProgram);
             }
             if (nameClass == "BBPowerTrade")
             {
-                bot = new BbPowerTrade(name);
+                bot = new BbPowerTrade(name, startProgram);
             }
             if (nameClass == "RviTrade")
             {
-                bot = new RviTrade(name);
+                bot = new RviTrade(name, startProgram);
             }
             if (nameClass == "WilliamsRangeTrade")
             {
-                bot = new WilliamsRangeTrade(name);
+                bot = new WilliamsRangeTrade(name, startProgram);
             }
             if (nameClass == "MacdTrail")
             {
-                bot = new MacdTrail(name);
+                bot = new MacdTrail(name, startProgram);
             }
             if (nameClass == "SmaStochastic")
             {
-                bot = new SmaStochastic(name);
+                bot = new SmaStochastic(name, startProgram);
             }
             if (nameClass == "MomentumMACD")
             {
-                bot = new MomentumMacd(name);
+                bot = new MomentumMacd(name, startProgram);
             }
             if (nameClass == "PinBarTrade")
             {
-                bot = new PinBarTrade(name);
+                bot = new PinBarTrade(name, startProgram);
             }
             if (nameClass == "PairRsiTrade")
             {
-                bot = new PairRsiTrade(name);
+                bot = new PairRsiTrade(name, startProgram);
             }
             if (nameClass == "Robot")
             {
-                bot = new Robot(name);
+                bot = new Robot(name, startProgram);
             }
             if (nameClass == "FirstBot")
             {
-                bot = new FirstBot(name);
+                bot = new FirstBot(name, startProgram);
             }
 
             if (nameClass == "TwoLegArbitrage")
             {
-                bot = new TwoLegArbitrage(name);
+                bot = new TwoLegArbitrage(name, startProgram);
             }
             if (nameClass == "OneLegArbitration")
             {
-                bot = new OneLegArbitration(name);
+                bot = new OneLegArbitration(name, startProgram);
             }
             if (nameClass == "ThreeSoldier")
             {
-                bot = new ThreeSoldier(name);
+                bot = new ThreeSoldier(name, startProgram);
             }
             if (nameClass == "BollingerOutburst")
             {
-                bot = new BollingerOutburst(name);
+                bot = new BollingerOutburst(name, startProgram);
             }
             if (nameClass == "RsiContrtrend")
             {
-                bot = new RsiContrtrend(name);
+                bot = new RsiContrtrend(name, startProgram);
             }
             if (nameClass == "PriceChannelVolatility")
             {
-                bot = new PriceChannelVolatility(name);
+                bot = new PriceChannelVolatility(name, startProgram);
             }
             if (nameClass == "PriceChannelBreak")
             {
-                bot = new PriceChannelBreak(name);
+                bot = new PriceChannelBreak(name, startProgram);
             }
             if (nameClass == "PairTraderSpreadSma")
             {
-                bot = new PairTraderSpreadSma(name);
+                bot = new PairTraderSpreadSma(name, startProgram);
             }
-            if (nameClass == "RedSwift")
+            //++++
+            if (nameClass== "PriceLavelBot")
             {
-                bot = new RedSwift(name);
+                bot = new PriceLavelBot(name, startProgram);
             }
-            if (nameClass == "PriceLavelBot")
-            {
-                bot = new PriceLavelBot(name);
-            }
-
-
 
             return bot;
-        }
-    }
-    public class RedSwift : BotPanel
-    {
-        private BotTabSimple _tab;
-        // начальное значение стопа(при выставлении ордера)
-        //public StrategyParameterInt _startStop;
-        public Decimal _startStop;
-        // объем лота
-        public Decimal _volume;
-
-        public override string GetNameStrategyType()
-        {
-            return "RedSwift";
-        }
-
-        public override void ShowIndividualSettingsDialog()
-        {
-            MessageBox.Show("У данной стратегии пока нет настроек");
-        }
-
-        public RedSwift(string name)
-            : base(name)
-        {
-            TabCreate(BotTabType.Simple);
-            _tab = TabsSimple[0];
-
-            //   _volume = CreateParameter("_volume", 1, 1m, 100, 2);
-            //   _startStop = CreateParameter("_startStop", 5, 5, 15, 1);
-
-            _tab.CandleFinishedEvent += TradeLogic;
-            _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
-            _tab.PositionClosingFailEvent += _tab_PositionClosingFailEvent;
-            _tab.PositionOpeningFailEvent += _tab_PositionOpeningFailEvent;
-            _tab.PositionClosingSuccesEvent += _tab_PositionOpeningSuccesEvent;
-            _volume = 10;
-            _startStop = 10;
-        }
-
-        private void _tab_PositionOpeningFailEvent(Position obj)
-        {
-            /*
-            if (obj.OpenActiv)
-            {
-                return;
-            }
-            if (obj.Direction== Side.Buy)
-            {
-                _tab.BuyAtMarket(_volume);
-            }
-            else
-            {
-                _tab.SellAtMarket(_volume);
-            }
-            */
-
-        }
-
-        private void _tab_PositionClosingFailEvent(Position obj)
-        {
-            /*
-            if (obj.State != PositionStateType.Closing)
-            {
-                return;
-            }
-               _tab.CloseAtMarket(obj, obj.OpenVolume);
-        */
-        }
-
-        private void _tab_PositionOpeningSuccesEvent(Position obj)
-        {
-            //выставим новые стопы
-            if (obj.Direction == Side.Buy)
-            {
-                _tab.CloseAtStop(obj, obj.EntryPrice - Convert.ToDecimal(_startStop), obj.EntryPrice - Convert.ToDecimal(_startStop));
-            }
-            else
-            {
-                _tab.CloseAtStop(obj, obj.EntryPrice + Convert.ToDecimal(_startStop), obj.EntryPrice + Convert.ToDecimal(_startStop));
-            }
-        }
-
-
-
-        private void TradeLogic(List<Candle> candles)
-        {
-            // 1. если свечей меньше чем 5 - выходим из метода.
-            if (candles.Count < 2)
-            {
-                return;
-            }
-
-            // 2. если уже есть открытые позиции – закрываем и выходим.
-            if (_tab.PositionsOpenAll != null && _tab.PositionsOpenAll.Count != 0)
-            {
-                //   _tab.CloseAllAtMarket();
-                //   return;
-
-                if (_tab.PositionOpenLong != null && _tab.PositionOpenLong.Count != 0 && candles[candles.Count - 2].Close > candles[candles.Count - 1].Close)
-                {
-                    _tab.CloseAllAtMarket();
-                    return;
-                }
-                if (_tab.PositionOpenShort != null && _tab.PositionOpenShort.Count != 0 && candles[candles.Count - 2].Close < candles[candles.Count - 1].Close)
-                {
-                    _tab.CloseAllAtMarket();
-                    return;
-                }
-
-            }
-
-            // 3. если закрытие последней свечи выше закрытия предыдущей – покупаем. 
-            if (candles[candles.Count - 1].Close > candles[candles.Count - 1].Open && (_tab.PositionOpenLong == null || _tab.PositionOpenLong.Count == 0))
-            //if (candles[candles.Count - 1].Close > candles[candles.Count - 2].Close)
-            {
-                _tab.BuyAtMarket(Convert.ToDecimal(_volume));
-            }
-
-            // 4. если закрытие последней свечи ниже закрытия предыдущей, продаем. 
-            if (candles[candles.Count - 1].Close < candles[candles.Count - 1].Open && (_tab.PositionOpenShort == null || _tab.PositionOpenShort.Count == 0))
-            //if (candles[candles.Count - 1].Close < candles[candles.Count - 2].Close )
-            {
-                _tab.SellAtMarket(Convert.ToDecimal(_volume));
-            }
-            // 5. поменяем стопы на предыдущих позициях
-
-            if (_tab.PositionsOpenAll != null && _tab.PositionsOpenAll.Count != 0)
-            {
-
-                decimal localstop;
-                localstop = (candles[candles.Count - 1].Close + candles[candles.Count - 1].Open) / 2;
-                for (int i = 0; i < _tab.PositionsOpenAll.Count; i++)
-                {
-                    _tab.CloseAtStop(_tab.PositionsOpenAll[i], localstop, localstop);
-                }
-            }
-
         }
     }
     public class PriceLavelBot : BotPanel
     {
         private BotTabSimple _tab;
-        private BotTabSimple _tab_delta;
         private BotTabSimple _tab_pattern;
         private BotTabSimple _tab_delta;
 
@@ -423,18 +280,6 @@ namespace OsEngine.OsTrader.Panels
         private Claster Claster_delta;
 
         /// <summary>
-        /// Индикатор дельты
-        /// </summary>
-        private Delta delta_delta;
-        /// <summary>
-        /// Индикатор объема
-        /// </summary>
-        private Volume Volume_delta;
-        /// <summary>
-        /// Индикатор кластер объемов по ценам
-        /// </summary>
-        private Claster Claster_delta;
-        /// <summary>
         /// Индикатор уровней
         /// </summary>
         private PriceLevleLine PriceLevleLine;
@@ -468,20 +313,13 @@ namespace OsEngine.OsTrader.Panels
 
         private MovingAverage maVolume;
 
-        
+
 
         private LineHorisontal LastSessionPriceLine;
         /// <summary>
         /// Максимальный размер стопа (% от депозита)
         /// </summary>
         private StrategyParameterDecimal MaxStop;
-<<<<<<< HEAD
-        
-        /// <summary>
-        /// Последний найденный паттерн
-        /// </summary>
-        private Pattern LastPattern;
-=======
 
         private TradeSessions _TradeSessions;
         /// <summary>
@@ -513,7 +351,6 @@ namespace OsEngine.OsTrader.Panels
 
         private StrategyParameterString DepoCurrency;
 
->>>>>>> Скользящая
         public override string GetNameStrategyType()
         {
             return "PriceLavelBot";
@@ -524,17 +361,14 @@ namespace OsEngine.OsTrader.Panels
             MessageBox.Show("У данной стратегии пока нет настроек");
         }
 
-        public PriceLavelBot(string name)
-            : base(name)
+        public PriceLavelBot(string name, StartProgram startProgram)
+            : base(name, startProgram)
         {
             this.ParametrsChangeByUser += PriceLavelBot_ParametrsChangeByUser;
 
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
 
-<<<<<<< HEAD
-            Claster = new Claster(this.NameStrategyUniq + _tab.TabNum + "Claster", false);
-=======
             SessionAsia = CreateParameter("Торговать Азию", false);
             SessionEU = CreateParameter("Торговать Европу", false);
             SessionUSA = CreateParameter("Торговать Америку", false);
@@ -546,29 +380,23 @@ namespace OsEngine.OsTrader.Panels
             _TradeSessions.Save();
 
             Claster = new Claster(name + "_Claster", false);
->>>>>>> Скользящая
             Claster = (Claster)_tab.CreateCandleIndicator(Claster, "Prime");
             Claster.Save();
 
-            PriceLevleLine = new PriceLevleLine(this.NameStrategyUniq + _tab.TabNum  + "PriceLevleLine", false);
+            PriceLevleLine = new PriceLevleLine(name + "_PriceLevleLine", false);
             PriceLevleLine = (PriceLevleLine)_tab.CreateCandleIndicator(PriceLevleLine, "Prime");
             PriceLevleLine.PaintOn = false;
             PriceLevleLine.Save();
-<<<<<<< HEAD
-            
-            maVolume = new MovingAverage(this.NameStrategyUniq + _tab.TabNum  + "maVolume", false) { TypePointsToSearch=PriceTypePoints.Volume, Lenght=48 };
-=======
 
             maLenth = CreateParameter("maLenth", 24, 24, 48, 1);
             maVolume = new MovingAverage(name + "_maVolume", false);
->>>>>>> Скользящая
             maVolume = (MovingAverage)_tab.CreateCandleIndicator(maVolume, "New1");
             maVolume.Lenght = maLenth.ValueInt;
             maVolume.TypeCalculationAverage = MovingAverageTypeCalculation.Exponential;
             maVolume.TypePointsToSearch = PriceTypePoints.Volume;
             maVolume.Save();
 
-            mA = new MovingAverage(name + "mA", false) { Lenght=9};
+            mA = new MovingAverage(name + "mA", false) { Lenght = 9 };
             mA = (MovingAverage)_tab.CreateCandleIndicator(mA, "Prime");
             mA.Save();
 
@@ -576,8 +404,8 @@ namespace OsEngine.OsTrader.Panels
             _Volume = CreateParameter("Volume", 1, 0.00m, 100, 1);
 
             MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
-            
-            _Slipage = CreateParameter("_Slipage",1,1,20,1);
+
+            _Slipage = CreateParameter("_Slipage", 1, 1, 20, 1);
 
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
@@ -589,8 +417,8 @@ namespace OsEngine.OsTrader.Panels
             _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
 
             _tab.FirstTickToDayEvent += _tab_FirstTickToDayEvent;
-            
-            
+
+
 
             //Младший тайм фрейм
             TabCreate(BotTabType.Simple);
@@ -598,18 +426,18 @@ namespace OsEngine.OsTrader.Panels
 
             _tab_pattern.CandleFinishedEvent += _tab_pattern_CandleFinishedEvent;
 
-            delta_pattern = new Delta(this.NameStrategyUniq + _tab_pattern.TabNum + "Delta", false);
+            delta_pattern = new Delta(name + "_delta", false);
             delta_pattern = (Delta)_tab_pattern.CreateCandleIndicator(delta_pattern, "New1");
             delta_pattern.Save();
 
-            Volume_pattern = new Volume(this.NameStrategyUniq + _tab_pattern.TabNum + "Volume", false);
+            Volume_pattern = new Volume(name + "_Volume", false);
             Volume_pattern = (Volume)_tab_pattern.CreateCandleIndicator(Volume_pattern, "New2");
             Volume_pattern.Save();
-            
-            Claster_pattern = new Claster(this.NameStrategyUniq + _tab_pattern.TabNum + "Claster", false);
+
+            Claster_pattern = new Claster(name + "_Claster", false);
             Claster_pattern = (Claster)_tab_pattern.CreateCandleIndicator(Claster_pattern, "Prime");
             Claster_pattern.Save();
-            
+
             //график Дельты
             TabCreate(BotTabType.Simple);
             _tab_delta = TabsSimple[2];
@@ -635,116 +463,17 @@ namespace OsEngine.OsTrader.Panels
             closerThread.IsBackground = true;
             closerThread.Start();
 
-<<<<<<< HEAD
-
-                TabCreate(BotTabType.Simple);
-            _tab_delta = TabsSimple[2];
-
-            _tab_delta.CandleFinishedEvent += _tab_delta_CandleFinishedEvent;
-
-            delta_delta = new Delta(this.NameStrategyUniq + _tab_delta.TabNum + "Delta", false);
-            delta_delta = (Delta)_tab_delta.CreateCandleIndicator(delta_delta, "New1");
-            delta_delta.Save();
-
-            Volume_delta = new Volume(this.NameStrategyUniq + _tab_delta.TabNum + "Volume", false);
-            Volume_delta = (Volume)_tab_delta.CreateCandleIndicator(Volume_delta, "New2");
-            Volume_delta.Save();
-
-            Claster_delta = new Claster(this.NameStrategyUniq + _tab_delta.TabNum + "Claster", false);
-            Claster_delta = (Claster)_tab_delta.CreateCandleIndicator(Claster_delta, "Prime");
-            Claster_delta.Save();
-
-
-            lines = new List<LineHorisontal>();
-        }
-
-        private void _tab_delta_CandleFinishedEvent(List<Candle> candles)
-        {
-            if (!ValidateParams())
-            {
-                return;
-            }
-            if (!CanOpenPosition())
-            {
-                return;
-            }
-            if (candles.Count < 2)
-            {
-                return;
-            }
-            DeltaStepCheck();
-            bool CanFindPattern = false;
-            for (int i = 1; i <= 2; i++)
-            {
-                Candle candle = candles[candles.Count - i];
-                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value <= candle.High && x.Value >= candle.Low);
-
-                if (lvl != null && lvl.Count > 0)
-                {
-                    CanFindPattern = true;
-                }
-            }
-            if (!CanFindPattern)
-            {
-                return;
-            }
-
-
-            List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
-            indicators.Add(delta_delta);
-            indicators.Add(Volume_delta);
-            indicators.Add(Claster_delta);
-
-            // открытие позиций по патерну
-            List<string> patterns = new List<string>();
-            patterns.Add("Signal_pattern"); //сигналка
-
-            List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
-            if (signal.Count > 0 && signal[0].isPattern)
-            {
-                if (signal.Count != 0 && signal[0].isPattern)
-                {
-                    _tab.SetNewLogMessage("Открытие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
-                    if (signal[0].Side == TradeSide)
-                    {
-                        LastPattern = signal[0];
-                        OpenPosition(signal[0].Side, candles[candles.Count - 1].Close);
-                    }
-
-                }
-            }
-
-        }
-
-        private IIndicatorCandle GetIndicator(BotTabSimple botPanel, string name)
-        {
-            return botPanel.Indicators.Find(x => x.Name == this.NameStrategyUniq+ botPanel.TabNum + name);
-        }
-        private void DeltaStepCheck()
-=======
         }
         private List<TradeSessions.SessionType> GetListSessionTypes()
->>>>>>> Скользящая
         {
             List<TradeSessions.SessionType> _result = new List<TradeSessions.SessionType>();
             if (SessionAsia.ValueBool)
             {
                 _result.Add(TradeSessions.SessionType.Asia);
             }
-<<<<<<< HEAD
-            if (_tab_delta.Connector.TimeFrameBuilder.DeltaPeriods.Periods[0].DeltaStep != (int)maVolume.Values[maVolume.Values.Count-1]/6)
-            {
-                //Заполнение параметров дельты
-                for (int i = 0; i < _tab_delta.Connector.TimeFrameBuilder.DeltaPeriods.Periods.Count; i++)
-                {
-                    _tab_delta.Connector.TimeFrameBuilder.DeltaPeriods.Periods[i].DeltaStep = (int)maVolume.Values[maVolume.Values.Count - 1] / 6;
-                }
-                _tab_delta.Connector.TimeFrameBuilder.Save();
-=======
             if (SessionEU.ValueBool)
             {
                 _result.Add(TradeSessions.SessionType.EU);
->>>>>>> Скользящая
             }
             if (SessionRUS.ValueBool)
             {
@@ -758,21 +487,6 @@ namespace OsEngine.OsTrader.Panels
         }
         private void Fillsession()
         {
-<<<<<<< HEAD
-            decimal _Vol;
-            decimal LocalStop=0;
-            if (LastPattern != null) {
-                LocalStop = GetPatternStop(price);
-            }
-            if(LocalStop == 0)
-            {
-                LocalStop = GetStopLevel(side, price);
-            }
-            decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)/price;
-
-            decimal StopSize = Math.Abs((price - LocalStop)/ price);
-            if (StopSize <=0)
-=======
             List<TradeSessions.SessionType> _result = GetListSessionTypes();
             _TradeSessions.FillSessions(_result);
         }
@@ -784,7 +498,6 @@ namespace OsEngine.OsTrader.Panels
         private void CloseFailPosition()
         {
             while (true)
->>>>>>> Скользящая
             {
                 Thread.Sleep(1000);
 
@@ -802,122 +515,8 @@ namespace OsEngine.OsTrader.Panels
                     _tab.CloseAtMarket(_tab.PositionsCloseAll[i], _tab.PositionsCloseAll[i].OpenVolume);
                 }
             }
-            LastPattern = null;
 
         }
-<<<<<<< HEAD
-        #region Вычисление стопов
-        private decimal GetPatternStop(decimal price)
-        {
-            if (LastPattern == null)
-            {
-                return 0;
-            }
-            if (LastPattern.Side == Side.Buy)
-            {
-               if(LastPattern.GetType().Name== "Signal_pattern")
-                {
-                   return Claster.Values[Claster.Values.Count - 1];
-                }
-                else
-                {
-                    List<Decimal> list = Claster_pattern.Values.FindAll(x => x < price);
-                    list.Sort((a, b) => decimal.Compare(a, b));
-                    if (list != null && list.Count > 0)
-                    {
-                        return list[list.Count - 1];
-                    }
-
-                }
-            }
-            if (LastPattern.Side == Side.Sell)
-            {
-                if (LastPattern.GetType().Name == "Signal_pattern")
-                {
-                    return Claster.Values[Claster.Values.Count - 1];
-                }
-                else
-                {
-                    List<Decimal> list = Claster_pattern.Values.FindAll(x => x > price);
-                    list.Sort((a, b) => decimal.Compare(a, b));
-                    if (list != null && list.Count > 0)
-                    {
-                        return list[0];
-                    }
-
-                }
-
-            }
-
-            return 0;
-        }
-        /// <summary>
-        /// Найдем последний уровень
-        /// </summary>
-        /// <param name="position">Позиция</param>
-        /// <returns></returns>
-        private Decimal GetStop(Side side, decimal price)
-        {
-            if (side == Side.Buy)
-            {
-                List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price < price);
-                lvls.Sort((a, b) => decimal.Compare(a.MaxData.Price, b.MaxData.Price));
-                if (lvls != null && lvls.Count > 1)
-                {
-                    return lvls[lvls.Count - 2].MaxData.Price;
-                }
-            }
-            if (side == Side.Sell)
-            {
-                List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price > price);
-                lvls.Sort((a, b) => decimal.Compare(a.MaxData.Price, b.MaxData.Price));
-                if (lvls != null && lvls.Count > 1)
-                {
-                    return lvls[1].MaxData.Price;
-                }
-            }
-            if (side == Side.Buy)
-            {
-                return price - price * MaxStop.ValueDecimal / 100;
-            }
-            else
-            {
-                return price + price * MaxStop.ValueDecimal / 100;
-            }
-
-        }
-        private Decimal GetStopLevel(Side side, decimal price)
-        {
-
-            if (side == Side.Buy)
-            {
-                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < price && x.levlSide == side);
-                if (lvl != null && lvl.Count > 0)
-                {
-                    lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
-                    return lvl[lvl.Count - 1].Value - 2 * _tab.Securiti.PriceStep;// _tab.CloseAtProfit(position, lvl[0].Value , lvl[0].Value);
-                }
-
-            }
-            else
-            {
-                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > price && x.levlSide == side);
-                if (lvl != null && lvl.Count > 0)
-                {
-                    lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
-                    return lvl[0].Value + 2 * _tab.Securiti.PriceStep;//_tab.CloseAtProfit(position, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
-                }
-
-
-            }
-            return GetStop(side, price);
-
-
-        }
-        #endregion
-
-        private void _tab_pattern_CandleFinishedEvent(List<Candle> candles)
-=======
         private void _tab_FirstTickToDayEvent(Trade obj)
         {
             RiskOnDay = 0;
@@ -930,7 +529,6 @@ namespace OsEngine.OsTrader.Panels
         /// <param name="candles">Свечи</param>
         /// <param name="patterns">Список паттернов</param>
         private void OpenByPattrn(List<IIndicatorCandle> indicators, List<Candle> candles, List<string> patterns)
->>>>>>> Скользящая
         {
             if (!ValidateParams())
             {
@@ -962,26 +560,14 @@ namespace OsEngine.OsTrader.Panels
             }
 
             // открытие позиций по патерну
-<<<<<<< HEAD
-            List<string> patterns = new List<string>();
-            patterns.Add("Metla_pattern"); // метелка
-            patterns.Add("Trap_pattern"); // ловушка
-
-            List <Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
-=======
             List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
->>>>>>> Скользящая
             if (signal.Count > 0 && signal[0].isPattern)
             {
                 if (signal.Count != 0 && signal[0].isPattern)
                 {
                     if (signal[0].Side == TradeSide)
                     {
-<<<<<<< HEAD
-                        LastPattern = signal[0];
-=======
                         _tab.SetNewLogMessage("Открытие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
->>>>>>> Скользящая
                         OpenPosition(signal[0].Side, candles[candles.Count - 1].Close);
                     }
                 }
@@ -998,7 +584,7 @@ namespace OsEngine.OsTrader.Panels
             List<string> patterns = new List<string>();
             patterns.Add("Signal_pattern"); //сигналка
 
-            OpenByPattrn(indicators,candles,patterns);
+            OpenByPattrn(indicators, candles, patterns);
         }
         private void _tab_pattern_CandleFinishedEvent(List<Candle> candles)
         {
@@ -1009,52 +595,33 @@ namespace OsEngine.OsTrader.Panels
             // открытие позиций по патерну
             List<string> patterns = new List<string>();
             patterns.Add("Metla_pattern"); //сигналка
-        //    patterns.Add("Trap_pattern");
+                                           //    patterns.Add("Trap_pattern");
             OpenByPattrn(indicators, candles, patterns);
         }
 
         private void DeltaStepCheck()
-=======
-        public static BotPanel GetStrategyForName(string nameClass, string name, StartProgram startProgram)
->>>>>>> pr/4
         {
             if (maVolume.Values.Count == 0)
             {
-<<<<<<< HEAD
                 return;
-=======
-                bot = new PatternTrader(name, startProgram);
->>>>>>> pr/4
             }
-            if (_tab_delta.Connector._timeFrameBuilder.DeltaPeriods != (int)maVolume.Values[maVolume.Values.Count-1]/6)
+            if (_tab_delta.Connector.TimeFrameBuilder.DeltaPeriods != (int)maVolume.Values[maVolume.Values.Count - 1] / 6)
             {
-<<<<<<< HEAD
-                _tab_delta.Connector._timeFrameBuilder.DeltaPeriods = (int)maVolume.Values[maVolume.Values.Count - 1] / 6;
-=======
-                bot = new HighFrequencyTrader(name, startProgram);
->>>>>>> pr/4
+                _tab_delta.Connector.TimeFrameBuilder.DeltaPeriods = (int)maVolume.Values[maVolume.Values.Count - 1] / 6;
             }
         }
         private decimal GetPrice(decimal price)
         {
             if (DepoCurrency.ValueString == "Currency2")
             {
-<<<<<<< HEAD
                 return price;
-=======
-                bot = new BotWhithTwoTimeFrame(name, startProgram);
->>>>>>> pr/4
             }
             else
             {
-<<<<<<< HEAD
                 return 1 / price;
-=======
-                bot = new PivotPointsRobot(name, startProgram);
->>>>>>> pr/4
             }
         }
-        private void OpenPosition(Side side,decimal price)
+        private void OpenPosition(Side side, decimal price)
         {
             Slipage = _Slipage.ValueInt * _tab.Securiti.PriceStep;
 
@@ -1062,52 +629,32 @@ namespace OsEngine.OsTrader.Panels
             LastStop = GetStopLevel(side, price);
             if (LastStop == 0)
             {
-<<<<<<< HEAD
                 return;
-=======
-                bot = new StrategyEngineCandle(name, startProgram);
->>>>>>> pr/4
             }
-            decimal VollAll = ( _tab.Portfolio.ValueCurrent-_tab.Portfolio.ValueBlocked)/GetPrice(price);
+            decimal VollAll = (_tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked) / GetPrice(price);
 
             decimal StopSize = Math.Abs((LastStop - price) / price);
-            if (StopSize <=0)
+            if (StopSize <= 0)
             {
-<<<<<<< HEAD
                 return;
-=======
-                bot = new StrategyBillWilliams(name, startProgram);
->>>>>>> pr/4
             }
-            _Vol = (MaxStop.ValueDecimal/100) * VollAll / (StopSize);
+            _Vol = (MaxStop.ValueDecimal / 100) * VollAll / (StopSize);
 
 
             // нужно разбираться почему так происходит
-            
+
             if (_Vol > VollAll)
             {
-<<<<<<< HEAD
-                _Vol= VollAll;
-=======
-                bot = new StrategyLevermor(name, startProgram);
->>>>>>> pr/4
+                _Vol = VollAll;
             }
-            
+
             if (side == Side.Buy)
             {
-<<<<<<< HEAD
                 _tab.BuyAtMarket(_Vol);
-=======
-                bot = new MarketMakerBot(name, startProgram);
->>>>>>> pr/4
             }
             else
             {
-<<<<<<< HEAD
                 _tab.SellAtMarket(_Vol);
-=======
-                bot = new StrategyBollinger(name, startProgram);
->>>>>>> pr/4
             }
 
 
@@ -1117,7 +664,6 @@ namespace OsEngine.OsTrader.Panels
         {
             if (!ValidateParams())
             {
-<<<<<<< HEAD
                 return;
             }
             /*
@@ -1125,15 +671,11 @@ namespace OsEngine.OsTrader.Panels
             if (openPositions != null && openPositions.Count > 0)
             {
                 return;
-=======
-                bot = new PairTraderSimple(name, startProgram);
->>>>>>> pr/4
             }
 
             List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x =>x.levlSide==TradeSide);
             if (lvl != null && lvl.Count>2)
             {
-<<<<<<< HEAD
                 if(TradeSide == Side.Buy
                     && lvl[lvl.Count-1].Value> lvl[lvl.Count - 2].Value)
                 {
@@ -1164,71 +706,44 @@ namespace OsEngine.OsTrader.Panels
                 }
                 
             } */
-            
+
         }
 
-        
+
         private bool ValidateParams()
         {
             if (Regime.ValueString == "Off")
             {
                 return false;
-=======
-                bot = new RsiTrade(name, startProgram);
->>>>>>> pr/4
             }
-            if (_tab.CandlesAll == null || _tab.CandlesAll.Count < 2 )
+            if (_tab.CandlesAll == null || _tab.CandlesAll.Count < 2)
             {
-<<<<<<< HEAD
                 return false;
-=======
-                bot = new StochasticTrade(name, startProgram);
->>>>>>> pr/4
             }
             if (LastSessionEndPrice == 0)
             {
-<<<<<<< HEAD
                 return false;
-=======
-                bot = new BollingerTrade(name, startProgram);
->>>>>>> pr/4
             }
             if (!_TradeSessions.CanTrade)
             {
-<<<<<<< HEAD
-            //    return false;
-=======
-                bot = new TrixTrade(name, startProgram);
->>>>>>> pr/4
+                //    return false;
             }
-            if (RiskOnDay <-1 * MaxStop.ValueDecimal / 100)
+            if (RiskOnDay < -1 * MaxStop.ValueDecimal / 100)
             {
-<<<<<<< HEAD
                 return false;
-=======
-                bot = new CciTrade(name, startProgram);
->>>>>>> pr/4
             }
-            if (_TradeSessions.MinSessionPrice==0 || (_TradeSessions.MaxSessionPrice - _TradeSessions.MinSessionPrice) / _TradeSessions.MinSessionPrice < MaxStop.ValueDecimal / 100)
+            if (_TradeSessions.MinSessionPrice == 0 || (_TradeSessions.MaxSessionPrice - _TradeSessions.MinSessionPrice) / _TradeSessions.MinSessionPrice < MaxStop.ValueDecimal / 100)
             {
-<<<<<<< HEAD
                 return false;
-=======
-                bot = new ParabolicSarTrade(name, startProgram);
->>>>>>> pr/4
             }
 
             return true;
         }
         private bool CanOpenPosition()
         {
-            if(_tab.PositionsOpenAll == null)
+            if (_tab.PositionsOpenAll == null)
             {
-<<<<<<< HEAD
                 return true;
-=======
-                bot = new PriceChannelTrade(name, startProgram);
->>>>>>> pr/4
             }
             return _tab.PositionsOpenAll.Count == 0;
         }
@@ -1237,19 +752,14 @@ namespace OsEngine.OsTrader.Panels
             List<Position> openPositions = _tab.PositionsOpenAll;
             if (CanOpenPosition())
             {
-<<<<<<< HEAD
                 return;
-=======
-                bot = new MacdTrade(name, startProgram);
->>>>>>> pr/4
             }
-          
+
 
             for (int i = 0; i < openPositions.Count && candles.Count > 1; i++)
             {
-<<<<<<< HEAD
                 //    decimal localStop = GetStop(openPositions[i].Direction, candles[candles.Count-1].Close);
-                if (openPositions[i].EntryPrice!=0 && Math.Abs((candles[candles.Count-1].Close - openPositions[i].EntryPrice) / openPositions[i].EntryPrice) > 2 * openPositions[i].fee)
+                if (openPositions[i].EntryPrice != 0 && Math.Abs((candles[candles.Count - 1].Close - openPositions[i].EntryPrice) / openPositions[i].EntryPrice) > 2 * openPositions[i].fee)
                 {
                     _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count - 1], mA.Values[mA.Values.Count - 1]);
                 }
@@ -1276,103 +786,74 @@ namespace OsEngine.OsTrader.Panels
                     }
                 }
                 */
-                
-=======
-                bot = new BbPowerTrade(name, startProgram);
->>>>>>> pr/4
+
             }
 
         }
-<<<<<<< HEAD
-=======
         /// <summary>
         /// Найдем последний уровень
         /// </summary>
         /// <param name="position">Позиция</param>
         /// <returns></returns>
-        private Decimal GetStop(Side side,decimal price)
+        private Decimal GetStop(Side side, decimal price)
         {
             // берем последние 6 свечек
-            List<decimal> maxVolumes = Claster.Values.GetRange(Claster.Values.Count-21,20);
+            List<decimal> maxVolumes = Claster.Values.GetRange(Claster.Values.Count - 21, 20);
             maxVolumes.Sort((a, b) => decimal.Compare(a, b));
             if (side == Side.Buy)
             {
-<<<<<<< HEAD
                 List<decimal> lvl = maxVolumes.FindAll(x => x < price);
-                if(lvl !=null && lvl.Count>1)
+                if (lvl != null && lvl.Count > 1)
                 {
                     return lvl[lvl.Count - 2] - Slipage;
                 }
-=======
-                bot = new RviTrade(name, startProgram);
->>>>>>> pr/4
             }
             if (side == Side.Sell)
             {
-<<<<<<< HEAD
                 List<decimal> lvl = maxVolumes.FindAll(x => x > price);
                 if (lvl != null && lvl.Count > 1)
                 {
-                    return lvl[1]+ Slipage;
+                    return lvl[1] + Slipage;
                 }
-=======
-                bot = new WilliamsRangeTrade(name, startProgram);
->>>>>>> pr/4
             }
             /*
             if (side == Side.Buy)
             {
-<<<<<<< HEAD
                 List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price < price);
                 lvls.Sort((a, b) => decimal.Compare(a.MaxData.Price, b.MaxData.Price));
                 if (lvls != null && lvls.Count > 1)
                 {
                     return lvls[lvls.Count - 2].MaxData.Price;
                 }
-=======
-                bot = new MacdTrail(name, startProgram);
->>>>>>> pr/4
             }
             if (side == Side.Sell)
             {
-<<<<<<< HEAD
                 List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price > price);
                 lvls.Sort((a, b) => decimal.Compare(a.MaxData.Price, b.MaxData.Price));
                 if (lvls != null && lvls.Count > 1)
                 {
                     return lvls[1].MaxData.Price;
                 }
-=======
-                bot = new SmaStochastic(name, startProgram);
->>>>>>> pr/4
             }
             */
-            if(side == Side.Buy)
+            if (side == Side.Buy)
             {
-<<<<<<< HEAD
-                return price - price * MaxStop.ValueDecimal/100;
-=======
-                bot = new MomentumMacd(name, startProgram);
->>>>>>> pr/4
+                return price - price * MaxStop.ValueDecimal / 100;
             }
             else
             {
-<<<<<<< HEAD
-                return price + price * MaxStop.ValueDecimal/100;
-=======
-                bot = new PinBarTrade(name, startProgram);
->>>>>>> pr/4
+                return price + price * MaxStop.ValueDecimal / 100;
             }
-            
+
         }
         private Decimal GetStopLevel(Side side, decimal price)
         {
 
             if (side == Side.Buy)
             {
-<<<<<<< HEAD
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < price);//&& x.levlSide == side);
-                if (lvl != null) {
+                if (lvl != null)
+                {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
                     if (lvl.Count > 1)
                     {
@@ -1385,13 +866,9 @@ namespace OsEngine.OsTrader.Panels
 
                 }
 
-=======
-                bot = new PairRsiTrade(name, startProgram);
->>>>>>> pr/4
             }
             else
             {
-<<<<<<< HEAD
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > price);// && x.levlSide == side);
                 if (lvl != null)
                 {
@@ -1407,16 +884,20 @@ namespace OsEngine.OsTrader.Panels
                         return lvl[0].Value + Slipage;//_tab.CloseAtProfit(position, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
                     }
                 }
->>>>>>> Скользящая
 
 
+            }
+            return GetStop(side, price);
+
+
+        }
         private void _tab_PositionOpeningSuccesEvent(Position obj)
         {
 
             //выставим новые стопы
             _tab.CloseAtTrailingStop(obj, LastStop, LastStop);
             LastStop = 0;
-           //          _tab.CloseAtProfit(obj, obj.EntryPrice * 1.005m, obj.EntryPrice * 1.005m);
+            //          _tab.CloseAtProfit(obj, obj.EntryPrice * 1.005m, obj.EntryPrice * 1.005m);
             /*
             //учтем комиссию за сделку
             decimal fee = obj.OpenVolume * obj.EntryPrice * obj.fee;
@@ -1428,41 +909,28 @@ namespace OsEngine.OsTrader.Panels
                     lvl.Sort((a, b) =>decimal.Compare(a.Value,b.Value));
                     _tab.CloseAtProfit(obj, lvl[0].Value , lvl[0].Value + fee + lvl[0].Value*obj.OpenVolume*obj.fee);
                 }
-=======
-                bot = new Robot(name, startProgram);
->>>>>>> pr/4
             }
             else
             {
-<<<<<<< HEAD
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < obj.EntryPrice);
                 if (lvl != null && lvl.Count > 0)
                 {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
                     _tab.CloseAtProfit(obj, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value -fee - lvl[lvl.Count - 1].Value * obj.OpenVolume * obj.fee);
                 }
-=======
-                bot = new FirstBot(name, startProgram);
->>>>>>> pr/4
             }
             */
         }
-
         private void OpenAtLevel()
         {
             if (!CanOpenPosition())
             {
-<<<<<<< HEAD
                 return;
-=======
-                bot = new TwoLegArbitrage(name, startProgram);
->>>>>>> pr/4
             }
             PriceLevleLine.levlel lvl = PriceLevleLine.LevleData.FindLast(x => x.levlSide == TradeSide);
-            if(lvl != null)
+            if (lvl != null)
             {
-<<<<<<< HEAD
-                if (TradeSide== Side.Buy)
+                if (TradeSide == Side.Buy)
                 {
                     // покупаем по возвращению цены
                     _tab.BuyAtStop(_Volume.ValueDecimal, lvl.Value, lvl.Value, StopActivateType.LowerOrEqyal);
@@ -1473,15 +941,11 @@ namespace OsEngine.OsTrader.Panels
                     _tab.SellAtStop(_Volume.ValueDecimal, lvl.Value, lvl.Value, StopActivateType.HigherOrEqual);
                 }
 
-=======
-                bot = new OneLegArbitration(name, startProgram);
->>>>>>> pr/4
             }
 
             lvl = PriceLevleLine.LevleData.FindLast(x => x.levlSide != TradeSide);
             if (lvl != null)
             {
-<<<<<<< HEAD
                 if (TradeSide == Side.Buy)
                 {
                     // покупаем попробитию последнего максимума
@@ -1490,11 +954,8 @@ namespace OsEngine.OsTrader.Panels
                 if (TradeSide == Side.Sell)
                 {
                     // Проадем попробитию последнего минимума
-                    _tab.SellAtStop(_Volume.ValueDecimal, lvl.Value - lvl.Value*0.005m, lvl.Value, StopActivateType.HigherOrEqual);
+                    _tab.SellAtStop(_Volume.ValueDecimal, lvl.Value - lvl.Value * 0.005m, lvl.Value, StopActivateType.HigherOrEqual);
                 }
-=======
-                bot = new ThreeSoldier(name, startProgram);
->>>>>>> pr/4
             }
 
         }
@@ -1504,11 +965,10 @@ namespace OsEngine.OsTrader.Panels
             //Определяем направление торговли по прошлой сессии
             LastSessionEndPrice = _TradeSessions.LastSessionEndPrice;
 
-            
+
             //LastSessionEndPrice = TradeSessions.LastSessionEndPrice(_tab.CandlesAll, candles[candles.Count - 1].TimeStart);
             if (LastSessionEndPrice > 0)
             {
-<<<<<<< HEAD
                 Side oldTradeSide = TradeSide;
                 if (LastSessionEndPrice < candles[candles.Count - 1].Open)
                 {
@@ -1522,18 +982,14 @@ namespace OsEngine.OsTrader.Panels
                 {
                     _tab.SetNewLogMessage("Направление торговли " + TradeSide, LogMessageType.Signal);
                 }
-=======
-                bot = new BollingerOutburst(name, startProgram);
->>>>>>> pr/4
             }
             for (int i = _tab.PositionsCloseAll.Count - 1; i >= 0; i--)
             {
-<<<<<<< HEAD
-                if(candles[candles.Count - 1].TimeStart.DayOfYear!= candles[candles.Count - 2].TimeStart.DayOfYear)
+                if (candles[candles.Count - 1].TimeStart.DayOfYear != candles[candles.Count - 2].TimeStart.DayOfYear)
                 {
                     RiskOnDay = 0;
                 }
-                
+
                 if (_tab.PositionsCloseAll[i].TimeClose.DayOfYear == candles[candles.Count - 1].TimeStart.DayOfYear)
                 {
                     /*
@@ -1542,52 +998,38 @@ namespace OsEngine.OsTrader.Panels
                         RiskOnDay += -1*_tab.PositionsCloseAll[i].ProfitPortfolioPersent;
                     }
                     */
-         //           RiskOnDay += _tab.PositionsCloseAll[i].ProfitPortfolioPersent;
+                    //           RiskOnDay += _tab.PositionsCloseAll[i].ProfitPortfolioPersent;
                 }
                 else
                 {
                     break;
                 }
-=======
-                bot = new RsiContrtrend(name, startProgram);
->>>>>>> pr/4
             }
             ///Отрисовка линий
             PriceLevleLine.PaintLevleData(TabsSimple);
 
             if (!ValidateParams())
             {
-<<<<<<< HEAD
                 return;
-=======
-                bot = new PriceChannelVolatility(name, startProgram);
->>>>>>> pr/4
             }
 
             LogicClosePositions(candles);
             if (!CanOpenPosition())
             {
-<<<<<<< HEAD
                 return;
-=======
-                bot = new PriceChannelBreak(name, startProgram);
->>>>>>> pr/4
             }
             // если трендовый день то открываемся сразу
-            if(_TradeSessions.TypeOfDay== TradeSessions.DayType.TrendDay)
+            if (_TradeSessions.TypeOfDay == TradeSessions.DayType.TrendDay)
             {
-<<<<<<< HEAD
-             //   OpenPosition(_TradeSessions.TradeSide[0], candles[candles.Count - 1].Close);
-=======
-                bot = new PairTraderSpreadSma(name, startProgram);
->>>>>>> pr/4
+                //   OpenPosition(_TradeSessions.TradeSide[0], candles[candles.Count - 1].Close);
             }
             //OpenAtLevel();
         }
 
-        
+
     }
-    #region примеры роботов для оптимизации
+
+    # region примеры роботов для оптимизации
 
     /// <summary>
     /// робот анализирующий плотность стакана для входа
@@ -1836,7 +1278,7 @@ namespace OsEngine.OsTrader.Panels
             {
                 return;
             }
-            //   _tab.CloseAtMarket(position, position.OpenVolume);
+            _tab.CloseAtMarket(position, position.OpenVolume);
         }
 
         // отзыв заявок в реальном подключении
@@ -2976,6 +2418,7 @@ namespace OsEngine.OsTrader.Panels
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
+
             _bol = new Bollinger(false);
             _bol = (Bollinger)_tab.CreateCandleIndicator(_bol, "Prime");
 
@@ -3018,8 +2461,10 @@ namespace OsEngine.OsTrader.Panels
             if (_lastPrice > _lastBolUp)
             {
                 _tab.SellAtMarket(Volume);
+
             }
         }
+
     }
 
     public class FirstBot : BotPanel

@@ -257,11 +257,7 @@ namespace OsEngine.Market.Connectors
         /// <summary>
         /// объект сохраняющий в себе настройки для построения свечек
         /// </summary>
-<<<<<<< HEAD:project/OsEngine/Market/Connector.cs
-        public TimeFrameBuilder _timeFrameBuilder;
-=======
         public TimeFrameBuilder TimeFrameBuilder;
->>>>>>> pr/4:project/OsEngine/Market/Connectors/ConnectorCandles.cs
 
         /// <summary>
         /// способ создания свечей: из тиков или из стаканов
