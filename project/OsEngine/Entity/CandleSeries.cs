@@ -1423,7 +1423,7 @@ namespace OsEngine.Entity
         private void UpdateClasterDate(Candle candle)
         {
             candle.ClasterData.update(candle.Trades);
-            if (candle.Trades == null || candle.Trades.Count == 0)
+            if (candle.ClasterData.maxPrice  == 0)
             {
                 if (candle.IsUp)
                 {
