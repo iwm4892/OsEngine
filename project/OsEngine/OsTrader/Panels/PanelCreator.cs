@@ -276,7 +276,6 @@ namespace OsEngine.OsTrader.Panels
         /// </summary>
         private PriceLevleLine PriceLevleLine;
 
-        public List<PriceLevleLine.levlel> levlels;
         /// <summary>
         /// режим on/off
         /// </summary>
@@ -322,7 +321,9 @@ namespace OsEngine.OsTrader.Panels
         /// Риск потерь за день
         /// </summary>
         private decimal RiskOnDay;
-
+        /// <summary>
+        /// Скользящая для стопа
+        /// </summary>
         private MovingAverage mA;
         /// <summary>
         /// Использовать Азиатскую сессию
@@ -340,9 +341,14 @@ namespace OsEngine.OsTrader.Panels
         /// Использовать Российскую сессию
         /// </summary>
         private StrategyParameterBool SessionRUS;
-
+        /// <summary>
+        /// Вылюта депозита (первая или вторая валюта валютной пары)
+        /// </summary>
         private StrategyParameterString DepoCurrency;
-
+        /// <summary>
+        /// торгуем контрактами
+        /// </summary>
+        private StrategyParameterBool isContract;
         public override string GetNameStrategyType()
         {
             return "PriceLavelBot";
@@ -402,7 +408,7 @@ namespace OsEngine.OsTrader.Panels
 
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
-
+            isContract = CreateParameter("Торгуем контрактами", false);
 
 
             _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
@@ -632,14 +638,20 @@ namespace OsEngine.OsTrader.Panels
             {
                 _Vol = VollAll;
             }
-
-            if (side == Side.Buy)
+            if (isContract.ValueBool)
             {
-                _tab.BuyAtMarket(_Vol);
+                _Vol = (int)_Vol;
             }
-            else
+            if (_Vol > 0)
             {
-                _tab.SellAtMarket(_Vol);
+                if (side == Side.Buy)
+                {
+                    _tab.BuyAtMarket(_Vol);
+                }
+                else
+                {
+                    _tab.SellAtMarket(_Vol);
+                }
             }
 
 
@@ -947,6 +959,8 @@ namespace OsEngine.OsTrader.Panels
         private void _tab_CandleFinishedEvent(List<Candle> candles)
         {
             DeltaStepCheck();
+            ///Отрисовка линий
+            PriceLevleLine.PaintLevleData(TabsSimple);
             //Определяем направление торговли по прошлой сессии
             LastSessionEndPrice = _TradeSessions.LastSessionEndPrice;
 
@@ -990,8 +1004,6 @@ namespace OsEngine.OsTrader.Panels
                     break;
                 }
             }
-            ///Отрисовка линий
-            PriceLevleLine.PaintLevleData(TabsSimple);
 
             if (!ValidateParams())
             {
