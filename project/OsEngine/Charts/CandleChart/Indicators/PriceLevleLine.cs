@@ -291,8 +291,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
         private void ProcessValue(List<Candle> candles,int i)
         {
 
-            int j =i--;
-            if (Values.Count > 2)
+            int j = --i;
+            if (j > 2)
             {
                 if (Values[j] <= Values[j-1]
                     && Values[j-2]<= Values[j-1]
