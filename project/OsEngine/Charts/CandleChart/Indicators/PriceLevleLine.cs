@@ -290,17 +290,18 @@ namespace OsEngine.Charts.CandleChart.Indicators
         }
         private void ProcessValue(List<Candle> candles,int i)
         {
-            Values.Add(candles[i].ClasterData.MaxData.Price);
-            if (i > 3)
+
+            i--;
+            if (Values.Count > 2)
             {
-                if (candles[i].ClasterData.MaxData.Price <= candles[i-1].ClasterData.MaxData.Price
-                    && candles[i-2].ClasterData.MaxData.Price <= candles[i-1].ClasterData.MaxData.Price
-                    && candles[i].ClasterData.MaxData.Price != candles[i-2].ClasterData.MaxData.Price
+                if (Values[i] <= Values[i-1]
+                    && Values[i-2]<= Values[i-1]
+                    && Values[i]!= Values[i-2]
                     )
                 {
                     levlel el = new levlel();
                     el.levlSide = Side.Sell;
-                    el.Value = candles[i-1].ClasterData.MaxData.Price;
+                    el.Value = Values[i-1];
 
                     if (!updateLevelData(el))
                     {
@@ -308,14 +309,14 @@ namespace OsEngine.Charts.CandleChart.Indicators
                     }
                 }
 
-                if (candles[i].ClasterData.MaxData.Price >= candles[i-1].ClasterData.MaxData.Price
-                    && candles[i-2].ClasterData.MaxData.Price >= candles[i-1].ClasterData.MaxData.Price
-                    && candles[i].ClasterData.MaxData.Price != candles[i-2].ClasterData.MaxData.Price
+                if (Values[i] >= Values[i-1]
+                    && Values[i-2]>= Values[i-1]
+                    && Values[i] != Values[i-2]
                     )
                 {
                     levlel el = new levlel();
                     el.levlSide = Side.Buy;
-                    el.Value = candles[i-1].ClasterData.MaxData.Price;
+                    el.Value = Values[i-1];
 
                     if (!updateLevelData(el))
                     {
@@ -386,7 +387,9 @@ namespace OsEngine.Charts.CandleChart.Indicators
              //   LevleData = new List<levlel>();
                 LastDay = candles[candles.Count - 1].TimeStart.Date;
             }
+
             ProcessValue(candles, candles.Count - 1);
+            Values.Add(candles[candles.Count - 1].ClasterData.MaxData.Price);
 
         }
 
@@ -402,6 +405,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
               //      LevleData = new List<levlel>();
                     LastDay = candles[i].TimeStart.Date;
                 }
+                Values.Add(candles[i].ClasterData.MaxData.Price);
                 ProcessValue(candles,i);
             }
         }
