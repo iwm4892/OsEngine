@@ -291,17 +291,17 @@ namespace OsEngine.Charts.CandleChart.Indicators
         private void ProcessValue(List<Candle> candles,int i)
         {
 
-            i--;
+            int j =i--;
             if (Values.Count > 2)
             {
-                if (Values[i] <= Values[i-1]
-                    && Values[i-2]<= Values[i-1]
-                    && Values[i]!= Values[i-2]
+                if (Values[j] <= Values[j-1]
+                    && Values[j-2]<= Values[j-1]
+                    && Values[j]!= Values[j-2]
                     )
                 {
                     levlel el = new levlel();
                     el.levlSide = Side.Sell;
-                    el.Value = Values[i-1];
+                    el.Value = Values[j-1];
 
                     if (!updateLevelData(el))
                     {
@@ -309,14 +309,14 @@ namespace OsEngine.Charts.CandleChart.Indicators
                     }
                 }
 
-                if (Values[i] >= Values[i-1]
-                    && Values[i-2]>= Values[i-1]
-                    && Values[i] != Values[i-2]
+                if (Values[j] >= Values[j-1]
+                    && Values[j-2]>= Values[j-1]
+                    && Values[j] != Values[j-2]
                     )
                 {
                     levlel el = new levlel();
                     el.levlSide = Side.Buy;
-                    el.Value = Values[i-1];
+                    el.Value = Values[j-1];
 
                     if (!updateLevelData(el))
                     {
