@@ -256,6 +256,11 @@ namespace OsEngine.Charts
                         {
                             CreateIndicator(new Delta(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
                         }
+                        if (indicator[0] == "PriceLevleLine")
+                        {
+                            CreateIndicator(new PriceLevleLine(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
+                        }
+
                         //---
                     }
 
