@@ -147,6 +147,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// Цвета значений
         /// </summary>
         public List<Color> ColorSeries { get; set; }
+        /// <summary>
+        /// Последняя обработаная сделка
+        /// </summary>
+        private int _lastTradeIndex;
 
         /// <summary>
         /// сохранить настройки в файл
@@ -282,7 +286,9 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 Values = new List<decimal>();
                 ColorSeries = new List<Color>();
             }
-            Values.Add(GetValue(candles, candles.Count - 1));
+            _lastTradeIndex = 0;
+            Values.Add(0);
+            GetValue(candles, candles.Count - 1);
             ColorSeries.Add(GetColor(Values[Values.Count-1]));
         }
 
@@ -296,7 +302,9 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
             for (int i = 0; i < candles.Count; i++)
             {
-                Values.Add(GetValue(candles,i));
+                _lastTradeIndex = 0;
+                Values.Add(0);
+                GetValue(candles,i);
                 ColorSeries.Add(GetColor(Values[Values.Count - 1]));
             }
         }
@@ -306,7 +314,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessLastCanlde(List<Candle> candles)
         {
-            Values[Values.Count-1]  = GetValue(candles, candles.Count - 1);
+            GetValue(candles, candles.Count - 1);
             ColorSeries[ColorSeries.Count - 1] = GetColor(Values[Values.Count - 1]);
         }
         /// <summary>
@@ -325,47 +333,32 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// взять значение индикаторм по индексу
         /// </summary>
-        private decimal GetValue(List<Candle> candles, int index)
+        private void GetValue(List<Candle> candles, int index)
         {
             if (index > candles.Count-1)
             {
-                return 0;
+                return;
             }
 
-            List<Trade> trades = candles[index].Trades;
 
-            if (trades == null ||
-                trades.Count == 0)
+            if (candles[index].Trades == null ||
+                candles[index].Trades.Count == 0)
             {
-                return 0;
+                return;
             }
 
-            decimal nBuy = 0;
-
-            decimal vBuy = 0;
-
-            decimal nSell = 0;
-
-            decimal vSell = 0;
-
-            for (int i = 0; i < trades.Count; i++)
+            for (int i = _lastTradeIndex; i < candles[index].Trades.Count; i++)
             {
-                if (trades[i].Side == Side.Buy)
+                if (candles[index].Trades[i].Side == Side.Buy)
                 {
-                    nBuy++;
-                    vBuy += trades[i].Volume;
+                    Values[index] += candles[index].Trades[i].Volume;
                 }
-                if (trades[i].Side == Side.Sell)
+                if (candles[index].Trades[i].Side == Side.Sell)
                 {
-                    nSell++;
-                    vSell += trades[i].Volume;
+                    Values[index] -= candles[index].Trades[i].Volume;
                 }
             }
-
-            //   decimal vto = (nBuy * vBuy - nSell * vSell) / (nBuy * vBuy + nSell * vSell);
-            decimal vto = vBuy - vSell;
-            return Math.Round(vto, 5);
-           
+            _lastTradeIndex = candles[index].Trades.Count;
         }
 
     }

@@ -247,7 +247,16 @@ namespace OsEngine.Charts
                         {
                             CreateIndicator(new TradeThread(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
                         }
-                        
+                        //+++
+                        if (indicator[0] == "Claster")
+                        {
+                            CreateIndicator(new Claster(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
+                        }
+                        if (indicator[0] == "Delta")
+                        {
+                            CreateIndicator(new Delta(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
+                        }
+                        //---
                     }
 
                     reader.Close();

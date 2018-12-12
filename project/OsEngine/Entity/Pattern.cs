@@ -276,7 +276,7 @@ namespace OsEngine.Entity
     {
         public Signal_pattern(List<Candle> candles, List<IIndicatorCandle> indicators)
         {
-            CandlesCount = 6;
+            CandlesCount = 2;
             Fill(candles, indicators);
             if (!Validate())
             {
@@ -306,8 +306,8 @@ namespace OsEngine.Entity
             //предположим что тени нет если размер тени меньше 10% размера свечи
             // предполагаем что длинная тень это больше 30% размера свечи
             if (Candles[Candles.Count - 1].IsUp
-                && cData.hiShadow ==0//< cData.candleSize * (decimal)0.1
-            //    && cData.lowShadow > cData.candleSize * (decimal)0.3
+                && cData.hiShadow < cData.candleSize * (decimal)0.05
+          //      && cData.lowShadow > cData.candleSize * (decimal)0.3
                 && cData.ClasterData.MaxData.Price <= Candles[Candles.Count - 1].Open +(cData.candleBody * (decimal)0.3)
                 && Delta.Values[Delta.Values.Count - 1] > 0
                 && Volume.Values[Volume.Values.Count-2]<= Volume.Values[Volume.Values.Count - 1]
@@ -317,8 +317,8 @@ namespace OsEngine.Entity
                 Side = Side.Buy;
             }
             if (Candles[Candles.Count - 1].IsDown
-                && cData.lowShadow ==0//< cData.candleSize * (decimal)0.1
-            //    && cData.hiShadow > cData.candleSize * (decimal)0.3
+                && cData.lowShadow < cData.candleSize * (decimal)0.05
+             //   && cData.hiShadow > cData.candleSize * (decimal)0.3
                 && cData.ClasterData.MaxData.Price >= Candles[Candles.Count - 1].Open - (cData.candleBody * (decimal)0.3)
                 && Delta.Values[Delta.Values.Count - 1] < 0
                 && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1])

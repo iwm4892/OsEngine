@@ -5334,11 +5334,12 @@ namespace OsEngine.Charts.CandleChart
                    {
                        max = maxOnSeries;
                    }
-
+                   /*
                    if (seriesOnArea[serIterator].ChartType == SeriesChartType.Column)
                    {
                        min = 0;
                    }
+                   */
                 }
 
                 if (min == double.MaxValue ||
