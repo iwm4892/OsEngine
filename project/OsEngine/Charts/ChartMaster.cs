@@ -248,19 +248,9 @@ namespace OsEngine.Charts
                             CreateIndicator(new TradeThread(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
                         }
                         //+++
-                        if (indicator[0] == "Claster")
-                        {
-                            CreateIndicator(new Claster(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
-                        }
-                        if (indicator[0] == "Delta")
-                        {
-                            CreateIndicator(new Delta(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
-                        }
-                        if (indicator[0] == "PriceLevleLine")
-                        {
-                            CreateIndicator(new PriceLevleLine(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
-                        }
-
+                        Object[] arg = { indicator[1], Convert.ToBoolean(indicator[3]) };
+                        object ind = ClassWork.GetInstance(ClassWork.GetFullNameIndicator(indicator[0]), arg);
+                        CreateIndicator((IIndicatorCandle)ind, indicator[2]);
                         //---
                     }
 

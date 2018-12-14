@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using System.Windows.Forms;
+using OsEngine.Entity;
 
 namespace OsEngine.Charts.CandleChart.Indicators
 {
@@ -1017,36 +1018,19 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 _chartMaster.CreateIndicator(IndicatorCandle, areaName);
             }
             //+++
-            if (_gridViewIndicators.SelectedCells[0].Value.ToString() == "Claster")
-            {
-                string name = "";
-
+            string ChartName = "";
+            string Indicator_name = _gridViewIndicators.SelectedCells[0].Value.ToString();
                 for (int i = 0; i < 30; i++)
                 {
-                    if (_chartMaster.IndicatorIsCreate(_chartMaster.Name + "Claster" + i) == false)
+                    if (_chartMaster.IndicatorIsCreate(_chartMaster.Name + Indicator_name + i) == false)
                     {
-                        name = "Claster" + i;
+                        ChartName = _gridViewIndicators.SelectedCells[0].Value.ToString() + i;
                         break;
                     }
                 }
-                IndicatorCandle = new Claster(_chartMaster.Name + name, true);
+                Object[] arg = { _chartMaster.Name + ChartName, true };
+                IndicatorCandle = (IIndicatorCandle)ClassWork.GetInstance(ClassWork.GetFullNameIndicator(Indicator_name) , arg);
                 _chartMaster.CreateIndicator(IndicatorCandle, areaName);
-            }
-            if (_gridViewIndicators.SelectedCells[0].Value.ToString() == "Delta")
-            {
-                string name = "";
-
-                for (int i = 0; i < 30; i++)
-                {
-                    if (_chartMaster.IndicatorIsCreate(_chartMaster.Name + "Delta" + i) == false)
-                    {
-                        name = "Delta" + i;
-                        break;
-                    }
-                }
-                IndicatorCandle = new Delta(_chartMaster.Name + name, true);
-                _chartMaster.CreateIndicator(IndicatorCandle, areaName);
-            }
             //---
 
             Close();
