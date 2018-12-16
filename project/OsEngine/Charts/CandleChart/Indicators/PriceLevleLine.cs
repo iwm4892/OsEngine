@@ -288,7 +288,14 @@ namespace OsEngine.Charts.CandleChart.Indicators
         }
         private void add(levlel el)
         {
-
+            if(el.Value == 0)
+            {
+                return;
+            }
+            if (updateLevelData(el))
+            {
+                return;
+            }
             LevleData.Add(el);
             LevleData.Sort((a, b) => decimal.Compare(a.Value, b.Value));
             if (LevleData.Count > 6)
@@ -319,11 +326,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                     levlel el = new levlel();
                     el.levlSide = Side.Sell;
                     el.Value = Values[j-1];
-
-                    if (!updateLevelData(el))
-                    {
-                        add(el);
-                    }
+                    add(el);
                 }
 
                 if (Values[j] >= Values[j-1]
@@ -334,11 +337,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                     levlel el = new levlel();
                     el.levlSide = Side.Buy;
                     el.Value = Values[j-1];
-
-                    if (!updateLevelData(el))
-                    {
-                        add(el);
-                    }
+                    add(el);
                 }
             }
 

@@ -286,22 +286,7 @@ namespace OsEngine.Entity
         }
         public new void Check()
         {
-            /*
-            // проверим тренд из последних CandlesCount Свечеек
-            // и посчетаем средний спрэд
-            decimal trend =0;
-            decimal sredspread=0;
-            for (int i= Candles.Count-CandlesCount;i< Candles.Count; i++)
-            {
-                trend += Candles[i].Close-Candles[i].Open;
-                sredspread += Candles[i].High - Candles[i].Low;
-            }
-            sredspread = sredspread / CandlesCount;
-            if (Math.Abs(trend) > sredspread * (decimal)0.1)
-            {
-                return;
-            }
-            */
+
             CandleData cData = new CandleData(Candles[Candles.Count - 1]);
             //предположим что тени нет если размер тени меньше 10% размера свечи
             // предполагаем что длинная тень это больше 30% размера свечи
@@ -345,22 +330,7 @@ namespace OsEngine.Entity
         }
         public new void Check()
         {
-            /*
-            // проверим тренд из последних CandlesCount Свечеек
-            // и посчетаем средний спрэд
-            decimal trend =0;
-            decimal sredspread=0;
-            for (int i= Candles.Count-CandlesCount;i< Candles.Count; i++)
-            {
-                trend += Candles[i].Close-Candles[i].Open;
-                sredspread += Candles[i].High - Candles[i].Low;
-            }
-            sredspread = sredspread / CandlesCount;
-            if (Math.Abs(trend) > sredspread * (decimal)0.1)
-            {
-                return;
-            }
-            */
+
             CandleData cData1 = new CandleData(Candles[Candles.Count - 2]);
             CandleData cData2 = new CandleData(Candles[Candles.Count - 1]);
             //Разные направления
