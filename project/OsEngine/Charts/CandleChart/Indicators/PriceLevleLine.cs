@@ -188,8 +188,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
                         el.Value = readerStr;
                         LevleData.Add(el);
                     }
-                        reader.ReadLine();
-
                     reader.Close();
                 }
 
