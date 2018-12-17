@@ -405,7 +405,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             }
 
             ProcessValue(candles, candles.Count - 1);
-            Values.Add(candles[candles.Count - 1].ClasterData.MaxData.Price);
+            Values.Add(GetValue(candles[candles.Count - 1]));
 
         }
 
@@ -421,8 +421,9 @@ namespace OsEngine.Charts.CandleChart.Indicators
               //      LevleData = new List<levlel>();
                     LastDay = candles[i].TimeStart.Date;
                 }
-                Values.Add(candles[i].ClasterData.MaxData.Price);
-                ProcessValue(candles,i);
+                ProcessValue(candles, i);
+                Values.Add(GetValue (candles[i]));
+                
             }
         }
 
@@ -434,26 +435,24 @@ namespace OsEngine.Charts.CandleChart.Indicators
             Values[Values.Count - 1] = candles[candles.Count - 1].ClasterData.MaxData.Price;
         }
 
-        /// <summary>
-        /// взять значение индикаторм по индексу
-        /// </summary>
-        private ClasterData GetValue(List<Candle> candles, int index)
+        private decimal GetValue(Candle candle)
         {
-            if (index > candles.Count - 1)
+            if (candle.ClasterData.MaxData.Price == 0)
             {
-                return new ClasterData();
+                if (candle.IsUp)
+                {
+                    return candle.High;
+                }
+                else
+                {
+                    return candle.Low;
+                }
             }
-
-            List<Trade> trades = candles[index].Trades;
-
-            if (trades == null ||
-                trades.Count == 0)
+            else
             {
-                return new ClasterData();
+                return candle.ClasterData.MaxData.Price;
             }
-            return candles[index].ClasterData;
         }
-
 
         /// <summary>
         /// прогрузить новыми значениями
