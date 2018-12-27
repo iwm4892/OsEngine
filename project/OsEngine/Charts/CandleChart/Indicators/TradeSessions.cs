@@ -105,30 +105,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
 
         }
-        /*
-        /// <summary>
-        /// Инициализация таблицы
-        /// </summary>
-        public void initTab()
-        {
-            if(_tab==null)
-            {
-                return;
-            }
-         //   _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
-
-        }
-
-        private void _tab_CandleFinishedEvent(List<Candle> candles)
-        {
-         //   UpdateDate(candles, candles.Count - 1);
-        }
-
-        /// <summary>
-        /// Таблица для обработки
-        /// </summary>
-         public OsTrader.Panels.Tab.BotTabSimple _tab;
-         */
         /// <summary>
         /// Описание торговой сессии
         /// </summary>
@@ -605,7 +581,9 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessLastCanlde(List<Candle> candles)
         {
+            UpdateDate(candles, candles.Count - 1);
             updateNullValue();
+            Values[Values.Count - 1] = LastSessionEndPrice;
         }
         private void updateNullValue()
         {
