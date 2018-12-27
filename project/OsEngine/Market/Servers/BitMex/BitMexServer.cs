@@ -16,7 +16,7 @@ using OsEngine.Market.Servers.Entity;
 
 namespace OsEngine.Market.Servers.BitMex
 {
-    public class BitMexServer: IServer
+    public class BitMexServer : IServer
     {
         /// <summary>
         /// конструктор
@@ -83,7 +83,7 @@ namespace OsEngine.Market.Servers.BitMex
         /// <returns></returns>
         public ServerType ServerType { get; set; }
 
-//сервис
+        //сервис
 
         private bool _isDemo;
 
@@ -147,7 +147,7 @@ namespace OsEngine.Market.Servers.BitMex
             {
                 _ui.Activate();
             }
-           
+
         }
 
         /// <summary>
@@ -228,8 +228,8 @@ namespace OsEngine.Market.Servers.BitMex
             }
         }
 
-        
-// подключение/отключение
+
+        // подключение/отключение
 
         /// <summary>
         /// нужный статус сервера. Нужен потоку который следит за соединением
@@ -261,7 +261,7 @@ namespace OsEngine.Market.Servers.BitMex
             ServerStatus = ServerConnectStatus.Connect;
         }
 
-// статус соединения
+        // статус соединения
 
         private ServerConnectStatus _serverConnectStatus;
 
@@ -290,7 +290,7 @@ namespace OsEngine.Market.Servers.BitMex
         /// </summary>
         public event Action<string> ConnectStatusChangeEvent;
 
-// работа основного потока !!!!!!
+        // работа основного потока !!!!!!
 
         /// <summary>
         /// основной поток, следящий за подключением, загрузкой портфелей и бумаг, пересылкой данных на верх
@@ -422,7 +422,7 @@ namespace OsEngine.Market.Servers.BitMex
                 _clientBitMex = new BitMexClient();
                 _clientBitMex.Connected += BitMexClient_Connected;
                 _clientBitMex.Disconnected += ClientBitMexOnDisconnected;
-               _clientBitMex.UpdatePortfolio += UpdatePortfolios;
+                _clientBitMex.UpdatePortfolio += UpdatePortfolios;
                 _clientBitMex.UpdatePosition += UpdatePosition;
                 _clientBitMex.UpdateMarketDepth += UpdateMarketDepth;
                 _clientBitMex.NewTradesEvent += NewTrades;
@@ -547,7 +547,7 @@ namespace OsEngine.Market.Servers.BitMex
         /// </summary>
         private BitMexClient _clientBitMex;
 
-// работа потока рассылки !!!!!
+        // работа потока рассылки !!!!!
 
         #region MyRegion
 
@@ -737,7 +737,7 @@ namespace OsEngine.Market.Servers.BitMex
         #endregion
 
 
-// время сервера
+        // время сервера
 
         private DateTime _serverTime;
 
@@ -770,7 +770,7 @@ namespace OsEngine.Market.Servers.BitMex
         /// </summary>
         public event Action<DateTime> TimeServerChangeEvent;
 
- // портфели
+        // портфели
 
         private List<Portfolio> _portfolios;
 
@@ -881,7 +881,7 @@ namespace OsEngine.Market.Servers.BitMex
         /// </summary>
         public event Action<List<Portfolio>> PortfoliosChangeEvent;
 
-// инструменты
+        // инструменты
 
         private List<Security> _securities;
 
@@ -967,7 +967,7 @@ namespace OsEngine.Market.Servers.BitMex
             ui.ShowDialog();
         }
 
- // Подпись на данные
+        // Подпись на данные
 
         /// <summary>
         /// мастер загрузки свечек
@@ -1041,7 +1041,7 @@ namespace OsEngine.Market.Servers.BitMex
 
                     _candles = null;
 
-                    CandleSeries series = new CandleSeries(timeFrameBuilder, security,StartProgram.IsOsTrader)
+                    CandleSeries series = new CandleSeries(timeFrameBuilder, security, StartProgram.IsOsTrader)
                     {
                         CandlesAll = _candles
                     };
@@ -1054,19 +1054,19 @@ namespace OsEngine.Market.Servers.BitMex
 
                         _clientBitMex.SendQuery(queryQuotes);
 
-                        
+
 
                         string queryTrades = "{\"op\": \"subscribe\", \"args\": [\"trade:" + security.Name + "\"]}";
 
                         _clientBitMex.SendQuery(queryTrades);
 
-                        
+
 
                         string queryMyTrades = "{\"op\": \"subscribe\", \"args\": [\"execution:" + security.Name + "\"]}";
 
                         _clientBitMex.SendQuery(queryMyTrades);
 
-                        
+
 
                         string queryorders = "{\"op\": \"subscribe\", \"args\": [\"order:" + security.Name + "\"]}";
 
@@ -1124,7 +1124,7 @@ namespace OsEngine.Market.Servers.BitMex
         /// </summary>
         public event Action NeadToReconnectEvent;
 
-// свечи
+        // свечи
 
 
         private object _getCandles = new object();
@@ -1292,7 +1292,7 @@ namespace OsEngine.Market.Servers.BitMex
                 candles1M = GetCandlesTf(security, "1m", 1);
                 a = tf / 1;
             }
-            
+
             int index = candles1M.FindIndex(can => can.TimeStart.Minute % tf == 0);
 
             List<Candle> candlestf = new List<Candle>();
@@ -1301,7 +1301,7 @@ namespace OsEngine.Market.Servers.BitMex
 
             Candle newCandle = new Candle();
 
-            for (int i = index; i < candles1M.Count; i ++)
+            for (int i = index; i < candles1M.Count; i++)
             {
                 count++;
                 if (count == 1)
@@ -1335,10 +1335,10 @@ namespace OsEngine.Market.Servers.BitMex
                     newCandle.State = CandleState.Finished;
                     candlestf.Add(newCandle);
                     count = 0;
-                }               
+                }
             }
 
-            return candlestf;          
+            return candlestf;
         }
 
         /// <summary>
@@ -1479,7 +1479,7 @@ namespace OsEngine.Market.Servers.BitMex
                             {
                                 _bidAskToSend.Enqueue(new BidAskSender
                                 {
-                                    Bid= myDepth.Bids[0].Price,
+                                    Bid = myDepth.Bids[0].Price,
                                     Ask = myDepth.Asks[0].Price,
                                     Security = quotes.data[0].symbol != null
                                         ? GetSecurityForName(quotes.data[0].symbol)
@@ -1780,9 +1780,9 @@ namespace OsEngine.Market.Servers.BitMex
 
         public event Action<MarketDepth> NewMarketDepthEvent;
 
-// тики
+        // тики
 
-        
+
         private ServerTickStorage _tickStorage;
 
         /// <summary>
@@ -1809,7 +1809,7 @@ namespace OsEngine.Market.Servers.BitMex
             try
             {
                 List<Trade> trades = new List<Trade>();
-                
+
                 Dictionary<string, string> param = new Dictionary<string, string>();
 
                 param["symbol"] = security.Name;
@@ -1841,7 +1841,7 @@ namespace OsEngine.Market.Servers.BitMex
             {
                 SendLogMessage(error.ToString(), LogMessageType.Error);
                 return null;
-            }           
+            }
         }
 
         /// <summary>
@@ -1927,9 +1927,9 @@ namespace OsEngine.Market.Servers.BitMex
             }
             catch (Exception error)
             {
-                    SendLogMessage(error.ToString(), LogMessageType.Error);
+                SendLogMessage(error.ToString(), LogMessageType.Error);
             }
-            
+
         }
 
         /// <summary>
@@ -1937,7 +1937,7 @@ namespace OsEngine.Market.Servers.BitMex
         /// </summary>
         public event Action<List<Trade>> NewTradeEvent;
 
-// новая моя сделка
+        // новая моя сделка
 
         private List<MyTrade> _myTrades;
 
@@ -1975,7 +1975,7 @@ namespace OsEngine.Market.Servers.BitMex
 
                         if (order.data[i].lastQty != null)
                         {
-                            trade.Volume = (int) order.data[i].lastQty;
+                            trade.Volume = (int)order.data[i].lastQty;
                         }
 
                         if (_myTrades == null)
@@ -1999,7 +1999,7 @@ namespace OsEngine.Market.Servers.BitMex
         /// </summary>
         public event Action<MyTrade> NewMyTradeEvent;
 
-// работа с ордерами
+        // работа с ордерами
 
         /// <summary>
         /// место работы потока на очередях исполнения заявок и их отмены
@@ -2123,7 +2123,7 @@ namespace OsEngine.Market.Servers.BitMex
                     {
                         continue;
                     }
-                   
+
                     order.NumberMarket = myOrders[i].orderID;
                     order.SecurityNameCode = myOrders[i].symbol;
 
@@ -2187,7 +2187,7 @@ namespace OsEngine.Market.Servers.BitMex
                               "Отчёта об ордере небыло больше пяти минут. Признаём его без вести пропавшим, а позицию по нему не открытой. Номер ордера: "
                                + _ordersToCheck[i].NumberUser, LogMessageType.Error);
                             SendLogMessage(
-                              "После предыдущей ошибки, существует всё же шанс что биржа просто зависла забыв про нас и через несколько минут или десятков"+
+                              "После предыдущей ошибки, существует всё же шанс что биржа просто зависла забыв про нас и через несколько минут или десятков" +
                               " минут роботу придёт оповещение " +
                             "о том что ордер таки исполнился. Проверте НЕТТО позицию через личный кабинет руками!!!", LogMessageType.Error);
 
@@ -2223,7 +2223,7 @@ namespace OsEngine.Market.Servers.BitMex
                             _ordersToCheck[i].State = OrderStateType.Done;
                             _ordersToCheck[i].TimeCallBack = ServerTime;
                             _ordersToCheck[i].VolumeExecute = _ordersToCheck[i].Volume;
-                            
+
                             _ordersToSend.Enqueue(_ordersToCheck[i]);
 
                             if (_myTrades != null &&
@@ -2538,7 +2538,7 @@ namespace OsEngine.Market.Servers.BitMex
         /// </summary>
         public event Action<Order> NewOrderIncomeEvent;
 
-// сообщения для лога
+        // сообщения для лога
 
         /// <summary>
         /// ошибки клиента
