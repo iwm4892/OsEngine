@@ -17,6 +17,8 @@ using OsEngine.Market;
 using OsEngine.Market.Servers;
 using OsEngine.Market.Servers.Finam;
 
+using OsEngine.Market.Servers.BitMex;
+
 namespace OsEngine.OsData
 {
     /// <summary>
@@ -824,7 +826,25 @@ namespace OsEngine.OsData
                     }
                 }
             }
-
+            //++++
+            if (TfTickIsOn && _myServer != null && _myServer.ServerType == ServerType.BitMex)
+            {
+                for (int i = 0; i < SecuritiesNames.Count; i++)
+                {
+                    DateTime _timeStart = GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick");
+                    if (_timeStart == DateTime.MinValue)
+                    {
+                        _timeStart = TimeStart;
+                    }
+                    while (
+                      ((BitMexServer)_myServer).StartTickToSecurity(SecuritiesNames[i].Id, TimeStart, TimeEnd,
+                          GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick")))
+                    {
+                        Thread.Sleep(5000);
+                    }
+                }
+            }
+            //----
             _setIsActive = true;
         }
 

@@ -2587,7 +2587,7 @@ namespace OsEngine.Market.Servers.BitMex
         public event Action<string, LogMessageType> LogMessageEvent;
         
         //+++++
-        public bool StartTickToSecurity(string id, DateTime startTime, DateTime endTime, DateTime actualTime, bool neadToUpdete)
+        public bool StartTickToSecurity(string id, DateTime startTime, DateTime endTime, DateTime actualTime)
         {
             try
             {
@@ -2639,9 +2639,14 @@ namespace OsEngine.Market.Servers.BitMex
                     }
 
                     Dictionary<string, string> param = new Dictionary<string, string>();
-
                     string end = endTime.ToString("yyyy-MM-dd HH:mm");
                     string start = startTime.ToString("yyyy-MM-dd HH:mm");
+
+                    if (startTime < actualTime && actualTime < endTime)
+                    {
+                        start = actualTime.ToString("yyyy-MM-dd HH:mm");
+                        end = actualTime.AddMinutes(5).ToString("yyyy-MM-dd HH:mm");
+                    }
 
                     param["symbol"] = security.Name;
 //                    param["count"] = 500.ToString();
@@ -2656,8 +2661,8 @@ namespace OsEngine.Market.Servers.BitMex
                     List<TradeBitMex> tradeHistory = JsonConvert.DeserializeAnonymousType(res, new List<TradeBitMex>());
 
                     tradeHistory.Reverse();
-              //      _allTrades = tradeHistory;
-             //       List<Trade> trades = new List<Trade>();
+                    //      _allTrades = tradeHistory;
+                    //       List<Trade> trades = new List<Trade>();
 
                     foreach (var oneTrade in tradeHistory)
                     {
@@ -2714,7 +2719,7 @@ namespace OsEngine.Market.Servers.BitMex
 
                             //           trades.Add(trade);
                         }
-
+                    }
                         //   _allTrades = trades;
                         //       return trades;
 
