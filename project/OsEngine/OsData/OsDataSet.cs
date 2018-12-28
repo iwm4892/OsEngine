@@ -827,7 +827,7 @@ namespace OsEngine.OsData
                 }
             }
             //++++
-            /*
+            
             if (TfTickIsOn && _myServer != null && _myServer.ServerType == ServerType.BitMex)
             {
                 for (int i = 0; i < SecuritiesNames.Count; i++)
@@ -838,14 +838,15 @@ namespace OsEngine.OsData
                         _timeStart = TimeStart;
                     }
                     while (
-                      ((BitMexServer)_myServer).StartTickToSecurity(SecuritiesNames[i].Id, TimeStart, TimeEnd,
+                      ((BitMexServer)_myServer).StartTickToSecurity(SecuritiesNames[i].Name, TimeStart, TimeEnd,
                           GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick")))
                     {
                         Thread.Sleep(5000);
                     }
                 }
             }
-            */
+            
+            
             //----
             _setIsActive = true;
         }

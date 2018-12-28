@@ -2587,7 +2587,7 @@ namespace OsEngine.Market.Servers.BitMex
         public event Action<string, LogMessageType> LogMessageEvent;
         
         //+++++
-        public bool StartTickToSecurity(string id, DateTime startTime, DateTime endTime, DateTime actualTime)
+        public bool StartTickToSecurity(string Name, DateTime startTime, DateTime endTime, DateTime actualTime)
         {
             try
             {
@@ -2599,7 +2599,7 @@ namespace OsEngine.Market.Servers.BitMex
                 // дальше по одному
                 lock (_lockerStarter)
                 {
-                    if (id == null)
+                    if (Name == null)
                     {
                         return false;
                     }
@@ -2626,7 +2626,7 @@ namespace OsEngine.Market.Servers.BitMex
 
                     for (int i = 0; _securities != null && i < _securities.Count; i++)
                     {
-                        if (_securities[i].NameId == id)
+                        if (_securities[i].Name == Name)
                         {
                             security = _securities[i];
                             break;
