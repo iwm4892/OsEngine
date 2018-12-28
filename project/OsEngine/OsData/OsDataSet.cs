@@ -827,6 +827,7 @@ namespace OsEngine.OsData
                 }
             }
             //++++
+            /*
             if (TfTickIsOn && _myServer != null && _myServer.ServerType == ServerType.BitMex)
             {
                 for (int i = 0; i < SecuritiesNames.Count; i++)
@@ -844,6 +845,7 @@ namespace OsEngine.OsData
                     }
                 }
             }
+            */
             //----
             _setIsActive = true;
         }
