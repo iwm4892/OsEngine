@@ -196,7 +196,7 @@ namespace OsEngine.OsData
             worker.IsBackground = true;
             worker.Start();
 
-            _chartMaster = new ChartMaster(nameUniq,StartProgram.IsOsData);
+            _chartMaster = new ChartMaster(nameUniq, StartProgram.IsOsData);
             _chartMaster.StopPaint();
 
             _comboBoxSecurity = comboBoxSecurity;
@@ -312,7 +312,7 @@ namespace OsEngine.OsData
 
                     string[] securities = reader.ReadLine().Split('@');
 
-                    for (int i = 0; i < securities.Length-1; i++)
+                    for (int i = 0; i < securities.Length - 1; i++)
                     {
                         SecuritiesNames.Add(new SecurityToLoad());
                         SecuritiesNames[SecuritiesNames.Count - 1].Load(securities[i]);
@@ -424,7 +424,7 @@ namespace OsEngine.OsData
                     SecuritiesNames = new List<SecurityToLoad>();
                 }
 
-               SecurityToLoad record = new SecurityToLoad();
+                SecurityToLoad record = new SecurityToLoad();
                 record.Name = ui.SelectedSecurity.Name;
                 record.Id = ui.SelectedSecurity.NameId;
 
@@ -546,7 +546,7 @@ namespace OsEngine.OsData
             {
                 if (Tf1MinuteIsOn)
                 {
-                    LoadSetsFromFile(SecuritiesNames[i].Name.Replace("*","") ,TimeFrame.Min1);
+                    LoadSetsFromFile(SecuritiesNames[i].Name.Replace("*", ""), TimeFrame.Min1);
                 }
                 if (Tf2MinuteIsOn)
                 {
@@ -612,7 +612,7 @@ namespace OsEngine.OsData
         {
 
 
-            string path = "Data\\" + SetName + "\\" + securityName.Replace("/", "") +"\\" + frame;
+            string path = "Data\\" + SetName + "\\" + securityName.Replace("/", "") + "\\" + frame;
 
             if (!Directory.Exists(path))
             {
@@ -657,7 +657,7 @@ namespace OsEngine.OsData
             {
                 candleSaveInfo.LastSaveObjectTime = candles[candles.Count - 1].TimeStart;
             }
-           
+
         }
 
         /// <summary>
@@ -819,35 +819,13 @@ namespace OsEngine.OsData
                 for (int i = 0; i < SecuritiesNames.Count; i++)
                 {
                     while (
-                        ((FinamServer) _myServer).StartTickToSecurity(SecuritiesNames[i].Id, TimeStart, TimeEnd,
+                        ((FinamServer)_myServer).StartTickToSecurity(SecuritiesNames[i].Id, TimeStart, TimeEnd,
                             GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick"), NeadToUpdate) == false)
                     {
                         Thread.Sleep(5000);
                     }
                 }
             }
-            //++++
-            
-            if (TfTickIsOn && _myServer != null && _myServer.ServerType == ServerType.BitMex)
-            {
-                for (int i = 0; i < SecuritiesNames.Count; i++)
-                {
-                    DateTime _timeStart = GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick");
-                    if (_timeStart == DateTime.MinValue)
-                    {
-                        _timeStart = TimeStart;
-                    }
-                    while (
-                      ((BitMexServer)_myServer).StartTickToSecurity(SecuritiesNames[i].Name, TimeStart, TimeEnd,
-                          GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick")))
-                    {
-                        Thread.Sleep(5000);
-                    }
-                }
-            }
-            
-            
-            //----
             _setIsActive = true;
         }
 
@@ -938,11 +916,11 @@ namespace OsEngine.OsData
 
             for (int i = 0; i < SecuritiesNames.Count; i++)
             {
-                string s = SecuritiesNames[i].Name.Replace("/","");
+                string s = SecuritiesNames[i].Name.Replace("/", "");
 
                 if (!Directory.Exists("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "").Replace("*", "")))
                 {
-                    Directory.CreateDirectory("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "").Replace("*",""));
+                    Directory.CreateDirectory("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "").Replace("*", ""));
                 }
             }
 
@@ -969,7 +947,51 @@ namespace OsEngine.OsData
             {
                 for (int i = 0; i < SecuritiesNames.Count; i++)
                 {
-                    if (_myServer.ServerType != ServerType.Finam)
+                    if (_myServer.ServerType == ServerType.BitMex)
+                    {
+                        DateTime lastDate = DateTime.MinValue;
+                        Security security = _myServer.GetSecurityForName(SecuritiesNames[i].Name);
+                        List<Trade> _LastTrades = new List<Trade>();
+                        while (lastDate < TimeEnd)
+                        {
+                            if (lastDate == DateTime.MinValue)
+                            {
+                                lastDate = GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick");
+                            }
+                            else
+                            {
+                                lastDate = TimeZoneInfo.ConvertTimeToUtc(lastDate);
+                            }
+                            List<Trade> trades = ((BitMexServer)_myServer).GetTickHistoryToSecurity(security, TimeStart, TimeEnd, lastDate);
+
+                            if (trades == null ||
+                                trades.Count == 0)
+                            {
+                                continue;
+                            }
+
+                            string path = pathToSet + SecuritiesNames[i].Name.Replace("/", "").Replace("*", "") + "\\Tick\\";
+
+                            for (int i2 = 0; i2 < trades.Count; i2++)
+                            {
+                                Trade ft = _LastTrades.Find(x => x.Id == trades[i2].Id);
+
+                                if (ft != null)
+                                {
+                                    continue;
+                                }
+                                SaveThisTick(trades[i2],
+                                    path, SecuritiesNames[i].Name.Replace("*", ""), null, path + "\\" + SecuritiesNames[i].Name.Replace("/", "").Replace("*", ""));
+                            }
+                            lastDate = trades[trades.Count - 1].Time;
+                            _LastTrades = trades;
+                            Thread.Sleep(2000);
+                        }
+
+                    }
+
+
+                    else if (_myServer.ServerType != ServerType.Finam)
                     {
                         List<Trade> trades = _myServer.GetAllTradesToSecurity(_myServer.GetSecurityForName(SecuritiesNames[i].Name));
 
@@ -992,8 +1014,8 @@ namespace OsEngine.OsData
                     { // Финам
                         List<string> trades = ((FinamServer)_myServer).GetAllFilesWhithTradeToSecurity(SecuritiesNames[i].Name);
 
-                         SaveThisTickFromFiles(trades,
-                            pathToSet + SecuritiesNames[i].Name.Replace("*", "").Replace("/", "") + "\\" + "Tick" + "\\", SecuritiesNames[i].Name.Replace("*", ""));
+                        SaveThisTickFromFiles(trades,
+                           pathToSet + SecuritiesNames[i].Name.Replace("*", "").Replace("/", "") + "\\" + "Tick" + "\\", SecuritiesNames[i].Name.Replace("*", ""));
 
                     }
                 }
@@ -1099,7 +1121,7 @@ namespace OsEngine.OsData
         /// <param name="pathToFile">путь к файлу</param>
         private DateTime GetActualTimeToCandle(string pathToFile)
         {
-            if(!Directory.Exists(pathToFile))
+            if (!Directory.Exists(pathToFile))
             {
                 return DateTime.MinValue;
             }
@@ -1353,7 +1375,7 @@ namespace OsEngine.OsData
 
                 string[] files = Directory.GetFiles(pathToFolder);
 
-                if (files.Length != 0 )
+                if (files.Length != 0)
                 {
                     if (writer != null)
                     {
@@ -1474,12 +1496,12 @@ namespace OsEngine.OsData
                     {
                         continue;
                     }
-                    
+
                     SaveThisTick(newTrade,
                         path, securityName, null, path + securityName.Replace("/", "") + ".txt");
                 }
 
-                using ( StreamWriter writer =
+                using (StreamWriter writer =
                         new StreamWriter(path + securityName.Replace("/", "") + ".txt", true))
                 {
                     while (!reader.EndOfStream)
@@ -1499,7 +1521,7 @@ namespace OsEngine.OsData
             }
         }
 
-        private List<string> _savedTradeFiles = new List<string>(); 
+        private List<string> _savedTradeFiles = new List<string>();
 
         // стаканы
 
@@ -1745,7 +1767,7 @@ namespace OsEngine.OsData
                 ReBuildComboBox();
 
                 _isSelected = true;
-                
+
                 Paint();
             }
             catch (Exception error)
@@ -1940,7 +1962,7 @@ namespace OsEngine.OsData
                 {
                     return;
                 }
-                if ( _selectedTf != TimeFrame.Sec1 &&
+                if (_selectedTf != TimeFrame.Sec1 &&
                     _selectedTf != TimeFrame.Sec2 &&
                     _selectedTf != TimeFrame.Sec5 &&
                     _selectedTf != TimeFrame.Sec10 &&
@@ -1949,7 +1971,7 @@ namespace OsEngine.OsData
                 {
                     _chartMaster.SetCandles(series.Candles);
                 }
-                
+
             }
             catch (Exception error)
             {
@@ -1957,7 +1979,7 @@ namespace OsEngine.OsData
             }
         }
 
-// сообщения в лог 
+        // сообщения в лог 
 
         /// <summary>
         /// выслать новое сообщение на верх
@@ -2056,7 +2078,7 @@ namespace OsEngine.OsData
                 {
                     if (Candles[Candles.Count - 1].TimeStart > candles[i].TimeStart)
                     {
-                        firstIndex = i+1;
+                        firstIndex = i + 1;
                         break;
                     }
                 }

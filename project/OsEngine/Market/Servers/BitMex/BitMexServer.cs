@@ -13,6 +13,8 @@ using OsEngine.Entity;
 using OsEngine.Logging;
 using OsEngine.Market.Servers.BitMex.BitMexEntity;
 using OsEngine.Market.Servers.Entity;
+using System.Net;
+
 
 namespace OsEngine.Market.Servers.BitMex
 {
@@ -2585,178 +2587,74 @@ namespace OsEngine.Market.Servers.BitMex
         /// исходящее сообщение для лога
         /// </summary>
         public event Action<string, LogMessageType> LogMessageEvent;
-        
+
         //+++++
-        public bool StartTickToSecurity(string Name, DateTime startTime, DateTime endTime, DateTime actualTime)
+        public List<Trade> GetTickHistoryToSecurity(Security security, DateTime startTime, DateTime endTime, DateTime actualTime)
         {
             try
             {
+                /*
                 if (_lastStartServerTime.AddSeconds(5) > DateTime.Now)
                 {
-                    return false;
+                    Thread.Sleep(5000);
                 }
-
+                */
                 // дальше по одному
                 lock (_lockerStarter)
                 {
-                    if (Name == null)
+                    List<Trade> trades = new List<Trade>();
+                    if (startTime < endTime)
                     {
-                        return false;
-                    }
-                    // надо запустить сервер если он ещё отключен
-                    if (ServerStatus != ServerConnectStatus.Connect)
-                    {
-                        //MessageBox.Show("Сервер не запущен. Скачивание данных прервано. Инструмент: " + namePaper);
-                        return false;
-                    }
-
-                    if (_securities == null)
-                    {
-                        Thread.Sleep(5000);
-                        return false;
-                    }
-                    if (_lastStartServerTime != DateTime.MinValue &&
-                        _lastStartServerTime.AddSeconds(15) > DateTime.Now)
-                    {
-                        return false;
-                    }
-
-                    Security security = null;
-
-
-                    for (int i = 0; _securities != null && i < _securities.Count; i++)
-                    {
-                        if (_securities[i].Name == Name)
+                        if (startTime < actualTime)
                         {
-                            security = _securities[i];
-                            break;
+                            startTime = actualTime;
                         }
-                    }
+                        SendLogMessage("Инструмент " + security.Name + "ТаймФрейм Tick" +
+                                " получение данных на " + startTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                             LogMessageType.System);
 
-                    if (security == null)
-                    {
-                        return false;
-                    }
+                        Dictionary<string, string> param = new Dictionary<string, string>();
 
-                    Dictionary<string, string> param = new Dictionary<string, string>();
-                    string end = endTime.ToString("yyyy-MM-dd HH:mm");
-                    string start = startTime.ToString("yyyy-MM-dd HH:mm");
+                        string start = startTime.ToString("yyyy-MM-dd HH:mm:ss");
+                        string end = startTime.AddMinutes(1).ToString("yyyy-MM-dd HH:mm:ss");
 
-                    if (startTime < actualTime && actualTime < endTime)
-                    {
-                        start = actualTime.ToString("yyyy-MM-dd HH:mm");
-                        end = actualTime.AddMinutes(5).ToString("yyyy-MM-dd HH:mm");
-                    }
-
-                    param["symbol"] = security.Name;
-//                    param["count"] = 500.ToString();
-                    param["reverse"] = true.ToString();
-                    param["startTime"] = start;
-                    param["endTime"] = end;
-                    param["partial"] = true.ToString();
+                        param["symbol"] = security.Name;
+                        param["count"] = 500.ToString();
+                        param["start"] = 0.ToString();
+                        param["reverse"] = true.ToString();
+                        param["startTime"] = WebUtility.UrlEncode(start);
+                        param["endTime"] = WebUtility.UrlEncode(end);
 
 
-                    var res = _clientBitMex.CreateQuery("GET", "/trade", param, true);
 
-                    List<TradeBitMex> tradeHistory = JsonConvert.DeserializeAnonymousType(res, new List<TradeBitMex>());
 
-                    tradeHistory.Reverse();
-                    //      _allTrades = tradeHistory;
-                    //       List<Trade> trades = new List<Trade>();
+                        var res = _clientBitMex.CreateQuery("GET", "/trade", param);
 
-                    foreach (var oneTrade in tradeHistory)
-                    {
-                        Trade trade = new Trade();
-                        trade.SecurityNameCode = oneTrade.symbol;
-                        trade.Id = oneTrade.trdMatchID;
-                        trade.Time = Convert.ToDateTime(oneTrade.timestamp);
-                        trade.Price = oneTrade.price;
-                        trade.Volume = oneTrade.size;
-                        trade.Side = oneTrade.side == "Sell" ? Side.Sell : Side.Buy;
+                        List<TradeBitMex> tradeHistory = JsonConvert.DeserializeAnonymousType(res, new List<TradeBitMex>());
 
-                        // сохраняем
-                        if (_allTrades == null)
+                        tradeHistory.Reverse();
+
+                        foreach (var oneTrade in tradeHistory)
                         {
-                            _allTrades = new List<Trade>[1];
-                            _allTrades[0] = new List<Trade> { trade };
+                            Trade trade = new Trade();
+                            trade.SecurityNameCode = oneTrade.symbol;
+                            trade.Id = oneTrade.trdMatchID;
+                            trade.Time = Convert.ToDateTime(oneTrade.timestamp);
+                            trade.Price = oneTrade.price;
+                            trade.Volume = oneTrade.size;
+                            trade.Side = oneTrade.side == "Sell" ? Side.Sell : Side.Buy;
+                            trades.Add(trade);
                         }
-                        else
-                        {
-                            // сортируем сделки по хранилищам
-                            List<Trade> myList = null;
-                            bool isSave = false;
-                            for (int i = 0; i < _allTrades.Length; i++)
-                            {
-                                if (_allTrades[i] != null && _allTrades[i].Count != 0 &&
-                                    _allTrades[i][0].SecurityNameCode == trade.SecurityNameCode)
-                                {
-                                    // если для этого инструметна уже есть хранилище, сохраняем и всё
-                                    if (trade.Time < _allTrades[i][_allTrades[i].Count - 1].Time)
-                                    {
-                                        return true;
-                                    }
-
-                                    _allTrades[i].Add(trade);
-                                    myList = _allTrades[i];
-                                    isSave = true;
-                                    break;
-                                }
-                            }
-
-                            if (isSave == false)
-                            {
-                                // хранилища для инструмента нет
-                                List<Trade>[] allTradesNew = new List<Trade>[_allTrades.Length + 1];
-                                for (int i = 0; i < _allTrades.Length; i++)
-                                {
-                                    allTradesNew[i] = _allTrades[i];
-                                }
-                                allTradesNew[allTradesNew.Length - 1] = new List<Trade>();
-                                allTradesNew[allTradesNew.Length - 1].Add(trade);
-                                myList = allTradesNew[allTradesNew.Length - 1];
-                                _allTrades = allTradesNew;
-                            }
-
-                            //           trades.Add(trade);
-                        }
+                        // startTime = startTime.AddMinutes(1);
+                        //   Thread.Sleep(5000);
                     }
-                        //   _allTrades = trades;
-                        //       return trades;
-
-                        /*
-                        FinamDataSeries finamDataSeries = new FinamDataSeries();
-
-                        finamDataSeries.ServerPrefics = "http://" + ServerAdress;
-                        finamDataSeries.TimeActual = actualTime;
-                        finamDataSeries.Security = security;
-                        finamDataSeries.SecurityFinam = _finamSecurities.Find(s => s.Id == security.NameId);
-                        finamDataSeries.TimeEnd = endTime;
-                        finamDataSeries.TimeStart = startTime;
-                        finamDataSeries.IsTick = true;
-                        finamDataSeries.TradesUpdateEvent += finamDataSecies_TradesFilesUpdateEvent;
-                        finamDataSeries.NeadToUpdeate = neadToUpdete;
-                        finamDataSeries.LogMessageEvent += SendLogMessage;
-
-                        if (_finamDataSeries == null)
-                        {
-                            _finamDataSeries = new List<FinamDataSeries>();
-                        }
-
-                        _finamDataSeries.Add(finamDataSeries);
-                        */
-                        Thread.Sleep(2000);
-
-                    SendLogMessage("Инструмент " + security.Name + "ТаймФрейм Tick" +
-                                   " успешно подключен на получение данных и прослушивание свечек",
-                        LogMessageType.System);
-
-                    return true;
+                    return trades;
                 }
             }
             catch (Exception error)
             {
                 SendLogMessage(error.ToString(), LogMessageType.Error);
-                return false;
+                return null;
             }
         }
 
