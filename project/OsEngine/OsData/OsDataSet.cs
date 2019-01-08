@@ -967,10 +967,13 @@ namespace OsEngine.OsData
                             if (trades == null ||
                                 trades.Count == 0)
                             {
+                                lastDate.AddDays(1);
                                 continue;
                             }
 
                             string path = pathToSet + SecuritiesNames[i].Name.Replace("/", "").Replace("*", "") + "\\Tick\\";
+
+                            int addTrades = trades.Count;
 
                             for (int i2 = 0; i2 < trades.Count; i2++)
                             {
@@ -978,12 +981,20 @@ namespace OsEngine.OsData
 
                                 if (ft != null)
                                 {
+                                    addTrades--;
                                     continue;
                                 }
                                 SaveThisTick(trades[i2],
                                     path, SecuritiesNames[i].Name.Replace("*", ""), null, path + "\\" + SecuritiesNames[i].Name.Replace("/", "").Replace("*", ""));
                             }
-                            lastDate = trades[trades.Count - 1].Time;
+                            if (addTrades != 0 && lastDate != trades[trades.Count - 1].Time)
+                            {
+                                lastDate = trades[trades.Count - 1].Time;
+                            }
+                            else
+                            {
+                                lastDate.AddSeconds(1);
+                            }
                             _LastTrades = trades;
                             Thread.Sleep(2000);
                         }
