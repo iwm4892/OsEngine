@@ -228,7 +228,7 @@ namespace OsEngine.OsTrader.Panels
                 bot = new PairTraderSpreadSma(name, startProgram);
             }
             //++++
-            if (nameClass== "PriceLavelBot")
+            if (nameClass == "PriceLavelBot")
             {
                 bot = new PriceLavelBot(name, startProgram);
             }
@@ -778,7 +778,7 @@ namespace OsEngine.OsTrader.Panels
                             )// openPositions[i].EntryPrice < Claster.data[Claster.data.Count - 1].MaxData.Price)
                         {
                             //   _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
-                        //    _tab.CloseAllAtMarket();
+                            //    _tab.CloseAllAtMarket();
                             //_tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count - 1], mA.Values[mA.Values.Count - 1]);
 
                         }
@@ -786,16 +786,16 @@ namespace OsEngine.OsTrader.Panels
                            )// && openPositions[i].EntryPrice > Claster.data[Claster.data.Count - 1].MaxData.Price)
                         {
                             //    _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
-                         //   _tab.CloseAllAtMarket();
+                            //   _tab.CloseAllAtMarket();
                         }
                     }
-                   _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count - 1], mA.Values[mA.Values.Count - 1]);
+                    _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count - 1], mA.Values[mA.Values.Count - 1]);
                 }
 
-
-                }
 
             }
+
+        }
         /// <summary>
         /// Найдем последний уровень
         /// </summary>
@@ -881,12 +881,10 @@ namespace OsEngine.OsTrader.Panels
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
                     if (lvl != null && lvl.Count > 1)
                     {
-                        lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
                         return lvl[1].Value + Slipage;//_tab.CloseAtProfit(position, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
                     }
                     if (lvl != null && lvl.Count > 0)
                     {
-                        lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
                         return lvl[0].Value + Slipage;//_tab.CloseAtProfit(position, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value);
                     }
                 }
@@ -949,7 +947,7 @@ namespace OsEngine.OsTrader.Panels
             }
             */
         }
-            private void OpenAtLevel()
+        private void OpenAtLevel()
         {
             if (!CanOpenPosition())
             {
@@ -1013,7 +1011,7 @@ namespace OsEngine.OsTrader.Panels
                     _tab.SetNewLogMessage("Направление торговли " + TradeSide, LogMessageType.Signal);
                 }
             }
-            if (candles.Count>1 && candles[candles.Count - 1].TimeStart.DayOfYear != candles[candles.Count - 2].TimeStart.DayOfYear)
+            if (candles.Count > 1 && candles[candles.Count - 1].TimeStart.DayOfYear != candles[candles.Count - 2].TimeStart.DayOfYear)
             {
                 RiskOnDay = 0;
             }
@@ -1029,7 +1027,7 @@ namespace OsEngine.OsTrader.Panels
                         RiskOnDay += -1*_tab.PositionsCloseAll[i].ProfitPortfolioPersent;
                     }
                     */
-                               RiskOnDay += _tab.PositionsCloseAll[i].ProfitPortfolioPersent;
+                    RiskOnDay += _tab.PositionsCloseAll[i].ProfitPortfolioPersent;
                 }
                 else
                 {
