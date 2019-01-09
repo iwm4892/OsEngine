@@ -958,10 +958,9 @@ namespace OsEngine.OsData
                             {
                                 lastDate = GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick");
                             }
-                            else
-                            {
-                                lastDate = TimeZoneInfo.ConvertTimeToUtc(lastDate);
-                            }
+                           
+                            lastDate = TimeZoneInfo.ConvertTimeToUtc(lastDate);
+                            
                             List<Trade> trades = ((BitMexServer)_myServer).GetTickHistoryToSecurity(security, TimeStart, TimeEnd, lastDate);
 
                             if (trades == null ||
