@@ -958,15 +958,16 @@ namespace OsEngine.OsData
                             {
                                 lastDate = GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick");
                             }
-                           
+
                             lastDate = TimeZoneInfo.ConvertTimeToUtc(lastDate);
-                            
+
                             List<Trade> trades = ((BitMexServer)_myServer).GetTickHistoryToSecurity(security, TimeStart, TimeEnd, lastDate);
 
                             if (trades == null ||
                                 trades.Count == 0)
                             {
-                                lastDate.AddDays(1);
+                                lastDate = lastDate.AddSeconds(1);
+                                Thread.Sleep(2000);
                                 continue;
                             }
 
@@ -986,13 +987,13 @@ namespace OsEngine.OsData
                                 SaveThisTick(trades[i2],
                                     path, SecuritiesNames[i].Name.Replace("*", ""), null, path + "\\" + SecuritiesNames[i].Name.Replace("/", "").Replace("*", ""));
                             }
-                            if (addTrades != 0 && lastDate != trades[trades.Count - 1].Time)
+                            if (addTrades != 0 && lastDate.ToString() != trades[trades.Count - 1].Time.ToUniversalTime().ToString())
                             {
                                 lastDate = trades[trades.Count - 1].Time;
                             }
                             else
                             {
-                                lastDate.AddSeconds(1);
+                                lastDate = lastDate.AddSeconds(1);
                             }
                             _LastTrades = trades;
                             Thread.Sleep(2000);
