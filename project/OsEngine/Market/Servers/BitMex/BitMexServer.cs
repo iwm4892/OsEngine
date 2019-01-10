@@ -1400,13 +1400,13 @@ namespace OsEngine.Market.Servers.BitMex
         public string timestamp { get; set; }
         public string symbol { get; set; }
         public string side { get; set; }
-        public int size { get; set; }
+        public decimal size { get; set; }
         public decimal price { get; set; }
         public string tickDirection { get; set; }
         public string trdMatchID { get; set; }
         public object grossValue { get; set; }
         public double homeNotional { get; set; }
-        public int foreignNotional { get; set; }
+        public decimal foreignNotional { get; set; }
     }
 
     /// <summary>
