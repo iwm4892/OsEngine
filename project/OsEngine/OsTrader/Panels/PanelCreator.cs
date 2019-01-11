@@ -301,6 +301,11 @@ namespace OsEngine.OsTrader.Panels
         /// </summary>
         private StrategyParameterInt _Slipage;
         private decimal Slipage;
+        
+        /// <summary>
+        /// коэффицент для расчета размера дельты
+        /// </summary>
+        private StrategyParameterInt DeltaSizeK;
 
         private MovingAverage maVolume;
 
@@ -407,6 +412,7 @@ namespace OsEngine.OsTrader.Panels
 
             isContract = CreateParameter("Торгуем контрактами", false);
 
+            DeltaSizeK = CreateParameter("Делитель основного ТФ", 6, 1, 40,1);
 
             _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
             _tab.CandleUpdateEvent += _tab_CandleUpdateEvent;
@@ -555,7 +561,7 @@ namespace OsEngine.OsTrader.Panels
             {
                 if (signal.Count != 0 && signal[0].isPattern)
                 {
-                    if (signal[0].Side == TradeSide)
+                   if (signal[0].Side == TradeSide)
                     {
                         _tab.SetNewLogMessage("Открытие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
                         OpenPosition(signal[0].Side, candles[candles.Count - 1].Close);
@@ -589,13 +595,14 @@ namespace OsEngine.OsTrader.Panels
 
         private void DeltaStepCheck()
         {
-            if (maVolume.Values.Count == 0)
+            if (maVolume.Values.Count == 0 || maVolume.Values[maVolume.Values.Count - 1]==0)
             {
+                _tab_delta.Connector.TimeFrameBuilder.DeltaPeriods = (int)_tab.CandlesAll[_tab.CandlesAll.Count - 1].Volume / DeltaSizeK.ValueInt;
                 return;
             }
-            if (_tab_delta.Connector.TimeFrameBuilder.DeltaPeriods != (int)maVolume.Values[maVolume.Values.Count - 1] / 6)
+            if (_tab_delta.Connector.TimeFrameBuilder.DeltaPeriods != (int)maVolume.Values[maVolume.Values.Count - 1] / DeltaSizeK.ValueInt)
             {
-                _tab_delta.Connector.TimeFrameBuilder.DeltaPeriods = (int)maVolume.Values[maVolume.Values.Count - 1] / 6;
+                _tab_delta.Connector.TimeFrameBuilder.DeltaPeriods = (int)maVolume.Values[maVolume.Values.Count - 1] / DeltaSizeK.ValueInt;
             }
         }
         private decimal GetPrice(decimal price)

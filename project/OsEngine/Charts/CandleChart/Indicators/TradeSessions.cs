@@ -60,6 +60,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                     Sessions.Add(tS);
                 }
             }
+            Sessions.Sort((a, b) => DateTime.Compare(a.Close, b.Close));
 
         }
         private void init()
@@ -505,15 +506,15 @@ namespace OsEngine.Charts.CandleChart.Indicators
         {
             TS result = new TS();
             DateTime testDateOpen;
+            DateTime testDateClose;
+
             foreach (var ts in Sessions)
             {
                 testDateOpen = new DateTime(date.Year, date.Month, date.Day, ts.Open.Hour, ts.Open.Minute, ts.Open.Second);
-                if (testDateOpen <= date)
+                testDateClose = new DateTime(date.Year, date.Month, date.Day, ts.Close.Hour, ts.Close.Minute, ts.Close.Second);
+                if (testDateOpen <= date && testDateClose > date)
                 {
-                    if (result.Open == new DateTime() || result.Open <= ts.Open)
-                    {
-                        result = ts;
-                    }
+                    result = ts;
                 }
             }
             return result;
@@ -551,9 +552,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 Values = new List<decimal>();
                 ColorSeries = new List<Color>();
             }
+            Values.Add(LastSessionEndPrice);
             UpdateDate(candles, candles.Count - 1);
 
-            Values.Add(LastSessionEndPrice);
+
             updateNullValue();
             ColorSeries.Add(color);
 
