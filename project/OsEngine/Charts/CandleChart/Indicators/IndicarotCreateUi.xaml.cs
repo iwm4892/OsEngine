@@ -1018,8 +1018,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 _chartMaster.CreateIndicator(IndicatorCandle, areaName);
             }
             //+++
-            string ChartName = "";
-            string Indicator_name = _gridViewIndicators.SelectedCells[0].Value.ToString();
+            if (IndicatorCandle == null)
+            {
+                string ChartName = "";
+                string Indicator_name = _gridViewIndicators.SelectedCells[0].Value.ToString();
                 for (int i = 0; i < 30; i++)
                 {
                     if (_chartMaster.IndicatorIsCreate(_chartMaster.Name + Indicator_name + i) == false)
@@ -1028,9 +1030,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
                         break;
                     }
                 }
+
                 Object[] arg = { _chartMaster.Name + ChartName, true };
-                IndicatorCandle = (IIndicatorCandle)ClassWork.GetInstance(ClassWork.GetFullNameIndicator(Indicator_name) , arg);
+                IndicatorCandle = (IIndicatorCandle)ClassWork.GetInstance(ClassWork.GetFullNameIndicator(Indicator_name), arg);
                 _chartMaster.CreateIndicator(IndicatorCandle, areaName);
+            }
             //---
 
             Close();
