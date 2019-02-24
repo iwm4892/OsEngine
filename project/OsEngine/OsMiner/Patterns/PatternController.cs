@@ -40,8 +40,8 @@ namespace OsEngine.OsMiner.Patterns
             MiningDealsCount = 50;
             MiningProfit = 10;
             LotsCount = LotsCountType.All;
-            SideInter= Side.Buy;
-           
+            SideInter = Side.Buy;
+
         }
 
         /// <summary>
@@ -62,10 +62,10 @@ namespace OsEngine.OsMiner.Patterns
                 DataServer = new OsMinerServer(_name);
                 DataServer.CandleSeriesChangeEvent += _dataServer_CandleSeriesChangeEvent;
 
-                _chart = new ChartCandleMaster(_name,StartProgram.IsOsMiner);
+                _chart = new ChartCandleMaster(_name, StartProgram.IsOsMiner);
                 _chart.ClickToIndexEvent += _chart_ClickToIndexEvent;
 
-                _chartTempPattern = new ChartCandlePainter(_name + "TempPattern",StartProgram.IsOsMiner);
+                _chartTempPattern = new ChartCandlePainter(_name + "TempPattern", StartProgram.IsOsMiner);
                 _chartTempPattern.IsPatternChart = true;
                 _chartSingleOpenPattern = new ChartCandlePainter(_name + "OpenSinglePattern", StartProgram.IsOsMiner);
                 _chartSingleOpenPattern.IsPatternChart = true;
@@ -112,20 +112,20 @@ namespace OsEngine.OsMiner.Patterns
 
             // разбираем паттерны на вход
             string[] patternsToEnter = array[1].Split('%');
-            for (int i = 0; i < patternsToEnter.Length-1; i += 1)
+            for (int i = 0; i < patternsToEnter.Length - 1; i += 1)
             {
                 LoadPattern(patternsToEnter[i], PatternsToOpen);
             }
 
             // разбираем паттерны на выход
             string[] patternsToExit = array[2].Split('%');
-            for (int i = 0; i < patternsToExit.Length-1; i += 1)
+            for (int i = 0; i < patternsToExit.Length - 1; i += 1)
             {
                 LoadPattern(patternsToExit[i], PatternsToClose);
             }
 
             IsOn = Convert.ToBoolean(array[3]);
-            Enum.TryParse(array[4],out SideInter);
+            Enum.TryParse(array[4], out SideInter);
             StopOrderIsOn = Convert.ToBoolean(array[5]);
             ProfitOrderIsOn = Convert.ToBoolean(array[6]);
             ExitFromSomeCandlesIsOn = Convert.ToBoolean(array[7]);
@@ -146,8 +146,8 @@ namespace OsEngine.OsMiner.Patterns
 
             DataServer = new OsMinerServer(Name);
             DataServer.CandleSeriesChangeEvent += _dataServer_CandleSeriesChangeEvent;
-            
-            _chart = new ChartCandleMaster(_name,StartProgram.IsOsMiner);
+
+            _chart = new ChartCandleMaster(_name, StartProgram.IsOsMiner);
             _chart.ClickToIndexEvent += _chart_ClickToIndexEvent;
 
             _chartTempPattern = new ChartCandlePainter(_name + "TempPattern", StartProgram.IsOsMiner);
@@ -166,7 +166,7 @@ namespace OsEngine.OsMiner.Patterns
             {
                 PaintOpenPattern(0);
             }
-            
+
         }
 
         /// <summary>
@@ -293,7 +293,7 @@ namespace OsEngine.OsMiner.Patterns
             {
                 if (firstFrame != series[i].TimeFrame)
                 {
-                    SendNewLogMessage(OsLocalization.Miner.Label11,LogMessageType.Error);
+                    SendNewLogMessage(OsLocalization.Miner.Label11, LogMessageType.Error);
                     return;
                 }
             }
@@ -316,7 +316,7 @@ namespace OsEngine.OsMiner.Patterns
         /// <summary>
         /// прорисовать сборный паттерн
         /// </summary>>
-        public void Paint(WindowsFormsHost chartHost,Rectangle rectChart)
+        public void Paint(WindowsFormsHost chartHost, Rectangle rectChart)
         {
             _chartHost = chartHost;
             _rectChart = rectChart;
@@ -340,7 +340,7 @@ namespace OsEngine.OsMiner.Patterns
         /// </summary>
         public LotsCountType LotsCount;
 
-// Настройки и Паттерны для входа
+        // Настройки и Паттерны для входа
 
         /// <summary>
         /// включен ли 
@@ -393,7 +393,7 @@ namespace OsEngine.OsMiner.Patterns
             Save();
         }
 
-// Настройки и Паттерны для выхода
+        // Настройки и Паттерны для выхода
 
         /// <summary>
         /// общий вес одиночных паттернов для выхода из позиции
@@ -458,7 +458,7 @@ namespace OsEngine.OsMiner.Patterns
             Save();
         }
 
-// логирование
+        // логирование
 
         /// <summary>
         /// выслать новое сообщение на верх
@@ -480,14 +480,14 @@ namespace OsEngine.OsMiner.Patterns
         /// </summary>
         public event Action<string, LogMessageType> LogMessageEvent;
 
-// бектестинг 
+        // бектестинг 
 
         /// <summary>
         /// открыть журнал сделок
         /// </summary>
         public void ShowJournal()
         {
-            Journal.Journal journal = new Journal.Journal("",StartProgram.IsOsMiner);
+            Journal.Journal journal = new Journal.Journal("", StartProgram.IsOsMiner);
             for (int i = 0; i < PositionsInTrades.Count; i++)
             {
                 journal.SetNewDeal(PositionsInTrades[i]);
@@ -498,14 +498,14 @@ namespace OsEngine.OsMiner.Patterns
             BotTabJournal botTabJournal = new BotTabJournal();
             botTabJournal.Journal = journal;
 
-            botPanelJournal._Tabs= new List<BotTabJournal>();
+            botPanelJournal._Tabs = new List<BotTabJournal>();
             botPanelJournal._Tabs.Add(botTabJournal);
             botPanelJournal.BotName = "";
 
             List<BotPanelJournal> list = new List<BotPanelJournal>();
             list.Add(botPanelJournal);
 
-            JournalUi ui = new JournalUi(list,StartProgram.IsOsMiner);
+            JournalUi ui = new JournalUi(list, StartProgram.IsOsMiner);
             ui.ShowDialog();
         }
 
@@ -517,8 +517,8 @@ namespace OsEngine.OsMiner.Patterns
         /// <summary>
         /// паттерны за последний бекТест
         /// </summary>
-        public List<ChartColorSeries>  ColorSeries = new List<ChartColorSeries>();
-        
+        public List<ChartColorSeries> ColorSeries = new List<ChartColorSeries>();
+
         /// <summary>
         /// начать тестирование текущих готовых одиночных паттернов без учёта паттерна из вкладки поиска
         /// </summary>
@@ -546,7 +546,7 @@ namespace OsEngine.OsMiner.Patterns
             }
             catch (Exception error)
             {
-                SendNewLogMessage(error.ToString(),LogMessageType.Error);
+                SendNewLogMessage(error.ToString(), LogMessageType.Error);
             }
         }
 
@@ -712,7 +712,7 @@ namespace OsEngine.OsMiner.Patterns
         /// <summary>
         /// проверить паттерны на вход в позицию
         /// </summary>
-        private bool CheckInter(List<IPattern> patterns, List<List<Candle>> series, int index, DateTime time,decimal weigthToInterOrExit)
+        private bool CheckInter(List<IPattern> patterns, List<List<Candle>> series, int index, DateTime time, decimal weigthToInterOrExit)
         {
             if (patterns == null ||
                 patterns.Count == 0)
@@ -722,7 +722,7 @@ namespace OsEngine.OsMiner.Patterns
             decimal weigth = 0;
             List<ChartColorSeries> seriesNew = new List<ChartColorSeries>();
 
-            for (int i = 0; i < patterns.Count && i< series.Count; i++)
+            for (int i = 0; i < patterns.Count && i < series.Count; i++)
             {
                 int startIndex = index;
                 while (startIndex > 0 && series[i][startIndex].TimeStart > time)
@@ -745,8 +745,8 @@ namespace OsEngine.OsMiner.Patterns
                             {
                                 ChartColorSeries newColorSeries = new ChartColorSeries();
                                 newColorSeries.NameSeries = "SeriesCandle";
-                                newColorSeries.IndexStart = i2 - ((PatternCandle)patterns[i]).Length+1;
-                                newColorSeries.IndexEnd = i2+1;
+                                newColorSeries.IndexStart = i2 - ((PatternCandle)patterns[i]).Length + 1;
+                                newColorSeries.IndexEnd = i2 + 1;
                                 seriesNew.Add(newColorSeries);
                             }
                             if (patterns[i].Type == PatternType.Volume)
@@ -780,9 +780,9 @@ namespace OsEngine.OsMiner.Patterns
         /// <summary>
         /// проверить выход из позиции
         /// </summary>
-        private bool CheckExit(Position position, List<IPattern> patterns, List<List<Candle>> series, int index, DateTime time, decimal price,MinerCandleSeries tradeSeries)
+        private bool CheckExit(Position position, List<IPattern> patterns, List<List<Candle>> series, int index, DateTime time, decimal price, MinerCandleSeries tradeSeries)
         {
-            if (CheckInter(patterns, series, index, time,WeigthToExit))
+            if (CheckInter(patterns, series, index, time, WeigthToExit))
             { // если выходим по паттернам
                 return true;
             }
@@ -818,7 +818,7 @@ namespace OsEngine.OsMiner.Patterns
 
                 if (position.Direction == Side.Buy)
                 {
-                    decimal newTrail =  position.EntryPrice - tradeSeries.Security.PriceStep * TreilingStopValue;
+                    decimal newTrail = position.EntryPrice - tradeSeries.Security.PriceStep * TreilingStopValue;
 
                     if (newTrail > position.StopOrderRedLine)
                     {
@@ -870,7 +870,7 @@ namespace OsEngine.OsMiner.Patterns
         /// </summary>
         private MinerCandleSeries GetCandleSeries(string name)
         {
-            if(CandleSeries == null)
+            if (CandleSeries == null)
             {
                 return null;
             }
@@ -976,7 +976,7 @@ namespace OsEngine.OsMiner.Patterns
                 profit += PositionsInTrades[i].ProfitOperationPunkt;
             }
 
-            if(PositionsInTrades.Count == 0)
+            if (PositionsInTrades.Count == 0)
             {
                 return OsLocalization.Miner.Label16;
             }
@@ -999,7 +999,7 @@ namespace OsEngine.OsMiner.Patterns
 
         private decimal _lastMo;
 
-// перемещение графика по паттернам
+        // перемещение графика по паттернам
 
         /// <summary>
         /// номер паттерна на который мы в последний раз смотрели
@@ -1025,7 +1025,7 @@ namespace OsEngine.OsMiner.Patterns
             int num = ColorSeries[_numPatternToWatch].IndexStart;
 
 
-            _chart.GoChartToIndex(num-5);
+            _chart.GoChartToIndex(num - 5);
             _numPatternToWatch++;
         }
 
@@ -1048,11 +1048,11 @@ namespace OsEngine.OsMiner.Patterns
             int num = ColorSeries[_numPatternToWatch].IndexStart;
 
 
-            _chart.GoChartToIndex(num-5);
+            _chart.GoChartToIndex(num - 5);
             _numPatternToWatch--;
         }
 
-// автомайнинг паттернов
+        // автомайнинг паттернов
 
         /// <summary>
         /// среднее матОжидание за последний тест
@@ -1202,7 +1202,7 @@ namespace OsEngine.OsMiner.Patterns
             }
             catch (Exception error)
             {
-                SendNewLogMessage(error.ToString(),LogMessageType.Error);
+                SendNewLogMessage(error.ToString(), LogMessageType.Error);
                 _worker = null;
             }
         }
@@ -1268,7 +1268,7 @@ namespace OsEngine.OsMiner.Patterns
             }
         }
 
-// поиск нового паттернов
+        // поиск нового паттернов
 
         /// <summary>
         /// взять  временный паттерн по типу
@@ -1322,7 +1322,7 @@ namespace OsEngine.OsMiner.Patterns
             else
             {
                 PatternsToClose.Add(pattern);
-                PaintClosePattern(PatternsToClose.Count-1);
+                PaintClosePattern(PatternsToClose.Count - 1);
             }
             Save();
         }
@@ -1458,7 +1458,7 @@ namespace OsEngine.OsMiner.Patterns
         /// </summary>
         public event Action<string> BackTestEndEvent;
 
-// прорисовка чарта и паттернов
+        // прорисовка чарта и паттернов
 
         /// <summary>
         /// основной чарт с графиком
@@ -1513,7 +1513,7 @@ namespace OsEngine.OsMiner.Patterns
             }
 
             _chart.Clear();
-            _chart.StartPaint(_chartHost,_rectChart);
+            _chart.StartPaint(_chartHost, _rectChart);
 
             if (CandleSeries == null)
             {
@@ -1526,7 +1526,7 @@ namespace OsEngine.OsMiner.Patterns
             {
                 return;
             }
-            
+
             _chart.SetCandles(series.Candles);
 
             if (_volume == null)
@@ -1535,7 +1535,7 @@ namespace OsEngine.OsMiner.Patterns
                 _volume = (Volume)_chart.CreateIndicator(_volume, "VolumeArea");
             }
             _volume.Process(series.Candles);
-            
+
         }
 
         /// <summary>
@@ -1573,7 +1573,7 @@ namespace OsEngine.OsMiner.Patterns
 
             if (string.IsNullOrEmpty(SecurityToInter))
             {
-                SendNewLogMessage(OsLocalization.Miner.Label21,LogMessageType.Error);
+                SendNewLogMessage(OsLocalization.Miner.Label21, LogMessageType.Error);
                 return;
             }
 
@@ -1601,8 +1601,8 @@ namespace OsEngine.OsMiner.Patterns
                 return;
             }
 
-            pattern.SetFromIndex(series.Candles,_chart.Indicators,_curIndex);
-            
+            pattern.SetFromIndex(series.Candles, _chart.Indicators, _curIndex);
+
 
             PaintTempPattern();
         }
@@ -1669,7 +1669,7 @@ namespace OsEngine.OsMiner.Patterns
             }
             if (pattern.Type == PatternType.Indicators)
             {
-                PatternIndicators pat = (PatternIndicators) pattern;
+                PatternIndicators pat = (PatternIndicators)pattern;
 
 
 

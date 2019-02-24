@@ -19,8 +19,6 @@ using OsEngine.Market;
 using OsEngine.Market.Servers;
 using OsEngine.Market.Servers.Finam;
 
-using OsEngine.Market.Servers.BitMex;
-
 namespace OsEngine.OsData
 {
     /// <summary>
@@ -29,7 +27,7 @@ namespace OsEngine.OsData
     public class OsDataSet
     {
         // регулируемые настройки
-        
+
         /// <summary>
         /// включен ли к сохранению 1 секундный ТаймФрейм
         /// </summary>
@@ -198,7 +196,7 @@ namespace OsEngine.OsData
             worker.IsBackground = true;
             worker.Start();
 
-            _chartMaster = new ChartCandleMaster(nameUniq,StartProgram.IsOsData);
+            _chartMaster = new ChartCandleMaster(nameUniq, StartProgram.IsOsData);
             _chartMaster.StopPaint();
 
             _comboBoxSecurity = comboBoxSecurity;
@@ -835,6 +833,7 @@ namespace OsEngine.OsData
                     }
                 }
             }
+
             _setIsActive = true;
         }
 
@@ -949,62 +948,7 @@ namespace OsEngine.OsData
             {
                 for (int i = 0; i < SecuritiesNames.Count; i++)
                 {
-                    if (_myServer.ServerType == ServerType.BitMex)
-                    {
-                        DateTime lastDate = DateTime.MinValue;
-                        Security security = _myServer.GetSecurityForName(SecuritiesNames[i].Name);
-                        List<Trade> _LastTrades = new List<Trade>();
-                        while (lastDate < TimeEnd)
-                        {
-                            if (lastDate == DateTime.MinValue)
-                            {
-                                lastDate = GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick");
-                            }
-
-                            lastDate = TimeZoneInfo.ConvertTimeToUtc(lastDate);
-
-                            List<Trade> trades = ((BitMexServer)_myServer).GetTickHistoryToSecurity(security, TimeStart, TimeEnd, lastDate);
-
-                            if (trades == null ||
-                                trades.Count == 0)
-                            {
-                                lastDate = lastDate.AddSeconds(1);
-                                Thread.Sleep(2000);
-                                continue;
-                            }
-
-                            string path = pathToSet + SecuritiesNames[i].Name.Replace("/", "").Replace("*", "") + "\\Tick\\";
-
-                            int addTrades = trades.Count;
-
-                            for (int i2 = 0; i2 < trades.Count; i2++)
-                            {
-                                Trade ft = _LastTrades.Find(x => x.Id == trades[i2].Id);
-
-                                if (ft != null)
-                                {
-                                    addTrades--;
-                                    continue;
-                                }
-                                SaveThisTick(trades[i2],
-                                    path, SecuritiesNames[i].Name.Replace("*", ""), null, path + "\\" + SecuritiesNames[i].Name.Replace("/", "").Replace("*", ""));
-                            }
-                            if (addTrades != 0 && lastDate.ToString() != trades[trades.Count - 1].Time.ToUniversalTime().ToString())
-                            {
-                                lastDate = trades[trades.Count - 1].Time;
-                            }
-                            else
-                            {
-                                lastDate = lastDate.AddSeconds(1);
-                            }
-                            _LastTrades = trades;
-                            Thread.Sleep(2000);
-                        }
-
-                    }
-
-
-                    else if (_myServer.ServerType != ServerType.Finam)
+                    if (_myServer.ServerType != ServerType.Finam)
                     {
                         List<Trade> trades = _myServer.GetAllTradesToSecurity(_myServer.GetSecurityForName(SecuritiesNames[i].Name));
 

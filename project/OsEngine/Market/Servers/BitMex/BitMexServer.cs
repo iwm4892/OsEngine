@@ -26,14 +26,10 @@ namespace OsEngine.Market.Servers.BitMex
             CreateParameterPassword(OsLocalization.Market.ServerParamSecretKey, "");
             CreateParameterBoolean("IsDemo", false);
         }
-        
+
         public List<Candle> GetBitMexCandleHistory(string nameSec, TimeSpan tf)
         {
             return ((BitMexServerRealization)ServerRealization).GetBitMexCandleHistory(nameSec, tf);
-        }
-        public List<Trade> GetTickHistoryToSecurity(Security security, DateTime startTime, DateTime endTime, DateTime actualTime)
-        {
-            return ((BitMexServerRealization)ServerRealization).GetTickHistoryToSecurity(security, startTime, endTime, actualTime);
         }
     }
 
@@ -288,7 +284,7 @@ namespace OsEngine.Market.Servers.BitMex
         public List<Candle> GetCandleDataToSecurity(Security security, TimeFrameBuilder timeFrameBuilder,
             DateTime startTime, DateTime endTime, DateTime actualTime)
         {
-           return GetBitMexCandleHistory(security.Name, timeFrameBuilder.TimeFrameTimeSpan);
+            return GetBitMexCandleHistory(security.Name, timeFrameBuilder.TimeFrameTimeSpan);
         }
 
         /// <summary>
@@ -374,7 +370,7 @@ namespace OsEngine.Market.Servers.BitMex
             _client.GetSecurities();
         }
 
-// Подпись на данные
+        // Подпись на данные
 
         /// <summary>
         /// мастер загрузки свечек
@@ -1316,7 +1312,7 @@ namespace OsEngine.Market.Servers.BitMex
             }
         }
 
-// работа с ордерами
+        // работа с ордерами
 
         /// <summary>
         /// место работы потока на очередях исполнения заявок и их отмены
@@ -1693,7 +1689,7 @@ namespace OsEngine.Market.Servers.BitMex
                             if (needOrder == null)
                             {
                                 needOrder = new Order();
-                                
+
                                 needOrder.NumberUser = Convert.ToInt32(myOrder.data[i].clOrdID);
                                 needOrder.NumberMarket = myOrder.data[i].orderID;
                                 needOrder.SecurityNameCode = myOrder.data[i].symbol;
@@ -1775,7 +1771,7 @@ namespace OsEngine.Market.Servers.BitMex
                                             CultureInfo.InvariantCulture);
                                     }
 
-                                 }
+                                }
 
                                 if (myOrder.data[i].ordStatus == "Filled")
                                 {
@@ -1922,7 +1918,6 @@ namespace OsEngine.Market.Servers.BitMex
         /// исходящее сообщение для лога
         /// </summary>
         public event Action<string, LogMessageType> LogMessageEvent;
-
     }
 
     /// <summary>
@@ -1933,13 +1928,13 @@ namespace OsEngine.Market.Servers.BitMex
         public string timestamp { get; set; }
         public string symbol { get; set; }
         public string side { get; set; }
-        public decimal size { get; set; }
+        public int size { get; set; }
         public decimal price { get; set; }
         public string tickDirection { get; set; }
         public string trdMatchID { get; set; }
         public object grossValue { get; set; }
         public double homeNotional { get; set; }
-        public decimal foreignNotional { get; set; }
+        public int foreignNotional { get; set; }
     }
 
     /// <summary>

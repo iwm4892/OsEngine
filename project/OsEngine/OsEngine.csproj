@@ -588,9 +588,6 @@
     <Compile Include="OsTrader\Panels\PanelsGui\BollingerTradeUi.xaml.cs">
       <DependentUpon>BollingerTradeUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="OsTrader\Panels\PanelsGui\BotWhithTwoTimeFrameUi.xaml.cs">
-      <DependentUpon>BotWhithTwoTimeFrameUi.xaml</DependentUpon>
-    </Compile>
     <Compile Include="OsTrader\Panels\PanelsGui\CCITradeUi.xaml.cs">
       <DependentUpon>CCITradeUi.xaml</DependentUpon>
     </Compile>
@@ -1056,10 +1053,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="OsTrader\Panels\PanelsGui\BollingerTradeUi.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="OsTrader\Panels\PanelsGui\BotWhithTwoTimeFrameUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

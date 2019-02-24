@@ -81,7 +81,7 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
 
         private PatternTrader _bot;
 
-// pattern selection and basic settings выбор паттерна и базовые настройки
+        // pattern selection and basic settings выбор паттерна и базовые настройки
 
         private void InitializePrimeSettings()
         {
@@ -92,11 +92,11 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
 
             List<string> setsNames = _bot.GetListSetsName();
 
-            for (int i = 0;setsNames != null && i < setsNames.Count; i++)
+            for (int i = 0; setsNames != null && i < setsNames.Count; i++)
             {
                 ComboBoxSets.Items.Add(setsNames[i]);
             }
-           
+
             ComboBoxSets.SelectionChanged += ComboBoxSets_SelectionChanged;
             ComboBoxSets.SelectedItem = _bot.NameSetToTrade;
 
@@ -188,7 +188,7 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
             ComboBoxPatternsGroups.SelectedItem = _bot.NameGroupPatternsToTrade;
         }
 
-// work with the first tab работа с первой вкладкой
+        // work with the first tab работа с первой вкладкой
 
         private void InitializePattarnsToOpenTab()
         {
@@ -243,7 +243,7 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
             _bot.Save();
         }
 
-//work with the second tab  работа со второй вкладкой
+        //work with the second tab  работа со второй вкладкой
 
 
         void InitializeTabClosePosition()
@@ -364,7 +364,7 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
             {
                 return;
             }
-            
+
             try
             {
                 _bot.WeigthToExit = Convert.ToDecimal(TextBoxWeigthToExit.Text.Replace(",",
@@ -488,7 +488,7 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
             _bot.Save();
         }
 
-//WORK WITH GRID РАБОТА С ГРИДАМИ
+        //WORK WITH GRID РАБОТА С ГРИДАМИ
 
         private DataGridView _gridPatternsToOpen;
 
