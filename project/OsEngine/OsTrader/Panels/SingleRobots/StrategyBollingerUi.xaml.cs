@@ -1,16 +1,15 @@
 ﻿/*
- *Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
+ * Your rights to use code governed by this license https://github.com/AlexWan/OsEngine/blob/master/LICENSE
+ * Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
 */
 
 using System;
 using System.Globalization;
 using System.Windows;
+using OsEngine.Language;
 
 namespace OsEngine.OsTrader.Panels.SingleRobots
 {
-    /// <summary>
-    /// Логика взаимодействия для BollingerUi.xaml
-    /// </summary>
     public partial class StrategyBollingerUi
     {
         private StrategyBollinger _strategy;
@@ -21,7 +20,7 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
             _strategy = strategy;
 
             TextBoxVolumeOne.Text = _strategy.Volume.ToString();
-            TextBoxSlipage.Text = _strategy.Slipage.ToString(new CultureInfo("ru-RU"));
+            TextBoxSlipage.Text = _strategy.Slippage.ToString(new CultureInfo("ru-RU"));
 
             ComboBoxRegime.Items.Add(BotTradeRegime.Off);
             ComboBoxRegime.Items.Add(BotTradeRegime.On);
@@ -29,6 +28,11 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
             ComboBoxRegime.Items.Add(BotTradeRegime.OnlyLong);
             ComboBoxRegime.Items.Add(BotTradeRegime.OnlyShort);
             ComboBoxRegime.SelectedItem = _strategy.Regime;
+
+            LabelVolume.Content = OsLocalization.Trader.Label30;
+            LabelRegime.Content = OsLocalization.Trader.Label115;
+            LabelSlippage.Content = OsLocalization.Trader.Label92;
+            ButtonAccept.Content = OsLocalization.Trader.Label17;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -44,12 +48,12 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
             }
             catch (Exception)
             {
-                MessageBox.Show("В одном из полей недопустимые значения. Процесс сохранения прерван");
+                MessageBox.Show(OsLocalization.Trader.Label13);
                 return;
             }
 
             _strategy.Volume = Convert.ToDecimal(TextBoxVolumeOne.Text);
-            _strategy.Slipage = Convert.ToDecimal(TextBoxSlipage.Text);
+            _strategy.Slippage = Convert.ToDecimal(TextBoxSlipage.Text);
 
             Enum.TryParse(ComboBoxRegime.Text, true, out _strategy.Regime);
 
@@ -59,8 +63,7 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
 
         private void ButtonAbout_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(
-                "Стратегия на индикаторе Боллинджер. Продаём когда линия закрытие происходит выше линии боллинджера и покупаем когда закрытие ниже линии боллинжера. Закрытие происходит по пересечению скользящей средней ");
+            MessageBox.Show(OsLocalization.Trader.Label129);
         }
     }
 }

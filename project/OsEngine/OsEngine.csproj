@@ -45,7 +45,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -53,6 +53,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Images\OsLogo.ico</ApplicationIcon>
@@ -296,12 +297,11 @@
     <Compile Include="Charts\CandleChart\Indicators\WilliamsRangeUi.xaml.cs">
       <DependentUpon>WilliamsRangeUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Charts\ColorKeeper\ChartMasterColorKeeperUi.xaml.cs">
-      <DependentUpon>ChartMasterColorKeeperUi.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Charts\CandleChart\ChartPainter.cs" />
+    <Compile Include="Charts\ClusterChart\ChartClusterMaster.cs" />
+    <Compile Include="Charts\ClusterChart\ChartClusterPainter.cs" />
+    <Compile Include="Charts\CandleChart\ChartCandlePainter.cs" />
     <Compile Include="Charts\ColorKeeper\ChartMasterColorKeeper.cs" />
-    <Compile Include="Charts\ChartMaster.cs" />
+    <Compile Include="Charts\CandleChart\ChartCandleMaster.cs" />
     <Compile Include="Charts\CandleChart\Indicators\IndicarotCreateUi.xaml.cs">
       <DependentUpon>IndicarotCreateUi.xaml</DependentUpon>
     </Compile>
@@ -311,6 +311,7 @@
     <Compile Include="Entity\ClassWork.cs" />
     <Compile Include="Entity\CandleConverter.cs" />
     <Compile Include="Entity\DataGridFactory.cs" />
+    <Compile Include="Entity\HorizontalVolume.cs" />
     <Compile Include="Entity\MarketDepthPainter.cs" />
     <Compile Include="Entity\ProxyHolder.cs" />
     <Compile Include="Entity\ProxyHolderAddUi.xaml.cs">
@@ -327,7 +328,20 @@
     <Compile Include="Journal\JournalUi.xaml.cs">
       <DependentUpon>JournalUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Language\ITraderLanguage.cs" />
+    <Compile Include="Language\AlertsLocal.cs" />
+    <Compile Include="Language\ChartsLocal.cs" />
+    <Compile Include="Language\ConverterLocal.cs" />
+    <Compile Include="Language\DataLocal.cs" />
+    <Compile Include="Language\EntityLocal.cs" />
+    <Compile Include="Language\JournalLocal.cs" />
+    <Compile Include="Language\LoggingLocal.cs" />
+    <Compile Include="Language\MainWIndowLocal.cs" />
+    <Compile Include="Language\MarketLocal.cs" />
+    <Compile Include="Language\MinerLocal.cs" />
+    <Compile Include="Language\OptimizerLocal.cs" />
+    <Compile Include="Language\OsLocalization.cs" />
+    <Compile Include="Language\PrimeSettingsMasterUiLocal.cs" />
+    <Compile Include="Language\TraderLocal.cs" />
     <Compile Include="Logging\LogErrorUi.xaml.cs">
       <DependentUpon>LogErrorUi.xaml</DependentUpon>
     </Compile>
@@ -355,11 +369,9 @@
     <Compile Include="Market\Servers\Binance\BinanceServer.cs" />
     <Compile Include="Market\Servers\Bitfinex\BitfinexClient.cs" />
     <Compile Include="Market\Servers\Bitfinex\BitfinexServer.cs" />
-    <Compile Include="Market\Servers\Bitfinex\BitfinexServerUi.xaml.cs">
-      <DependentUpon>BitfinexServerUi.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Market\Servers\Bitfinex\BitfitnexEntity\BitfinexOrder.cs" />
     <Compile Include="Market\Servers\Bitfinex\BitfitnexEntity\BitfinexSecurity.cs" />
+    <Compile Include="Market\Servers\Bitfinex\BitfitnexEntity\BitfinexTickerTradeInfo.cs" />
     <Compile Include="Market\Servers\Bitfinex\BitfitnexEntity\EventInfo.cs" />
     <Compile Include="Market\Servers\Bitfinex\BitfitnexEntity\JsonConverter.cs" />
     <Compile Include="Market\Servers\Bitfinex\BitfitnexEntity\NewOrderPayload.cs" />
@@ -373,12 +385,9 @@
     <Compile Include="Market\Servers\BitMex\BitMexEntity\BitMexSecurity.cs" />
     <Compile Include="Market\Servers\BitMex\BitMexEntity\BitMexTrades.cs" />
     <Compile Include="Market\Servers\BitMex\BitMexServer.cs" />
-    <Compile Include="Market\Servers\BitStamp\BitStampServer.cs" />
     <Compile Include="Market\Servers\BitStamp\BitStampClient.cs" />
     <Compile Include="Market\Servers\BitStamp\BitStampEntity\RequestAuthenticator.cs" />
-    <Compile Include="Market\Servers\BitStamp\BitStampServerUi.xaml.cs">
-      <DependentUpon>BitStampServerUi.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="Market\Servers\BitStamp\BitStampServer.cs" />
     <Compile Include="Market\Servers\BitStamp\BitStampEntity\JsonResponse.cs" />
     <Compile Include="Market\Servers\Entity\BidAskSender.cs" />
     <Compile Include="Market\Servers\Entity\OrderSender.cs" />
@@ -420,31 +429,23 @@
     <Compile Include="Market\Servers\Lmax\Tags.cs" />
     <Compile Include="Market\Servers\NinjaTrader\NinjaTraderClient.cs" />
     <Compile Include="Market\Servers\NinjaTrader\NinjaTraderServer.cs" />
-    <Compile Include="Market\Servers\NinjaTrader\NinjaTraderUi.xaml.cs">
-      <DependentUpon>NinjaTraderUi.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Market\Servers\Oanda\OandaClient.cs" />
     <Compile Include="Market\Servers\Oanda\OandaServer.cs" />
-    <Compile Include="Market\Servers\Oanda\OandaServerUi.xaml.cs">
-      <DependentUpon>OandaServerUi.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Market\Servers\Optimizer\OptimizerServer.cs" />
     <Compile Include="Market\Servers\Optimizer\OptimizerDataStorage.cs" />
     <Compile Include="Market\Servers\Optimizer\OptimizerDataStorageUi.xaml.cs">
       <DependentUpon>OptimizerDataStorageUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Market\Servers\Plaza\Internal\PlazaController.cs" />
+    <Compile Include="Market\Servers\Plaza\Internal\PlazaClient.cs" />
     <Compile Include="Market\Servers\Plaza\Internal\PlazaMarketDepthCreator.cs" />
     <Compile Include="Market\Servers\Plaza\PlazaServer.cs" />
-    <Compile Include="Market\Servers\Plaza\PlazaServerUi.xaml.cs">
-      <DependentUpon>PlazaServerUi.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Market\Servers\QuikLua\QuikLuaServer.cs" />
-    <Compile Include="Market\Servers\QuikLua\QuikLuaServerUi.xaml.cs">
-      <DependentUpon>QuikLuaServerUi.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Market\ServerMasterPortfoliosPainter.cs" />
     <Compile Include="Market\Servers\ServerTickStorage.cs" />
+    <Compile Include="Market\Servers\Entity\MarshalUTF8.cs" />
+    <Compile Include="Market\Servers\Entity\ServerWorkingTimeSettings.cs" />
+    <Compile Include="Market\Servers\Entity\TimeManager.cs" />
+    <Compile Include="Market\Servers\SmartCom\SmartComServer.cs" />
     <Compile Include="Market\Servers\Tester\TesterServer.cs" />
     <Compile Include="Market\Servers\Tester\TesterServerUi.xaml.cs">
       <DependentUpon>TesterServerUi.xaml</DependentUpon>
@@ -459,10 +460,6 @@
     <Compile Include="Market\ServerMaster.cs" />
     <Compile Include="Market\ServerMasterUi.xaml.cs">
       <DependentUpon>ServerMasterUi.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Market\Servers\SmartCom\SmartComServer.cs" />
-    <Compile Include="Market\Servers\SmartCom\SmartComServerUi.xaml.cs">
-      <DependentUpon>SmartComServerUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="Entity\CandleManager.cs" />
     <Compile Include="Entity\Candle.cs" />
@@ -505,7 +502,14 @@
     </Compile>
     <Compile Include="Journal\Internal\DealStaticticGenerator.cs" />
     <Compile Include="Market\Servers\Quik\QuikDdeServer.cs" />
-    <Compile Include="OsMiner\OsMinerServer.cs" />
+    <Compile Include="Market\Servers\Miner\OsMinerServer.cs" />
+    <Compile Include="Market\Servers\Transaq\ChangeTransaqPassword.xaml.cs">
+      <DependentUpon>ChangeTransaqPassword.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Market\Servers\Transaq\TransaqClient.cs" />
+    <Compile Include="Market\Servers\Transaq\TransaqEntity\TransaqEntities.cs" />
+    <Compile Include="Market\Servers\Transaq\TransaqEntity\TransaqPortfolio.cs" />
+    <Compile Include="Market\Servers\Transaq\TransaqServer.cs" />
     <Compile Include="OsMiner\OsMinerMaster.cs" />
     <Compile Include="OsMiner\OsMinerSet.cs" />
     <Compile Include="OsMiner\OsMinerSetUi.xaml.cs">
@@ -576,6 +580,8 @@
     <Compile Include="OsTrader\Panels\PanelsGui\BollingerOutburstUi.xaml.cs">
       <DependentUpon>BollingerOutburstUi.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OsTrader\Panels\SingleRobots\ClusterCountertrend.cs" />
+    <Compile Include="OsTrader\Panels\SingleRobots\ClusterEngine.cs" />
     <Compile Include="OsTrader\Panels\SingleRobots\StrategyBollingerUi.xaml.cs">
       <DependentUpon>StrategyBollingerUi.xaml</DependentUpon>
     </Compile>
@@ -621,9 +627,6 @@
     <Compile Include="OsTrader\Panels\PanelsGui\PriceChannelVolatilityUi.xaml.cs">
       <DependentUpon>PriceChannelVolatilityUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="OsTrader\Panels\PanelsGui\RobotUi.xaml.cs">
-      <DependentUpon>RobotUi.xaml</DependentUpon>
-    </Compile>
     <Compile Include="OsTrader\Panels\PanelsGui\RsiContrtrendUi.xaml.cs">
       <DependentUpon>RsiContrtrendUi.xaml</DependentUpon>
     </Compile>
@@ -651,12 +654,16 @@
       <DependentUpon>PatternTraderUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="OsTrader\Panels\SingleRobots\StrategyBollinger.cs" />
-    <Compile Include="OsTrader\Panels\Tab\Internal\BotTabCandleSpreadUi.xaml.cs">
-      <DependentUpon>BotTabCandleSpreadUi.xaml</DependentUpon>
+    <Compile Include="OsTrader\Panels\Tab\BotTabClusterUi.xaml.cs">
+      <DependentUpon>BotTabClusterUi.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OsTrader\Panels\Tab\BotTabIndexUi.xaml.cs">
+      <DependentUpon>BotTabIndexUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="Entity\StrategyParemetrsUi.xaml.cs">
       <DependentUpon>StrategyParemetrsUi.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OsTrader\Panels\Tab\BotTabCluster.cs" />
     <Compile Include="OsTrader\RiskManager\RiskManagerUi.xaml.cs">
       <DependentUpon>RiskManagerUi.xaml</DependentUpon>
     </Compile>
@@ -868,10 +875,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Charts\ColorKeeper\ChartMasterColorKeeperUi.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Charts\CandleChart\Indicators\IndicarotCreateUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -904,14 +907,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Market\Servers\Bitfinex\BitfinexServerUi.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Market\Servers\BitStamp\BitStampServerUi.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Market\Servers\Finam\FinamServerUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -928,27 +923,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Market\Servers\NinjaTrader\NinjaTraderUi.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Market\Servers\Oanda\OandaServerUi.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Market\Servers\Optimizer\OptimizerDataStorageUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Market\Servers\Plaza\PlazaServerUi.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Market\Connectors\ConnectorCandlesUi.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Market\Servers\QuikLua\QuikLuaServerUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -973,10 +952,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Charts\CandleChart\Indicators\RsiUi.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Market\Servers\SmartCom\SmartComServerUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1013,6 +988,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Logging\ServerSmsUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Market\Servers\Transaq\ChangeTransaqPassword.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1132,10 +1111,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="OsTrader\Panels\PanelsGui\RobotUi.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="OsTrader\Panels\PanelsGui\RsiContrtrendUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1168,7 +1143,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="OsTrader\Panels\Tab\Internal\BotTabCandleSpreadUi.xaml">
+    <Page Include="OsTrader\Panels\Tab\BotTabClusterUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OsTrader\Panels\Tab\BotTabIndexUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1224,8 +1203,16 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="PrimeSettings\PrimeSettingsMasterUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PrimeSettings\PrimeSettingsMaster.cs" />
+    <Compile Include="PrimeSettings\PrimeSettingsMasterUi.xaml.cs">
+      <DependentUpon>PrimeSettingsMasterUi.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1242,6 +1229,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -1280,18 +1268,6 @@
     <None Include="Resources\Bird.wav" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\pickDown.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\pickDownSmall.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\pickUp.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\pickUpSmall.png" />
-  </ItemGroup>
-  <ItemGroup>
     <COMReference Include="SmartCOM4Lib">
       <Guid>{D12929CB-4569-46B7-99CE-FFF546E41866}</Guid>
       <VersionMajor>1</VersionMajor>
@@ -1314,6 +1290,42 @@
   <ItemGroup>
     <Resource Include="Images\MainWIndow\Trading.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pickDownSize1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pickDownSize4.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pickUpSize1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pickUpSize4.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pickDownSize2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pickDownSize3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pickUpSize2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pickUpSize3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\MainWIndow\gear.png" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -11,7 +11,9 @@ using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Forms.Integration;
 using System.Windows.Shapes;
 using OsEngine.Charts;
+using OsEngine.Charts.CandleChart;
 using OsEngine.Entity;
+using OsEngine.Language;
 using OsEngine.Logging;
 using OsEngine.Market;
 using OsEngine.Market.Servers;
@@ -27,7 +29,7 @@ namespace OsEngine.OsData
     public class OsDataSet
     {
         // регулируемые настройки
-
+        
         /// <summary>
         /// включен ли к сохранению 1 секундный ТаймФрейм
         /// </summary>
@@ -196,7 +198,7 @@ namespace OsEngine.OsData
             worker.IsBackground = true;
             worker.Start();
 
-            _chartMaster = new ChartMaster(nameUniq, StartProgram.IsOsData);
+            _chartMaster = new ChartCandleMaster(nameUniq,StartProgram.IsOsData);
             _chartMaster.StopPaint();
 
             _comboBoxSecurity = comboBoxSecurity;
@@ -396,7 +398,7 @@ namespace OsEngine.OsData
             {
                 if (NewLogMessageEvent != null)
                 {
-                    NewLogMessageEvent("Источник не настроен", LogMessageType.System);
+                    NewLogMessageEvent(OsLocalization.Data.Label12, LogMessageType.System);
                 }
 
                 return;
@@ -409,7 +411,7 @@ namespace OsEngine.OsData
             {
                 if (NewLogMessageEvent != null)
                 {
-                    NewLogMessageEvent("В источнике нет доступных бумаг", LogMessageType.System);
+                    NewLogMessageEvent(OsLocalization.Data.Label13, LogMessageType.System);
                 }
                 return;
             }
@@ -814,12 +816,19 @@ namespace OsEngine.OsData
                     StartThis(SecuritiesNames[i], TimeFrame.Hour2);
                 }
             }
-            if (TfTickIsOn && _myServer != null && _myServer.ServerType == ServerType.Finam)
+            if (TfMarketDepthIsOn)
+            {
+                for (int i = 0; i < SecuritiesNames.Count; i++)
+                {
+                    StartThis(SecuritiesNames[i], TimeFrame.Hour1);
+                }
+            }
+            if (TfTickIsOn && _myServer != null)
             {
                 for (int i = 0; i < SecuritiesNames.Count; i++)
                 {
                     while (
-                        ((FinamServer)_myServer).StartTickToSecurity(SecuritiesNames[i].Id, TimeStart, TimeEnd,
+                        (_myServer).GetTickDataToSecurity(SecuritiesNames[i].Id, TimeStart, TimeEnd,
                             GetActualTimeToTrade("Data\\" + SetName + "\\" + SecuritiesNames[i].Name.Replace("/", "") + "\\Tick"), NeadToUpdate) == false)
                     {
                         Thread.Sleep(5000);
@@ -842,15 +851,8 @@ namespace OsEngine.OsData
                 TimeFrameBuilder timeFrameBuilder = new TimeFrameBuilder();
                 timeFrameBuilder.TimeFrame = timeFrame;
 
-                if (_myServer.ServerType == ServerType.Finam)
-                {
-                    series = ((FinamServer)_myServer).StartThisSecurity(loadSec.Id, timeFrameBuilder, TimeStart,
+                series = _myServer.GetCandleDataToSecurity(loadSec.Id, timeFrameBuilder, TimeStart,
                         TimeEnd, GetActualTimeToCandle("Data\\" + SetName + "\\" + loadSec.Name.Replace("/", "") + "\\" + timeFrame), NeadToUpdate);
-                }
-                else
-                {
-                    series = _myServer.StartThisSecurity(loadSec.Name, timeFrameBuilder);
-                }
 
                 Thread.Sleep(10);
             }
@@ -1698,7 +1700,7 @@ namespace OsEngine.OsData
         /// <summary>
         /// мастер прорисовки чарта
         /// </summary>
-        private ChartMaster _chartMaster;
+        private ChartCandleMaster _chartMaster;
 
         /// <summary>
         /// меню выбора инструмента

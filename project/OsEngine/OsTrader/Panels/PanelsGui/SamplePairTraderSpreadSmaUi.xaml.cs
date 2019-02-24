@@ -1,15 +1,14 @@
 ﻿/*
- *Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
+ * Your rights to use code governed by this license https://github.com/AlexWan/OsEngine/blob/master/LICENSE
+ * Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
 */
 using System;
 using System.Globalization;
 using System.Windows;
+using OsEngine.Language;
 
 namespace OsEngine.OsTrader.Panels.PanelsGui
 {
-    /// <summary>
-    /// Логика взаимодействия для PairTraderSpreadSmaUi.xaml
-    /// </summary>
     public partial class PairTraderSpreadSmaUi
     {
         private PairTraderSpreadSma _strategy;
@@ -32,6 +31,12 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             ComboBoxRegime.Items.Add(BotTradeRegime.OnlyClosePosition);
             ComboBoxRegime.SelectedItem = _strategy.Regime;
 
+            LabelRegime.Content = OsLocalization.Trader.Label115;
+            ButtonAccept.Content = OsLocalization.Trader.Label132;
+            LabelVolume1.Content = OsLocalization.Trader.Label30 + 1;
+            LabelSlippage1.Content = OsLocalization.Trader.Label92 + 1;
+            LabelVolume1.Content = OsLocalization.Trader.Label30 + 2;
+            LabelSlippage1.Content = OsLocalization.Trader.Label92 + 2;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -48,7 +53,7 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             }
             catch (Exception)
             {
-                MessageBox.Show("Операция прервана, т.к. в одном из полей недопустимое значение.");
+                MessageBox.Show(OsLocalization.Trader.Label13);
                 return;
             }
 
@@ -61,15 +66,11 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
 
             _strategy.Save();
             Close();
-
         }
 
         private void ButtonAbout_Click_1(object sender, RoutedEventArgs e)
         {
-            string str = "";
-            str += "Робот смотрит на график спреда между инструментами. На нём есть короткая и длинная машка. ";
-            str += "Когда короткая пересекает длинную это служит сигналом для входа в позицию. Закрытие тоже по пробою";
-            MessageBox.Show(str);
+            MessageBox.Show(OsLocalization.Trader.Label148);
         }
     }
 }

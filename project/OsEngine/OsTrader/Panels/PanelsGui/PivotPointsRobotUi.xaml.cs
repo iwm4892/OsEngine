@@ -1,12 +1,15 @@
-﻿using System;
+﻿/*
+ * Your rights to use code governed by this license https://github.com/AlexWan/OsEngine/blob/master/LICENSE
+ * Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
+*/
+
+using System;
 using System.Globalization;
 using System.Windows;
+using OsEngine.Language;
 
 namespace OsEngine.OsTrader.Panels.PanelsGui
 {
-    /// <summary>
-    /// Логика взаимодействия для PivotPointsRobotUi.xaml
-    /// </summary>
     public partial class PivotPointsRobotUi : Window
     {
         private PivotPointsRobot _strategy;
@@ -30,6 +33,11 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             ComboBoxRegime.Items.Add(BotTradeRegime.OnlyShort);
             ComboBoxRegime.SelectedItem = _strategy.Regime;
 
+            LabelRegime.Content = OsLocalization.Trader.Label115;
+            LabelVolume.Content = OsLocalization.Trader.Label30;
+            LabelSlippage.Content = OsLocalization.Trader.Label92;
+            ButtonAccept.Content = OsLocalization.Trader.Label132;
+            LabelStopOrder.Content = OsLocalization.Trader.Label123;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -47,7 +55,7 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             }
             catch (Exception)
             {
-                MessageBox.Show("В одном из полей недопустимые значения. Процесс сохранения прерван");
+                MessageBox.Show(OsLocalization.Trader.Label13);
                 return;
             }
 

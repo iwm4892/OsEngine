@@ -1,16 +1,15 @@
 ﻿/*
- *Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
+ * Your rights to use code governed by this license https://github.com/AlexWan/OsEngine/blob/master/LICENSE
+ * Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
 */
 
 using System;
 using System.Globalization;
 using System.Windows;
+using OsEngine.Language;
 
 namespace OsEngine.OsTrader.Panels.PanelsGui
 {
-    /// <summary>
-    /// Логика взаимодействия для SmaStochasticUi.xaml
-    /// </summary>
     public partial class SmaStochasticUi
     {
         private SmaStochastic _strategy;
@@ -22,8 +21,6 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             TextBoxVolumeOne.Text = _strategy.VolumeFix.ToString();
 
             TextBoxSlipage.Text = _strategy.Slipage.ToString(new CultureInfo("ru-RU"));
-
-
             ComboBoxRegime.Items.Add(BotTradeRegime.Off);
             ComboBoxRegime.Items.Add(BotTradeRegime.On);
             ComboBoxRegime.Items.Add(BotTradeRegime.OnlyClosePosition);
@@ -35,7 +32,13 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             StochDown.Text = _strategy.Downline.ToString(new CultureInfo("ru-RU"));
             Step.Text = _strategy.Step.ToString(new CultureInfo("ru-RU"));
 
-
+            LabelRegime.Content = OsLocalization.Trader.Label115;
+            LabelVolume.Content = OsLocalization.Trader.Label30;
+            LabelSlippage.Content = OsLocalization.Trader.Label92;
+            ButtonAccept.Content = OsLocalization.Trader.Label132;
+            LabelStohasticUp.Content = OsLocalization.Trader.Label149;
+            LabelStochasticLow.Content = OsLocalization.Trader.Label150;
+            LabelStep.Content = OsLocalization.Trader.Label151;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -54,7 +57,7 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             }
             catch (Exception)
             {
-                MessageBox.Show("В одном из полей недопустимые значения. Процесс сохранения прерван");
+                MessageBox.Show(OsLocalization.Trader.Label13);
                 return;
             }
 
@@ -66,8 +69,6 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             _strategy.Step = Convert.ToDecimal(Step.Text);
 
             Enum.TryParse(ComboBoxRegime.Text, true, out _strategy.Regime);
-
-
 
             _strategy.Save();
             Close();

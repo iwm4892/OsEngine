@@ -1,9 +1,11 @@
 ﻿/*
- *Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
+ * Your rights to use code governed by this license https://github.com/AlexWan/OsEngine/blob/master/LICENSE
+ * Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
 */
 
 using System;
 using System.Windows;
+using OsEngine.Language;
 
 namespace OsEngine.OsTrader.Panels.SingleRobots
 {
@@ -26,6 +28,14 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
             TextBoxSpreadBeetwenLine.Text = _strategy.PersentToSpreadLines.ToString();
 
             CheckBoxNeadToPaint.IsChecked = _strategy.PaintOn;
+
+            LabelRegime.Content = OsLocalization.Trader.Label115;
+            LabelVolume.Content = OsLocalization.Trader.Label30;
+            LabelBetweenLines.Content = OsLocalization.Trader.Label130;
+            CheckBoxNeadToPaint.Content = OsLocalization.Trader.Label131;
+            ButtonAccept.Content = OsLocalization.Trader.Label117;
+
+
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -40,7 +50,7 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
             }
             catch (Exception)
             {
-                MessageBox.Show("В одном из полей недопустимые значения. Процесс сохранения прерван");
+                MessageBox.Show(OsLocalization.Trader.Label13);
                 return;
             }
 
@@ -59,8 +69,7 @@ namespace OsEngine.OsTrader.Panels.SingleRobots
 
         private void ButtonAbout_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("В пятницу все позиции закрываются. Каждый понедельник строются 20 уровней вверх и 20 уровней вниз. " 
-                +"Через расстояние указываемое в настройках. При пересечении этих уровней в противоположную сторону открывается позиция   http://y-dav.livejournal.com/8877.html");
+            MessageBox.Show(OsLocalization.Trader.Label113);
         }
     }
 }

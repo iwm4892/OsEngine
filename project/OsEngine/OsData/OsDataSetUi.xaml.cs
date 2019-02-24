@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using OsEngine.Entity;
+using OsEngine.Language;
 using OsEngine.Market;
 
 namespace OsEngine.OsData
@@ -70,20 +71,13 @@ namespace OsEngine.OsData
 
             CheckBoxNeadToLoadDataInServers.IsChecked = set.NeadToLoadDataInServers;
 
+            List < ServerType > serverTypes = ServerMaster.ServersTypes;
             ComboBoxSource.Items.Add(ServerType.None);
-            ComboBoxSource.Items.Add(ServerType.Finam);
-            ComboBoxSource.Items.Add(ServerType.InteractivBrokers);
-            ComboBoxSource.Items.Add(ServerType.Plaza);
-            ComboBoxSource.Items.Add(ServerType.QuikDde);
-            ComboBoxSource.Items.Add(ServerType.QuikLua);
-            ComboBoxSource.Items.Add(ServerType.BitMex);
-            ComboBoxSource.Items.Add(ServerType.Kraken);
-            ComboBoxSource.Items.Add(ServerType.Binance);
-            ComboBoxSource.Items.Add(ServerType.BitStamp);
-            ComboBoxSource.Items.Add(ServerType.NinjaTrader);
-            ComboBoxSource.Items.Add(ServerType.SmartCom);
-            ComboBoxSource.Items.Add(ServerType.Oanda);
 
+            for (int i = 0; i < serverTypes.Count; i++)
+            {
+                ComboBoxSource.Items.Add(serverTypes[i]);
+            }
 
             ComboBoxSource.SelectedItem = _set.Source;
             ComboBoxSource.SelectionChanged += ComboBoxSource_SelectionChanged;
@@ -112,6 +106,19 @@ namespace OsEngine.OsData
             CreateSecuritiesTable();
             ReloadSecuritiesOnTable();
             CheckButtons();
+            Title = OsLocalization.Data.TitleDataSet;
+            Label3.Content = OsLocalization.Data.Label3;
+            Label4.Content = OsLocalization.Data.Label4;
+            Label15.Content = OsLocalization.Data.Label15;
+            Label16.Content = OsLocalization.Data.Label16;
+            Label17.Content = OsLocalization.Data.Label17;
+            Label18.Content = OsLocalization.Data.Label18;
+            Label19.Content = OsLocalization.Data.Label19;
+            Label20.Content = OsLocalization.Data.Label20;
+            ButtonAccept.Content = OsLocalization.Data.ButtonAccept;
+            CheckBoxNeadToLoadDataInServers.Content = OsLocalization.Data.Label21;
+            CheckBoxNeadToUpDate.Content = OsLocalization.Data.Label22;
+
         }
 
         /// <summary>
@@ -147,7 +154,8 @@ namespace OsEngine.OsData
             else
             {
                 EnableControls();
-                if (ComboBoxSource.SelectedItem.ToString() == "Finam")
+                if (ComboBoxSource.SelectedItem != null && 
+                    ComboBoxSource.SelectedItem.ToString() == "Finam")
                 {
                     CheckBoxTf2HourIsOn.IsEnabled = false;
                     CheckBoxTf2HourIsOn.IsChecked = false;
@@ -314,7 +322,7 @@ namespace OsEngine.OsData
 
             DataGridViewColumn column0 = new DataGridViewColumn();
             column0.CellTemplate = cell0;
-            column0.HeaderText = @"Код бумаги";
+            column0.HeaderText = OsLocalization.Data.Label14;
             column0.ReadOnly = true;
             column0.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _grid.Columns.Add(column0);
@@ -365,7 +373,7 @@ namespace OsEngine.OsData
         {
             if (TextBoxFolderName.Text == "")
             {
-                MessageBox.Show(@"Сохранение прервано. Сету необходимо задать имя");
+                MessageBox.Show(OsLocalization.Data.Label23);
                 return;
             }
 

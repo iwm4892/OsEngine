@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using OsEngine.Entity;
+using OsEngine.Language;
 using OsEngine.Logging;
 using OsEngine.Market;
 using OsEngine.Market.Servers;
@@ -77,6 +78,7 @@ namespace OsEngine.OsData
 
                 servers[i].ConnectStatusChangeEvent += ServerStatusChangeEvent;
                 servers[i].LogMessageEvent += OsDataMaster_LogMessageEvent;
+
             }
             RePaintSourceGrid();
         }
@@ -214,14 +216,14 @@ namespace OsEngine.OsData
 
             DataGridViewColumn colum0 = new DataGridViewColumn();
             colum0.CellTemplate = cell0;
-            colum0.HeaderText = @"Источник";
+            colum0.HeaderText = OsLocalization.Data.Label4;
             colum0.ReadOnly = true;
             colum0.Width = 100;
             newGrid.Columns.Add(colum0);
 
             DataGridViewColumn colu = new DataGridViewColumn();
             colu.CellTemplate = cell0;
-            colu.HeaderText = @"Статус";
+            colu.HeaderText = OsLocalization.Data.Label5;
             colu.ReadOnly = true;
             colu.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             newGrid.Columns.Add(colu);
@@ -245,11 +247,7 @@ namespace OsEngine.OsData
 
             _gridSources.Rows.Clear();
 
-            List<ServerType> servers = new ServerType[]
-            {
-               ServerType.Finam, ServerType.QuikDde, ServerType.QuikLua, ServerType.SmartCom, ServerType.Plaza, 
-                ServerType.Oanda, ServerType.BitMex, ServerType.Kraken ,ServerType.Binance,ServerType.BitStamp,ServerType.NinjaTrader
-            }.ToList();
+            List<ServerType> servers = ServerMaster.ServersTypes;
 
             List<IServer> serversCreate = ServerMaster.GetServers();
 
@@ -275,8 +273,10 @@ namespace OsEngine.OsData
                 {
                     row1.Cells[1].Value = "Connect";
                     DataGridViewCellStyle style = new DataGridViewCellStyle();
-                    style.BackColor = Color.DarkSeaGreen;
-                    style.SelectionBackColor = Color.SeaGreen;
+                    style.BackColor = Color.MediumSeaGreen;
+                    style.SelectionBackColor = Color.Green;
+                    style.ForeColor = Color.Black;
+                    style.SelectionForeColor = Color.Black;
                     row1.Cells[1].Style = style;
                     row1.Cells[0].Style = style;
                 }
@@ -284,8 +284,10 @@ namespace OsEngine.OsData
                 {
                     row1.Cells[1].Value = "Disconnect";
                     DataGridViewCellStyle style = new DataGridViewCellStyle();
-                    style.BackColor = Color.FloralWhite;
-                    style.SelectionBackColor = Color.DarkSalmon;
+                    style.BackColor = Color.Coral;
+                    style.SelectionBackColor = Color.Chocolate;
+                    style.ForeColor = Color.Black;
+                    style.SelectionForeColor = Color.Black;
                     row1.Cells[1].Style = style;
                     row1.Cells[0].Style = style;
                 }
@@ -354,14 +356,14 @@ namespace OsEngine.OsData
 
             DataGridViewColumn colum0 = new DataGridViewColumn();
             colum0.CellTemplate = cell0;
-            colum0.HeaderText = @"Название";
+            colum0.HeaderText = OsLocalization.Data.Label3;
             colum0.ReadOnly = true;
             colum0.Width = 100;
             newGrid.Columns.Add(colum0);
 
             DataGridViewColumn colu = new DataGridViewColumn();
             colu.CellTemplate = cell0;
-            colu.HeaderText = @"Статус";
+            colu.HeaderText = OsLocalization.Data.Label5;
             colu.ReadOnly = true;
             colu.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             newGrid.Columns.Add(colu);
@@ -399,8 +401,10 @@ namespace OsEngine.OsData
                     if (_sets[i].Regime == DataSetState.On)
                     {
                         DataGridViewCellStyle style = new DataGridViewCellStyle();
-                        style.BackColor = Color.DarkSeaGreen;
-                        style.SelectionBackColor = Color.SeaGreen;
+                        style.BackColor = Color.MediumSeaGreen;
+                        style.SelectionBackColor = Color.Green;
+                        style.ForeColor = Color.Black;
+                        style.SelectionForeColor = Color.Black;
                         nRow.Cells[1].Style = style;
                         nRow.Cells[0].Style = style;
                     }
@@ -456,13 +460,13 @@ namespace OsEngine.OsData
             MenuItem[] items = new MenuItem[3];
 
             items[0] = new MenuItem();
-            items[0].Text = @"Добавить";
+            items[0].Text = OsLocalization.Data.Label6;
             items[0].Click += AddSet_Click;
 
-            items[1] = new MenuItem() { Text = @"Редактировать" };
+            items[1] = new MenuItem() { Text = OsLocalization.Data.Label7 };
             items[1].Click += RedactSet_Click;
 
-            items[2] = new MenuItem() { Text = @"Удалить"};
+            items[2] = new MenuItem() { Text = OsLocalization.Data.Label8 };
             items[2].Click += DeleteSet_Click;
 
             ContextMenu menu = new ContextMenu(items);
@@ -503,7 +507,7 @@ namespace OsEngine.OsData
                 return;
             }
 
-            AcceptDialogUi ui = new AcceptDialogUi("Вы собираетесь удалить сет. Вы уверены?");
+            AcceptDialogUi ui = new AcceptDialogUi(OsLocalization.Data.Label9);
             ui.ShowDialog();
 
             if (ui.UserAcceptActioin == false)
@@ -593,13 +597,13 @@ namespace OsEngine.OsData
             {
                 set.Regime = DataSetState.Off;
                 set.Delete();
-                MessageBox.Show(@"Создание сета прервано. Необходимо дать сету имя!");
+                MessageBox.Show(OsLocalization.Data.Label10);
                 return;
             }
 
             if (_sets.Find(dataSet => dataSet.SetName == set.SetName) != null)
             {
-                MessageBox.Show(@"Создание сета прервано. Сет с таким именем уже существует!");
+                MessageBox.Show(OsLocalization.Data.Label11);
                 set.Regime = DataSetState.Off;
                 set.Delete();
                 return;

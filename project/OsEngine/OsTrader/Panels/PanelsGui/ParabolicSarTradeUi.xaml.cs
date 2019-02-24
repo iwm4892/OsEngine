@@ -1,16 +1,15 @@
 ﻿/*
- *Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
+ * Your rights to use code governed by this license https://github.com/AlexWan/OsEngine/blob/master/LICENSE
+ * Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
 */
 
 using System;
 using System.Globalization;
 using System.Windows;
+using OsEngine.Language;
 
 namespace OsEngine.OsTrader.Panels.PanelsGui
 {
-    /// <summary>
-    /// Логика взаимодействия для ParabolicSarTradeUi.xaml
-    /// </summary>
     public partial class ParabolicSarTradeUi
     {
         private ParabolicSarTrade _strategy;
@@ -31,7 +30,10 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             ComboBoxRegime.Items.Add(BotTradeRegime.OnlyShort);
             ComboBoxRegime.SelectedItem = _strategy.Regime;
 
-
+            LabelRegime.Content = OsLocalization.Trader.Label115;
+            LabelVolume.Content = OsLocalization.Trader.Label30;
+            LabelSlippage.Content = OsLocalization.Trader.Label92;
+            ButtonAccept.Content = OsLocalization.Trader.Label132;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -48,13 +50,12 @@ namespace OsEngine.OsTrader.Panels.PanelsGui
             }
             catch (Exception)
             {
-                MessageBox.Show("В одном из полей недопустимые значения. Процесс сохранения прерван");
+                MessageBox.Show(OsLocalization.Trader.Label13);
                 return;
             }
 
             _strategy.VolumeFix = Convert.ToDecimal(TextBoxVolumeOne.Text);
             _strategy.Slipage = Convert.ToDecimal(TextBoxSlipage.Text);
-
 
             Enum.TryParse(ComboBoxRegime.Text, true, out _strategy.Regime);
 

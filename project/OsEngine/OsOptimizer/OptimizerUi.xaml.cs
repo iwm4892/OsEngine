@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Windows.Media;
 using OsEngine.Entity;
 using OsEngine.Journal;
+using OsEngine.Language;
 using OsEngine.Logging;
 using OsEngine.Market;
 using OsEngine.Market.Servers.Tester;
@@ -24,8 +25,6 @@ namespace OsEngine.OsOptimizer
         public OptimizerUi()
         {
             InitializeComponent();
-
-            TabControlPrime.Items.RemoveAt(4);
 
             _master = new OptimizerMaster();
             _master.StrategyNamesReadyEvent += _master_StrategyNamesReadyEvent;
@@ -59,61 +58,29 @@ namespace OsEngine.OsOptimizer
             CheckBoxFilterMiddleProfitIsOn.IsChecked = _master.FilterMiddleProfitIsOn;
             CheckBoxFilterWinPositonIsOn.IsChecked = _master.FilterWinPositionIsOn;
             CheckBoxFilterProfitFactorIsOn.IsChecked = _master.FilterProfitFactorIsOn;
+            CheckBoxFilterDealsCount.IsChecked = _master.FilterDealsCountIsOn;
 
             CheckBoxFilterProfitIsOn.Click += CheckBoxFilterIsOn_Click;
             CheckBoxFilterMaxDrowDownIsOn.Click += CheckBoxFilterIsOn_Click;
             CheckBoxFilterMiddleProfitIsOn.Click += CheckBoxFilterIsOn_Click;
             CheckBoxFilterWinPositonIsOn.Click += CheckBoxFilterIsOn_Click;
             CheckBoxFilterProfitFactorIsOn.Click += CheckBoxFilterIsOn_Click;
+            CheckBoxFilterDealsCount.Click += CheckBoxFilterIsOn_Click;
 
             TextBoxFilterProfitValue.Text = _master.FilterProfitFactorValue.ToString();
             TextBoxMaxDrowDownValue.Text = _master.FilterMaxDrowDownValue.ToString();
             TextBoxFilterMiddleProfitValue.Text = _master.FilterMiddleProfitValue.ToString();
             TextBoxFilterWinPositionValue.Text = _master.FilterWinPositionValue.ToString();
             TextBoxFilterProfitFactorValue.Text = _master.FilterProfitFactorValue.ToString();
+            TextBoxFilterDealsCount.Text = _master.FilterDealsCountValue.ToString();
 
             TextBoxFilterProfitValue.TextChanged += TextBoxFiltertValue_TextChanged;
             TextBoxMaxDrowDownValue.TextChanged += TextBoxFiltertValue_TextChanged;
             TextBoxFilterMiddleProfitValue.TextChanged += TextBoxFiltertValue_TextChanged;
             TextBoxFilterWinPositionValue.TextChanged += TextBoxFiltertValue_TextChanged;
             TextBoxFilterProfitFactorValue.TextChanged += TextBoxFiltertValue_TextChanged;
+            TextBoxFilterDealsCount.TextChanged += TextBoxFiltertValue_TextChanged;
 
-            // Оптимизация
-
-            if (_master.TypeOptimization == OptimizationType.SimulatedAnnealing)
-            {
-                CheckBoxOptimizationTypeSimulatedAnnealing.IsChecked = true;
-            }
-            else if (_master.TypeOptimization == OptimizationType.GeneticАlgorithm)
-            {
-                CheckBoxOptimizationTypeGeneticAlgoritm.IsChecked = true;
-            }
-
-            CheckBoxOptimizationTypeSimulatedAnnealing.Click += CheckBoxOptimizationTypeSimulatedAnnealing_Click;
-            CheckBoxOptimizationTypeGeneticAlgoritm.Click += CheckBoxOptimizationTypeGeneticAlgoritm_Click;
-
-            if (_master.TypeOprimizationFunction == OptimizationFunctionType.EndProfit)
-            {
-                CheckBoxOptimizationFunctionTypeEndProfit.IsChecked = true;
-            }
-            if (_master.TypeOprimizationFunction == OptimizationFunctionType.MiddleProfitFromPosition)
-            {
-                CheckBoxOptimizationFunctionMiddleProfitFromPosition.IsChecked = true;
-            }
-            if (_master.TypeOprimizationFunction == OptimizationFunctionType.MaxDrowDown)
-            {
-                CheckBoxOptimizationFunctionMaxDrowDawn.IsChecked = true;
-            }
-            if (_master.TypeOprimizationFunction == OptimizationFunctionType.ProfitFactor)
-            {
-                CheckBoxOptimizationFunctionProfitFactor.IsChecked = true;
-            }
-
-            CheckBoxOptimizationFunctionTypeEndProfit.Click += CheckBoxOptimizationFunctionTypeEndProfit_Click;
-            CheckBoxOptimizationFunctionMiddleProfitFromPosition.Click +=
-            CheckBoxOptimizationFunctionMiddleProfitFromPosition_Click;
-            CheckBoxOptimizationFunctionMaxDrowDawn.Click += CheckBoxOptimizationFunctionMaxDrowDawn_Click;
-            CheckBoxOptimizationFunctionProfitFactor.Click += CheckBoxOptimizationFunctionProfitFactor_Click;
 
             // Этапы
 
@@ -125,26 +92,42 @@ namespace OsEngine.OsOptimizer
             DatePickerEnd.SelectedDateChanged += DatePickerEnd_SelectedDateChanged;
             TextBoxPercentFiltration.TextChanged += TextBoxPercentFiltration_TextChanged;
 
-
-            // алгоритмы оптимизации. Пока блокируем
-
-            CheckBoxOptimizationTypeSimulatedAnnealing.IsEnabled = false;
-            CheckBoxOptimizationTypeGeneticAlgoritm.IsEnabled = false;
-            CheckBoxOptimizationTypeAllBots.IsEnabled = false;
-            CheckBoxOptimizationTypeAllBots.IsChecked = true;
-
-            CheckBoxOptimizationFunctionTypeEndProfit.IsEnabled = false;
-            CheckBoxOptimizationFunctionMiddleProfitFromPosition.IsEnabled = false;
-            CheckBoxOptimizationFunctionMaxDrowDawn.IsEnabled = false;
-            CheckBoxOptimizationFunctionProfitFactor.IsEnabled = false;
-
             _master.NeadToMoveUiToEvent += _master_NeadToMoveUiToEvent;
 
             Thread proggressPainter = new Thread(PainterProgressArea);
             proggressPainter.Name = "ProggressPainter";
             proggressPainter.IsBackground = true;
             proggressPainter.Start();
+
+            Label7.Content = OsLocalization.Optimizer.Label7;
+            Label8.Content = OsLocalization.Optimizer.Label8;
+            ButtonGo.Content = OsLocalization.Optimizer.Label9;
+            TabItemControl.Header = OsLocalization.Optimizer.Label10;
+            ButtonServerDialog.Content = OsLocalization.Optimizer.Label11;
+            Label12.Content = OsLocalization.Optimizer.Label12;
+            Label13.Content = OsLocalization.Optimizer.Label13;
+            LabelTabsEndTimeFrames.Content = OsLocalization.Optimizer.Label14;
+            Label15.Content = OsLocalization.Optimizer.Label15;
+            TabItemParams.Header = OsLocalization.Optimizer.Label16;
+            Label17.Content = OsLocalization.Optimizer.Label17;
+            TabItemFazes.Header = OsLocalization.Optimizer.Label18;
+            ButtonCreateOptimizeFazes.Content = OsLocalization.Optimizer.Label19;
+            Label20.Content = OsLocalization.Optimizer.Label20;
+            Label21.Content = OsLocalization.Optimizer.Label21;
+            Label22.Content = OsLocalization.Optimizer.Label22;
+            TabItemFilters.Header = OsLocalization.Optimizer.Label23;
+            CheckBoxFilterProfitIsOn.Content = OsLocalization.Optimizer.Label24;
+            CheckBoxFilterMaxDrowDownIsOn.Content = OsLocalization.Optimizer.Label25;
+            CheckBoxFilterMiddleProfitIsOn.Content = OsLocalization.Optimizer.Label26;
+            CheckBoxFilterWinPositonIsOn.Content = OsLocalization.Optimizer.Label27;
+            CheckBoxFilterProfitFactorIsOn.Content = OsLocalization.Optimizer.Label28;
+            TabItemResults.Header= OsLocalization.Optimizer.Label29;
+            Label30.Content = OsLocalization.Optimizer.Label30;
+            Label31.Content = OsLocalization.Optimizer.Label31;
+            CheckBoxFilterDealsCount.Content = OsLocalization.Optimizer.Label34;
         }
+
+
 
         /// <summary>
         /// объект хранящий в себе данные для оптимизации
@@ -173,7 +156,7 @@ namespace OsEngine.OsOptimizer
                 return;
             }
 
-            ButtonGo.Content = "Погнали!";
+            ButtonGo.Content = OsLocalization.Optimizer.Label9;
             TabControlPrime.SelectedItem = TabControlPrime.Items[4];
             TabControlPrime.IsEnabled = true;
             ComboBoxThreadsCount.IsEnabled = true;
@@ -348,53 +331,25 @@ namespace OsEngine.OsOptimizer
             if (move == NeadToMoveUiTo.Fazes)
             {
                 TabControlPrime.SelectedItem = TabControlPrime.Items[2];
-                GridFazes.Background = Brushes.DarkOrange;
             }
             if (move == NeadToMoveUiTo.Filters)
             {
                 TabControlPrime.SelectedItem = TabControlPrime.Items[3];
-                GridFilters.Background = Brushes.DarkOrange;
             }
             if (move == NeadToMoveUiTo.TabsAndTimeFrames)
             {
                 TabControlPrime.SelectedItem = TabControlPrime.Items[0];
-                RectangleTimeFramesAndSecurities.Fill = Brushes.DarkOrange;
             }
             if (move == NeadToMoveUiTo.Storage)
             {
                 TabControlPrime.SelectedItem = TabControlPrime.Items[0];
-                RectangleServerData.Fill = Brushes.DarkOrange;
             }
             if (move == NeadToMoveUiTo.Parametrs)
             {
                 TabControlPrime.SelectedItem = TabControlPrime.Items[1];
-                GridParametrs.Background = Brushes.DarkOrange;
             }
-
-            Thread worker = new Thread(RePaintAreas);
-            worker.IsBackground = true;
-            worker.Start();
         }
 
-        /// <summary>
-        /// место работы потока который возвращает стандартные цвета для объектов на форме, 
-        /// после того как мы подсветили какие-то из них для пользователя
-        /// </summary>
-        private void RePaintAreas()
-        {
-            if (!TabControlPrime.Dispatcher.CheckAccess())
-            {
-                Thread.Sleep(1000);
-                TabControlPrime.Dispatcher.Invoke(RePaintAreas);
-                return;
-            }
-            GridFazes.Background = Brushes.Black;
-            RectangleTimeFramesAndSecurities.Fill = Brushes.Black;
-            RectangleServerData.Fill = Brushes.Black;
-            RectangleStrategyName.Fill = Brushes.Black;
-            GridParametrs.Background = Brushes.Black;
-            GridFilters.Background = Brushes.Black;
-        }
 
 // обработка контролов по нажатию их пользователем
 
@@ -405,10 +360,10 @@ namespace OsEngine.OsOptimizer
         {
             SaveParamsFromTable();
 
-            if (ButtonGo.Content.ToString() == "Погнали!" &&
+            if (ButtonGo.Content.ToString() == OsLocalization.Optimizer.Label9 &&
                 _botsInSample != null)
             {
-                AcceptDialogUi ui = new AcceptDialogUi("Предыдущие данные будут уничтожены!");
+                AcceptDialogUi ui = new AcceptDialogUi(OsLocalization.Optimizer.Label33);
 
                 ui.ShowDialog();
 
@@ -418,15 +373,15 @@ namespace OsEngine.OsOptimizer
                 }
             }
 
-            if (ButtonGo.Content.ToString() == "Погнали!" && _master.Start())
+            if (ButtonGo.Content.ToString() == OsLocalization.Optimizer.Label9 && _master.Start())
             {
-                ButtonGo.Content = "Остановить";
+                ButtonGo.Content = OsLocalization.Optimizer.Label32;
                 StopUserActivity();
             }
-            else if (ButtonGo.Content.ToString() == "Остановить")
+            else if (ButtonGo.Content.ToString() == OsLocalization.Optimizer.Label32)
             {
                 _master.Stop();
-                ButtonGo.Content = "Погнали!";
+                ButtonGo.Content = OsLocalization.Optimizer.Label9;
             }
         }
 
@@ -452,50 +407,6 @@ namespace OsEngine.OsOptimizer
             _master.TimeStart = DatePickerStart.DisplayDate;
         }
 
-        private void CheckBoxOptimizationFunctionProfitFactor_Click(object sender, RoutedEventArgs e)
-        {
-            _master.TypeOprimizationFunction = OptimizationFunctionType.ProfitFactor;
-            CheckBoxOptimizationFunctionMaxDrowDawn.IsChecked = false;
-            CheckBoxOptimizationFunctionMiddleProfitFromPosition.IsChecked = false;
-            CheckBoxOptimizationFunctionTypeEndProfit.IsChecked = false;
-        }
-
-        void CheckBoxOptimizationFunctionMaxDrowDawn_Click(object sender, RoutedEventArgs e)
-        {
-            _master.TypeOprimizationFunction = OptimizationFunctionType.MaxDrowDown;
-            CheckBoxOptimizationFunctionProfitFactor.IsChecked = false;
-            CheckBoxOptimizationFunctionMiddleProfitFromPosition.IsChecked = false;
-            CheckBoxOptimizationFunctionTypeEndProfit.IsChecked = false;
-        }
-
-        void CheckBoxOptimizationFunctionMiddleProfitFromPosition_Click(object sender, RoutedEventArgs e)
-        {
-            _master.TypeOprimizationFunction = OptimizationFunctionType.MiddleProfitFromPosition;
-            CheckBoxOptimizationFunctionProfitFactor.IsChecked = false;
-            CheckBoxOptimizationFunctionMaxDrowDawn.IsChecked = false;
-            CheckBoxOptimizationFunctionTypeEndProfit.IsChecked = false;
-        }
-
-        void CheckBoxOptimizationFunctionTypeEndProfit_Click(object sender, RoutedEventArgs e)
-        {
-            _master.TypeOprimizationFunction = OptimizationFunctionType.EndProfit;
-            CheckBoxOptimizationFunctionProfitFactor.IsChecked = false;
-            CheckBoxOptimizationFunctionMaxDrowDawn.IsChecked = false;
-            CheckBoxOptimizationFunctionMiddleProfitFromPosition.IsChecked = false;
-        }
-
-        void CheckBoxOptimizationTypeGeneticAlgoritm_Click(object sender, RoutedEventArgs e)
-        {
-            CheckBoxOptimizationTypeSimulatedAnnealing.IsChecked = false;
-            _master.TypeOptimization = OptimizationType.GeneticАlgorithm;
-        }
-
-        void CheckBoxOptimizationTypeSimulatedAnnealing_Click(object sender, RoutedEventArgs e)
-        {
-            CheckBoxOptimizationTypeGeneticAlgoritm.IsChecked = false;
-            _master.TypeOptimization = OptimizationType.SimulatedAnnealing;
-        }
-
         void TextBoxFiltertValue_TextChanged(object sender, TextChangedEventArgs e)
         {
             try
@@ -505,6 +416,7 @@ namespace OsEngine.OsOptimizer
                 _master.FilterMiddleProfitValue = Convert.ToDecimal(TextBoxFilterMiddleProfitValue.Text);
                 _master.FilterWinPositionValue = Convert.ToDecimal(TextBoxFilterWinPositionValue.Text);
                 _master.FilterProfitFactorValue = Convert.ToDecimal(TextBoxFilterProfitFactorValue.Text);
+                _master.FilterDealsCountValue = Convert.ToInt32(TextBoxFilterDealsCount.Text);
             }
             catch
             {
@@ -513,9 +425,10 @@ namespace OsEngine.OsOptimizer
                 TextBoxFilterMiddleProfitValue.Text = _master.FilterMiddleProfitValue.ToString();
                 TextBoxFilterWinPositionValue.Text = _master.FilterWinPositionValue.ToString();
                 TextBoxFilterProfitFactorValue.Text = _master.FilterProfitFactorValue.ToString();
+                TextBoxFilterDealsCount.Text = _master.FilterDealsCountValue.ToString();
             }
         }
-
+        
         void CheckBoxFilterIsOn_Click(object sender, RoutedEventArgs e)
         {
             _master.FilterProfitIsOn = CheckBoxFilterProfitIsOn.IsChecked.Value;
@@ -523,6 +436,7 @@ namespace OsEngine.OsOptimizer
             _master.FilterMiddleProfitIsOn = CheckBoxFilterMiddleProfitIsOn.IsChecked.Value;
             _master.FilterWinPositionIsOn = CheckBoxFilterWinPositonIsOn.IsChecked.Value;
             _master.FilterProfitFactorIsOn = CheckBoxFilterProfitFactorIsOn.IsChecked.Value;
+            _master.FilterDealsCountIsOn = CheckBoxFilterDealsCount.IsChecked.Value;
         }
 
         void _master_NewSecurityEvent(List<Security> securities)
@@ -588,7 +502,7 @@ namespace OsEngine.OsOptimizer
                 return;
             }
 
-            _master.SendLogMessage("Найдено стратегий с параметрами: " + strategy.Count, LogMessageType.System);
+            _master.SendLogMessage(OsLocalization.Optimizer.Message19 + strategy.Count, LogMessageType.System);
 
             ComboBoxNameStrategyToOptimization.Items.Clear();
 
@@ -639,7 +553,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column0 = new DataGridViewColumn();
             column0.CellTemplate = cell0;
-            column0.HeaderText = @"№ вкладки";
+            column0.HeaderText = OsLocalization.Optimizer.Message20;
             column0.ReadOnly = true;
             column0.Width = 100;
 
@@ -647,7 +561,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column1 = new DataGridViewColumn();
             column1.CellTemplate = cell0;
-            column1.HeaderText = @"Бумага";
+            column1.HeaderText = OsLocalization.Optimizer.Message21;
             column1.ReadOnly = false;
             column1.Width = 150;
 
@@ -655,7 +569,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column = new DataGridViewColumn();
             column.CellTemplate = cell0;
-            column.HeaderText = @"ТаймФрейм";
+            column.HeaderText = OsLocalization.Optimizer.Label12;
             column.ReadOnly = false;
             column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridTableTabsSimple.Columns.Add(column);
@@ -832,7 +746,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column0 = new DataGridViewColumn();
             column0.CellTemplate = cell0;
-            column0.HeaderText = @"№ вкладки";
+            column0.HeaderText = OsLocalization.Optimizer.Message20;
             column0.ReadOnly = true;
             column0.Width = 100;
 
@@ -910,7 +824,7 @@ namespace OsEngine.OsOptimizer
 
                 DataGridViewButtonCell cell2 = new DataGridViewButtonCell();
                 cell2.Style = new DataGridViewCellStyle();
-                cell2.Value = "Настроить";
+                cell2.Value = OsLocalization.Optimizer.Message22;
                 row.Cells.Add(cell2);
 
                 _gridTableTabsIndex.Rows.Insert(0, row);
@@ -969,7 +883,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column0 = new DataGridViewColumn();
             column0.CellTemplate = cell0;
-            column0.HeaderText = @"№ шага";
+            column0.HeaderText = OsLocalization.Optimizer.Message23;
             column0.ReadOnly = true;
             column0.Width = 100;
 
@@ -977,7 +891,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column1 = new DataGridViewColumn();
             column1.CellTemplate = cell0;
-            column1.HeaderText = @"Тип";
+            column1.HeaderText = OsLocalization.Optimizer.Message24;
             column1.ReadOnly = true;
             column1.Width = 150;
 
@@ -985,21 +899,21 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column = new DataGridViewColumn();
             column.CellTemplate = cell0;
-            column.HeaderText = @"Начало";
+            column.HeaderText = OsLocalization.Optimizer.Message25;
             column.ReadOnly = true;
             column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridFazes.Columns.Add(column);
 
             DataGridViewColumn column2 = new DataGridViewColumn();
             column2.CellTemplate = cell0;
-            column2.HeaderText = @"Конец";
+            column2.HeaderText = OsLocalization.Optimizer.Message26;
             column2.ReadOnly = true;
             column2.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridFazes.Columns.Add(column2);
 
             DataGridViewColumn column3 = new DataGridViewColumn();
             column3.CellTemplate = cell0;
-            column3.HeaderText = @"Дней";
+            column3.HeaderText = OsLocalization.Optimizer.Message27;
             column3.ReadOnly = true;
             column3.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridFazes.Columns.Add(column3);
@@ -1086,7 +1000,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewCheckBoxColumn column0 = new DataGridViewCheckBoxColumn();
             column0.CellTemplate = new DataGridViewCheckBoxCell();
-            column0.HeaderText = @"Вкл/Выкл";
+            column0.HeaderText = OsLocalization.Optimizer.Message28;
             column0.ReadOnly = false;
             column0.Width = 100;
 
@@ -1094,7 +1008,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column1 = new DataGridViewColumn();
             column1.CellTemplate = cell0;
-            column1.HeaderText = @"Название";
+            column1.HeaderText = OsLocalization.Optimizer.Message29;
             column1.ReadOnly = true;
             column1.Width = 150;
 
@@ -1102,35 +1016,35 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column = new DataGridViewColumn();
             column.CellTemplate = cell0;
-            column.HeaderText = @"Тип";
+            column.HeaderText = OsLocalization.Optimizer.Message24;
             column.ReadOnly = true;
             column1.Width = 100;
             _gridParametrs.Columns.Add(column);
 
             DataGridViewComboBoxColumn column2 = new DataGridViewComboBoxColumn();
             column2.CellTemplate = new DataGridViewComboBoxCell();
-            column2.HeaderText = @"По умолчанию";
+            column2.HeaderText = OsLocalization.Optimizer.Message30;
             column2.ReadOnly = false;
             column2.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridParametrs.Columns.Add(column2);
 
             DataGridViewColumn column22 = new DataGridViewColumn();
             column22.CellTemplate = cell0;
-            column22.HeaderText = @"Стартовое значение";
+            column22.HeaderText = OsLocalization.Optimizer.Message31;
             column22.ReadOnly = false;
             column22.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridParametrs.Columns.Add(column22);
 
             DataGridViewColumn column3 = new DataGridViewColumn();
             column3.CellTemplate = cell0;
-            column3.HeaderText = @"Шаг приращения";
+            column3.HeaderText = OsLocalization.Optimizer.Message32;
             column3.ReadOnly = false;
             column3.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridParametrs.Columns.Add(column3);
 
             DataGridViewColumn column4 = new DataGridViewColumn();
             column4.CellTemplate = cell0;
-            column4.HeaderText = @"Последнее значение";
+            column4.HeaderText = OsLocalization.Optimizer.Message33;
             column4.ReadOnly = false;
             column4.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridParametrs.Columns.Add(column4);
@@ -1340,7 +1254,7 @@ namespace OsEngine.OsOptimizer
 
                         if (valueStart > valueStop)
                         {
-                            MessageBox.Show("Стартовое значение не может быть больше конечного");
+                            MessageBox.Show(OsLocalization.Optimizer.Message34);
                             PaintTableParametrs();
                             return;
                         }
@@ -1375,7 +1289,7 @@ namespace OsEngine.OsOptimizer
 
                         if (valueStart > valueStop)
                         {
-                            MessageBox.Show("Стартовое значение не может быть больше конечного");
+                            MessageBox.Show(OsLocalization.Optimizer.Message34);
                             PaintTableParametrs();
                             return;
                         }
@@ -1435,7 +1349,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column0 = new DataGridViewColumn();
             column0.CellTemplate = cell0;
-            column0.HeaderText = @"№ шага";
+            column0.HeaderText = OsLocalization.Optimizer.Message23;
             column0.ReadOnly = true;
             column0.Width = 100;
 
@@ -1443,7 +1357,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column1 = new DataGridViewColumn();
             column1.CellTemplate = cell0;
-            column1.HeaderText = @"Тип";
+            column1.HeaderText = OsLocalization.Optimizer.Message24;
             column1.ReadOnly = true;
             column1.Width = 150;
 
@@ -1451,21 +1365,21 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column = new DataGridViewColumn();
             column.CellTemplate = cell0;
-            column.HeaderText = @"Начало";
+            column.HeaderText = OsLocalization.Optimizer.Message25;
             column.ReadOnly = true;
             column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridFazesEnd.Columns.Add(column);
 
             DataGridViewColumn column2 = new DataGridViewColumn();
             column2.CellTemplate = cell0;
-            column2.HeaderText = @"Конец";
+            column2.HeaderText = OsLocalization.Optimizer.Message26;
             column2.ReadOnly = true;
             column2.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridFazesEnd.Columns.Add(column2);
 
             DataGridViewColumn column3 = new DataGridViewColumn();
             column3.CellTemplate = cell0;
-            column3.HeaderText = @"Дней";
+            column3.HeaderText = OsLocalization.Optimizer.Message27;
             column3.ReadOnly = true;
             column3.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridFazesEnd.Columns.Add(column3);
@@ -1555,7 +1469,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column0 = new DataGridViewColumn();
             column0.CellTemplate = cell0;
-            column0.HeaderText = @"Имя";
+            column0.HeaderText = OsLocalization.Optimizer.Message35;
             column0.ReadOnly = true;
             column0.Width = 150;
 
@@ -1563,7 +1477,7 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column1 = new DataGridViewColumn();
             column1.CellTemplate = cell0;
-            column1.HeaderText = @"Профит в % к депо";
+            column1.HeaderText = OsLocalization.Optimizer.Message36;
             column1.ReadOnly = false;
             column1.Width = 150;
 
@@ -1571,28 +1485,28 @@ namespace OsEngine.OsOptimizer
 
             DataGridViewColumn column = new DataGridViewColumn();
             column.CellTemplate = cell0;
-            column.HeaderText = @"Средняя прибыль в %";
+            column.HeaderText = OsLocalization.Optimizer.Message37;
             column.ReadOnly = false;
             column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridResults.Columns.Add(column);
 
             DataGridViewButtonColumn column2 = new DataGridViewButtonColumn();
             column2.CellTemplate = new DataGridViewButtonCell();
-            column2.HeaderText = @"Параметры";
+            column2.HeaderText = OsLocalization.Optimizer.Message38;
             column2.ReadOnly = true;
             column2.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridResults.Columns.Add(column2);
 
             DataGridViewButtonColumn column3 = new DataGridViewButtonColumn();
             column3.CellTemplate = new DataGridViewButtonCell();
-            column3.HeaderText = @"Журнал";
+            column3.HeaderText = OsLocalization.Optimizer.Message39;
             column3.ReadOnly = true;
             column3.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridResults.Columns.Add(column3);
 
             DataGridViewButtonColumn column4 = new DataGridViewButtonColumn();
             column4.CellTemplate = new DataGridViewButtonCell();
-            column4.HeaderText = @"График";
+            column4.HeaderText = OsLocalization.Optimizer.Message40;
             column4.ReadOnly = true;
             column4.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             _gridResults.Columns.Add(column4);
@@ -1681,15 +1595,15 @@ namespace OsEngine.OsOptimizer
                 row.Cells.Add(cell3);
 
                 DataGridViewButtonCell cell4 = new DataGridViewButtonCell();
-                cell4.Value = "Параметры";
+                cell4.Value = OsLocalization.Optimizer.Message38;
                 row.Cells.Add(cell4);
 
                 DataGridViewButtonCell cell5 = new DataGridViewButtonCell();
-                cell5.Value = "Журнал сделок";
+                cell5.Value = OsLocalization.Optimizer.Message39;
                 row.Cells.Add(cell5);
 
                 DataGridViewButtonCell cell6 = new DataGridViewButtonCell();
-                cell6.Value = "График";
+                cell6.Value = OsLocalization.Optimizer.Message40;
                 row.Cells.Add(cell6);
 
                 _gridResults.Rows.Add(row);

@@ -13,8 +13,10 @@ using OsEngine.Charts.CandleChart;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Entity;
 using OsEngine.Journal;
+using OsEngine.Language;
 using OsEngine.Logging;
 using OsEngine.Market;
+using OsEngine.Market.Servers.Miner;
 
 namespace OsEngine.OsMiner.Patterns
 {
@@ -60,14 +62,14 @@ namespace OsEngine.OsMiner.Patterns
                 DataServer = new OsMinerServer(_name);
                 DataServer.CandleSeriesChangeEvent += _dataServer_CandleSeriesChangeEvent;
 
-                _chart = new ChartMaster(_name,StartProgram.IsOsMiner);
+                _chart = new ChartCandleMaster(_name,StartProgram.IsOsMiner);
                 _chart.ClickToIndexEvent += _chart_ClickToIndexEvent;
 
-                _chartTempPattern = new ChartPainter(_name + "TempPattern",StartProgram.IsOsMiner);
+                _chartTempPattern = new ChartCandlePainter(_name + "TempPattern",StartProgram.IsOsMiner);
                 _chartTempPattern.IsPatternChart = true;
-                _chartSingleOpenPattern = new ChartPainter(_name + "OpenSinglePattern", StartProgram.IsOsMiner);
+                _chartSingleOpenPattern = new ChartCandlePainter(_name + "OpenSinglePattern", StartProgram.IsOsMiner);
                 _chartSingleOpenPattern.IsPatternChart = true;
-                _chartSingleClosePattern = new ChartPainter(_name + "CloseSinglePattern", StartProgram.IsOsMiner);
+                _chartSingleClosePattern = new ChartCandlePainter(_name + "CloseSinglePattern", StartProgram.IsOsMiner);
                 _chartSingleClosePattern.IsPatternChart = true;
             }
         }
@@ -145,14 +147,14 @@ namespace OsEngine.OsMiner.Patterns
             DataServer = new OsMinerServer(Name);
             DataServer.CandleSeriesChangeEvent += _dataServer_CandleSeriesChangeEvent;
             
-            _chart = new ChartMaster(_name,StartProgram.IsOsMiner);
+            _chart = new ChartCandleMaster(_name,StartProgram.IsOsMiner);
             _chart.ClickToIndexEvent += _chart_ClickToIndexEvent;
 
-            _chartTempPattern = new ChartPainter(_name + "TempPattern", StartProgram.IsOsMiner);
+            _chartTempPattern = new ChartCandlePainter(_name + "TempPattern", StartProgram.IsOsMiner);
             _chartTempPattern.IsPatternChart = true;
-            _chartSingleOpenPattern = new ChartPainter(_name + "OpenSinglePattern", StartProgram.IsOsMiner);
+            _chartSingleOpenPattern = new ChartCandlePainter(_name + "OpenSinglePattern", StartProgram.IsOsMiner);
             _chartSingleOpenPattern.IsPatternChart = true;
-            _chartSingleClosePattern = new ChartPainter(_name + "CloseSinglePattern", StartProgram.IsOsMiner);
+            _chartSingleClosePattern = new ChartCandlePainter(_name + "CloseSinglePattern", StartProgram.IsOsMiner);
             _chartSingleClosePattern.IsPatternChart = true;
 
             if (PatternsToOpen.Count != 0)
@@ -291,7 +293,7 @@ namespace OsEngine.OsMiner.Patterns
             {
                 if (firstFrame != series[i].TimeFrame)
                 {
-                    SendNewLogMessage("Сет данных не принят, т.к. содержит данные с разным таймфреймом",LogMessageType.Error);
+                    SendNewLogMessage(OsLocalization.Miner.Label11,LogMessageType.Error);
                     return;
                 }
             }
@@ -567,7 +569,7 @@ namespace OsEngine.OsMiner.Patterns
 
             if (candlesToTrade == null)
             {
-                SendNewLogMessage("Выбранная серия для торговли отсутствует.", LogMessageType.Error);
+                SendNewLogMessage(OsLocalization.Miner.Label12, LogMessageType.Error);
                 return;
             }
 
@@ -577,7 +579,7 @@ namespace OsEngine.OsMiner.Patterns
                 ExitFromSomeCandlesIsOn == false &&
                 PatternsToClose.Count == 0)
             {
-                SendNewLogMessage("Не выбран не один способ закрытия позиции. Тестирование не возможно", LogMessageType.Error);
+                SendNewLogMessage(OsLocalization.Miner.Label13, LogMessageType.Error);
                 return;
             }
 
@@ -595,7 +597,7 @@ namespace OsEngine.OsMiner.Patterns
 
             if (patternsToInter.Count != candlesParallelPatternsToInter.Count)
             {
-                SendNewLogMessage("К паттрнам на ОТКРЫТИЕ не удалось найти всех нужных серий данных. Перейдите в соответствующую вкладку и назначте всем паттернам серию данных.", LogMessageType.Error);
+                SendNewLogMessage(OsLocalization.Miner.Label14, LogMessageType.Error);
                 return;
             }
 
@@ -612,7 +614,7 @@ namespace OsEngine.OsMiner.Patterns
 
             if (patternsToExit.Count != candlesParallelPatternsToExit.Count)
             {
-                SendNewLogMessage("К паттрнам на ЗАКРЫТИЕ не удалось найти всех нужных серий данных. Перейдите в соответствующую вкладку и назначте всем паттернам серию данных.", LogMessageType.Error);
+                SendNewLogMessage(OsLocalization.Miner.Label15, LogMessageType.Error);
                 return;
             }
 
@@ -976,7 +978,7 @@ namespace OsEngine.OsMiner.Patterns
 
             if(PositionsInTrades.Count == 0)
             {
-                return "По паттерну небыло сделок";
+                return OsLocalization.Miner.Label16;
             }
 
             _lastProfit = profit;
@@ -984,9 +986,9 @@ namespace OsEngine.OsMiner.Patterns
             decimal mO = profit / PositionsInTrades.Count;
             _lastCount = PositionsInTrades.Count;
             _lastMo = mO;
-            result += "Общий профит: " + profit + "\r\n";
-            result += "Прибыль со сделки: " + mO + "\r\n";
-            result += "Количество входов: " + PositionsInTrades.Count + "\r\n";
+            result += OsLocalization.Miner.Label17 + profit + "\r\n";
+            result += OsLocalization.Miner.Label19 + mO + "\r\n";
+            result += OsLocalization.Miner.Label18 + PositionsInTrades.Count + "\r\n";
 
             return result;
         }
@@ -1138,7 +1140,7 @@ namespace OsEngine.OsMiner.Patterns
                     if (curNum >= mySeries.Candles.Count)
                     {
                         StopMiningProcces();
-                        MessageBox.Show("Поиск паттернов завершён. Мы проверили все данные");
+                        MessageBox.Show(OsLocalization.Miner.Label20);
                         return;
                     }
 
@@ -1461,7 +1463,7 @@ namespace OsEngine.OsMiner.Patterns
         /// <summary>
         /// основной чарт с графиком
         /// </summary>
-        private ChartMaster _chart;
+        private ChartCandleMaster _chart;
 
         /// <summary>
         /// прямоугольник под чартом
@@ -1476,17 +1478,17 @@ namespace OsEngine.OsMiner.Patterns
         /// <summary>
         /// чарт для отрисовки временного паттерна
         /// </summary>
-        private ChartPainter _chartTempPattern;
+        private ChartCandlePainter _chartTempPattern;
 
         /// <summary>
         /// чарт для отрисовки одиночного паттерна на вход
         /// </summary>
-        private ChartPainter _chartSingleOpenPattern;
+        private ChartCandlePainter _chartSingleOpenPattern;
 
         /// <summary>
         /// чарт для отрисовки одиночного паттерна на выход
         /// </summary>
-        private ChartPainter _chartSingleClosePattern;
+        private ChartCandlePainter _chartSingleClosePattern;
 
         /// <summary>
         /// индикатор объём
@@ -1571,20 +1573,20 @@ namespace OsEngine.OsMiner.Patterns
 
             if (string.IsNullOrEmpty(SecurityToInter))
             {
-                SendNewLogMessage("Установите бумагу для торговли",LogMessageType.Error);
+                SendNewLogMessage(OsLocalization.Miner.Label21,LogMessageType.Error);
                 return;
             }
 
             if (WeigthToTempPattern <= 0)
             {
-                SendNewLogMessage("Вес не может быть нулевым",LogMessageType.Error);
+                SendNewLogMessage(OsLocalization.Miner.Label22, LogMessageType.Error);
                 return;
             }
 
             if (PatternsToOpen.Count == 0 &&
                 PlaceToUsePattern == UsePatternType.ClosePosition)
             {
-                SendNewLogMessage("Нельзя устанавливать паттерн на закрытие позиций в тот момент когда нет ни одного паттерна на открытие!", LogMessageType.Error);
+                SendNewLogMessage(OsLocalization.Miner.Label23, LogMessageType.Error);
                 return;
             }
 
@@ -1595,7 +1597,7 @@ namespace OsEngine.OsMiner.Patterns
 
             if (series == null)
             {
-                SendNewLogMessage("Не найдены исторические данные, установленные для торговли по этому инструменту!", LogMessageType.Error);
+                SendNewLogMessage(OsLocalization.Miner.Label24, LogMessageType.Error);
                 return;
             }
 
@@ -1647,11 +1649,11 @@ namespace OsEngine.OsMiner.Patterns
         /// <summary>
         /// прорисовать паттерн на его индивидуальном чарте
         /// </summary>
-        private void PaintSinglePattern(IPattern pattern, ChartPainter chart)
+        private void PaintSinglePattern(IPattern pattern, ChartCandlePainter chart)
         {
             if (chart.GetChart().InvokeRequired)
             {
-                chart.GetChart().Invoke(new Action<IPattern, ChartPainter>(PaintSinglePattern), pattern, chart);
+                chart.GetChart().Invoke(new Action<IPattern, ChartCandlePainter>(PaintSinglePattern), pattern, chart);
                 return;
             }
             chart.ClearDataPointsAndSizeValue();
