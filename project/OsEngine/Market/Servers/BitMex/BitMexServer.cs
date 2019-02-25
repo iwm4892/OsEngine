@@ -1696,7 +1696,7 @@ namespace OsEngine.Market.Servers.BitMex
 
                                 if (!string.IsNullOrEmpty(myOrder.data[i].price))
                                 {
-                                    needOrder.Price = Convert.ToDecimal(myOrder.data[i].price);
+                                    needOrder.Price = Convert.ToDecimal(myOrder.data[i].price.Replace(",", CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator), CultureInfo.InvariantCulture);
                                 }
 
                                 if (!string.IsNullOrEmpty(myOrder.data[i].text))
