@@ -11,6 +11,7 @@ using OsEngine.Robots.High_Frequency;
 using OsEngine.Robots.MarketMaker;
 using OsEngine.Robots.Patterns;
 using OsEngine.Robots.Trend;
+using OsEngine.Robots.VSA;
 
 namespace OsEngine.Robots
 {
@@ -40,6 +41,8 @@ namespace OsEngine.Robots
             result.Add("PivotPointsRobot");
             result.Add("RsiContrtrend");
             result.Add("PinBarTrade");
+            //+++
+            result.Add("PriceLavelBot");
 
             return result;
         }
@@ -116,6 +119,11 @@ namespace OsEngine.Robots
             if (nameClass == "PairTraderSpreadSma")
             {
                 bot = new PairTraderSpreadSma(name, startProgram);
+            }
+            //++++
+            if (nameClass == "PriceLavelBot")
+            {
+                bot = new PriceLavelBot(name, startProgram);
             }
 
 
