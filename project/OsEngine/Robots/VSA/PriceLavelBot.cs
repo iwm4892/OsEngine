@@ -313,7 +313,7 @@ namespace OsEngine.Robots.VSA
             {
                 return;
             }
-
+            
             bool CanFindPattern = false;
             for (int i = 1; i <= 1; i++)
             {
@@ -329,7 +329,7 @@ namespace OsEngine.Robots.VSA
             {
                 return;
             }
-
+            
             // открытие позиций по патерну
             List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
             if (signal.Count > 0 && signal[0].isPattern)
@@ -347,6 +347,10 @@ namespace OsEngine.Robots.VSA
         }
         private void _tab_delta_CandleFinishedEvent(List<Candle> candles)
         {
+            if (!ValidateParams())
+            {
+                return;
+            }
             List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
             indicators.Add(delta_delta);
             indicators.Add(Volume_delta);
@@ -358,6 +362,10 @@ namespace OsEngine.Robots.VSA
         }
         private void _tab_pattern_CandleFinishedEvent(List<Candle> candles)
         {
+            if (!ValidateParams())
+            {
+                return;
+            }
             List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
             indicators.Add(delta_pattern);
             indicators.Add(Volume_pattern);
@@ -507,13 +515,28 @@ namespace OsEngine.Robots.VSA
             }
             if (RiskOnDay < -1 * MaxStop.ValueDecimal / 100)
             {
-                return false;
+               return false;
             }
             if (_TradeSessions.MinSessionPrice == 0 || (_TradeSessions.MaxSessionPrice - _TradeSessions.MinSessionPrice) / _TradeSessions.MinSessionPrice < MaxStop.ValueDecimal / 100)
             {
+                //return false;
+            }
+            
+            if(Math.Abs(_TradeSessions.MaxSessionPrice -_tab.CandlesAll[_tab.CandlesAll.Count-1].Close)<
+                Math.Abs(_TradeSessions.MinSessionPrice - _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close) 
+                && TradeSide == Side.Buy
+                && _TradeSessions.MaxSessionPrice > _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close)
+            {
                 return false;
             }
-
+            if (Math.Abs(_TradeSessions.MaxSessionPrice - _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close) >
+                Math.Abs(_TradeSessions.MinSessionPrice - _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close) 
+                && TradeSide == Side.Sell
+                 && _TradeSessions.MinSessionPrice < _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close)
+            {
+                return false;
+            }
+            
             return true;
         }
         private bool CanOpenPosition()
@@ -537,7 +560,15 @@ namespace OsEngine.Robots.VSA
             {
                 //    decimal localStop = GetStop(openPositions[i].Direction, candles[candles.Count-1].Close);
                 bool canClose = false;
-                if (openPositions[i].EntryPrice != 0 && Math.Abs((candles[candles.Count - 1].Close - openPositions[i].EntryPrice) / openPositions[i].EntryPrice) > 2 * openPositions[i].fee)
+                if(openPositions[i].Direction== Side.Buy
+                     && (candles[candles.Count - 1].Close - openPositions[i].EntryPrice) / openPositions[i].EntryPrice >2* openPositions[i].fee
+                    )
+                {
+                    canClose = true;
+                }
+                if (openPositions[i].Direction == Side.Sell
+                     && -1*(candles[candles.Count - 1].Close - openPositions[i].EntryPrice) / openPositions[i].EntryPrice > 2 * openPositions[i].fee
+                    )
                 {
                     canClose = true;
                 }
@@ -773,7 +804,7 @@ namespace OsEngine.Robots.VSA
             ///Отрисовка линий
             PriceLevleLine.PaintLevleData(TabsSimple);
             //Определяем направление торговли по прошлой сессии
-            LastSessionEndPrice = _TradeSessions.LastSessionEndPrice;
+            LastSessionEndPrice = _TradeSessions.Values[_TradeSessions.Values.Count - 1];//_TradeSessions.LastSessionEndPrice;
 
 
             //LastSessionEndPrice = TradeSessions.LastSessionEndPrice(_tab.CandlesAll, candles[candles.Count - 1].TimeStart);

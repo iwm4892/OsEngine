@@ -295,7 +295,7 @@ namespace OsEngine.Entity
           //      && cData.lowShadow > cData.candleSize * (decimal)0.3
                 && cData.ClasterData.MaxData.Price <= Candles[Candles.Count - 1].Open +(cData.candleBody * (decimal)0.3)
                 && Delta.Values[Delta.Values.Count - 1] > 0
-                && Volume.Values[Volume.Values.Count-2]<= Volume.Values[Volume.Values.Count - 1]
+         //       && Volume.Values[Volume.Values.Count-2]<= Volume.Values[Volume.Values.Count - 1]
                 )
             {
                 isPattern = true;
@@ -306,7 +306,7 @@ namespace OsEngine.Entity
              //   && cData.hiShadow > cData.candleSize * (decimal)0.3
                 && cData.ClasterData.MaxData.Price >= Candles[Candles.Count - 1].Open - (cData.candleBody * (decimal)0.3)
                 && Delta.Values[Delta.Values.Count - 1] < 0
-                && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
+        //        && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
             )
             {
                 isPattern = true;

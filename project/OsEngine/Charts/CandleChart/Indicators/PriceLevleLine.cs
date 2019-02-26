@@ -274,7 +274,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
         private bool updateLevelData(levlel lvl)
         {
-            levlel findlvl = LevleData.Find(x => x.Value + (linewidth * x.Value / 2) > lvl.Value && x.Value - (linewidth * x.Value / 2) < lvl.Value);
+            levlel findlvl = LevleData.Find(x => x.Value + (linewidth * x.Value ) > lvl.Value && x.Value - (linewidth * x.Value ) < lvl.Value);
             if (findlvl != null)
             {
                 findlvl.levlSide = lvl.levlSide;
