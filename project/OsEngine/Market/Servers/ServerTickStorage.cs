@@ -34,7 +34,7 @@ namespace OsEngine.Market.Servers
 
             _pathName = @"Data" + @"\" + server.GetType().Name + @"Trades";
 
-            Thread saver = new Thread(TickSaverSpaceInOneFile);
+            Thread saver = new Thread(TickSaverSpaceInFiles);
             saver.CurrentCulture = new CultureInfo("RU-ru");
             saver.IsBackground = false;
             saver.Start();
@@ -225,7 +225,7 @@ namespace OsEngine.Market.Servers
                     {
                         string[] array = saves[i].Split('\\');
 
-                        nameSecurity = array[2].Split('.')[0];
+                        nameSecurity = array[2].Split('_')[0];
                     }
                     catch
                     {
@@ -284,22 +284,30 @@ namespace OsEngine.Market.Servers
                         _tradeSaveInfo.Add(tradeInfo);
                     }
 
+                    
+
                     if (allTrades == null)
                     {
                         allTrades = new[] { newList };
                     }
                     else
                     {
-                        List<Trade>[] newListsArray = new List<Trade>[allTrades.Length + 1];
+                        int _indextradeinfo = _tradeSaveInfo.FindIndex(s => s.NameSecurity == newList[0].SecurityNameCode);
+                        List<Trade>[] newListsArray = new List<Trade>[_tradeSaveInfo.Count];
                         for (int ii = 0; ii < allTrades.Length; ii++)
                         {
                             newListsArray[ii] = allTrades[ii];
                         }
-                        newListsArray[newListsArray.Length - 1] = newList;
+                        newListsArray[_indextradeinfo].AddRange(newList);
                         allTrades = newListsArray;
                     }
 
                     reader.Close();
+                }
+
+                for (int ii = 0; ii < _tradeSaveInfo.Count; ii++)
+                {
+                    _tradeSaveInfo[ii].LastSaveIndex = allTrades[ii].Count;
                 }
 
                 if (TickLoadedEvent != null)
@@ -335,6 +343,115 @@ namespace OsEngine.Market.Servers
         /// исходящее сообщение для лога
         /// </summary>
         public event Action<string, LogMessageType> LogMessageEvent;
+        /// <summary>
+        /// метод в котором работает поток сохраняющий тики в различные файлы
+        /// </summary>
+        private void TickSaverSpaceInFiles()
+        {
+            _tradeSaveInfo = new List<TradeSaveInfo>();
+            try
+            {
+                if (!Directory.Exists(_pathName))
+                {
+                    Directory.CreateDirectory(_pathName);
+                }
+                while (true)
+                {
+                    Thread.Sleep(15000);
+
+                    if (_server.ServerStatus != ServerConnectStatus.Connect)
+                    {
+                        continue;
+                    }
+
+                    if (NeadToSave == false)
+                    {
+                        continue;
+                    }
+
+                    if (_weLoadTrades == false)
+                    {
+                        continue;
+                    }
+
+                    List<Trade>[] allTrades = _server.AllTrades;
+
+                    for (int i1 = 0;
+                        allTrades != null && Thread.CurrentThread.Name != "deleteThread" && i1 < allTrades.Length;
+                        i1++)
+                    {
+                        if (allTrades[i1].Count == 0)
+                        {
+                            continue;
+                        }
+                        if (MainWindow.ProccesIsWorked == false)
+                        {
+                            // если приложение закрывается
+                            return;
+                        }
+
+                        if (_securities == null ||
+                            (_securities != null &&
+                             _securities.Find(security => security.Name == allTrades[i1][0].SecurityNameCode) == null))
+                        {
+                            continue;
+                        }
+
+                        TradeSaveInfo tradeInfo =
+                            _tradeSaveInfo.Find(s => s.NameSecurity == allTrades[i1][0].SecurityNameCode);
+
+                        if (tradeInfo == null)
+                        {
+                            tradeInfo = new TradeSaveInfo();
+                            tradeInfo.NameSecurity = allTrades[i1][0].SecurityNameCode;
+                            _tradeSaveInfo.Add(tradeInfo);
+                        }
+
+                        if (tradeInfo.LastSaveIndex == allTrades[i1].Count)
+                        {
+                            continue;
+                        }
+
+                        int lastSecond = allTrades[i1][tradeInfo.LastSaveIndex].Time.Second;
+                        int lastMillisecond = allTrades[i1][tradeInfo.LastSaveIndex].MicroSeconds;
+
+                       
+                        string _timepath= allTrades[i1][0].Time.ToString("yyyy_MM_dd");
+                        StreamWriter writer = new StreamWriter(_pathName + @"\" + allTrades[i1][0].SecurityNameCode + "_" + _timepath + ".txt", true);
+
+                        for (int i = tradeInfo.LastSaveIndex; i < allTrades[i1].Count - 1; i++)
+                        {
+                            string timepath = allTrades[i1][i].Time.ToString("yyyy_MM_dd");
+                            if (timepath != _timepath)
+                            {
+                                writer.Close();
+                                writer = new StreamWriter(_pathName + @"\" + allTrades[i1][0].SecurityNameCode +"_"+ timepath + ".txt", true);
+                                _timepath = timepath;
+                            }
+                            if (allTrades[i1][i].MicroSeconds == 0)
+                            { // генерим какое-то время микросекунд, если нам коннектор их не выдал
+                                if (lastSecond != allTrades[i1][i].Time.Second)
+                                {
+                                    lastMillisecond = 0;
+                                    lastSecond = allTrades[i1][i].Time.Second;
+                                }
+
+                                allTrades[i1][i].MicroSeconds = lastMillisecond += 10;
+                            }
+
+                            writer.WriteLine(allTrades[i1][i].GetSaveString());
+                        }
+                        tradeInfo.LastSaveIndex = allTrades[i1].Count - 1;
+                        writer.Close();
+
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                SendNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+        }
 
     }
 }
