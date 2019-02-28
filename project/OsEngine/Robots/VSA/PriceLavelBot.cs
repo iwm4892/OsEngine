@@ -390,6 +390,14 @@ namespace OsEngine.Robots.VSA
         }
         private decimal GetPrice(decimal price)
         {
+            if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
+            {
+                if (_tab.Securiti.Name == "ETHUSD")
+                {
+                    return price * 0.000001m;
+                }
+            }
+
             if (DepoCurrency.ValueString == "Currency2")
             {
                 return price;
@@ -410,7 +418,7 @@ namespace OsEngine.Robots.VSA
                 return;
             }
             decimal VollAll = (_tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked) / GetPrice(price);
-
+            
             decimal StopSize = Math.Abs((LastStop - price) / price);
             if (StopSize <= 0)
             {
