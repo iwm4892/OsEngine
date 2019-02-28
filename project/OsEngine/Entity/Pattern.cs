@@ -342,7 +342,9 @@ namespace OsEngine.Entity
                     && cData2.ClasterData.MaxData.Price <= Candles[Candles.Count - 1].Close + (cData2.candleBody * (decimal)0.3)
                     && Delta.Values[Delta.Values.Count - 2] > 0
                     && Delta.Values[Delta.Values.Count - 1] < 0
-                   && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
+                      && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
+                 //    && Volume.Values[Volume.Values.Count - 2] >= Volume.Values[Volume.Values.Count - 1]
+                 //    && cData1.candleSize <= cData2.candleSize
                     )
                 {
                     isPattern = true;
@@ -353,7 +355,9 @@ namespace OsEngine.Entity
                     && cData2.ClasterData.MaxData.Price >= Candles[Candles.Count - 1].Close - (cData2.candleBody * (decimal)0.3)
                     && Delta.Values[Delta.Values.Count - 2] < 0
                     && Delta.Values[Delta.Values.Count - 1] > 0
-                    && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
+                     && Volume.Values[Volume.Values.Count - 2] <= Volume.Values[Volume.Values.Count - 1]
+                  //   && Volume.Values[Volume.Values.Count - 2] >= Volume.Values[Volume.Values.Count - 1]
+                 //    && cData1.candleSize <= cData2.candleSize
                     )
                 {
                     isPattern = true;

@@ -64,6 +64,10 @@ namespace OsEngine.Robots.VSA
         /// </summary>
         private bool TradeLevel;
         /// <summary>
+        /// Использовать безубыток
+        /// </summary>
+        private StrategyParameterBool UseSafe;
+        /// <summary>
         /// Цена на которой закончилась прошлая сессия
         /// </summary>
         private Decimal LastSessionEndPrice;
@@ -177,6 +181,7 @@ namespace OsEngine.Robots.VSA
             mA.Save();
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
+            UseSafe = CreateParameter("Использовать сейф", true);
             _Volume = CreateParameter("Volume", 1, 0.00m, 100, 1);
 
             MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
@@ -194,7 +199,7 @@ namespace OsEngine.Robots.VSA
             _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
 
             _tab.FirstTickToDayEvent += _tab_FirstTickToDayEvent;
-
+            _tab.PositionClosingSuccesEvent += _tab_PositionClosingSuccesEvent;
 
 
             //Младший тайм фрейм
@@ -235,6 +240,13 @@ namespace OsEngine.Robots.VSA
             closerThread.Start();
 
         }
+
+        private void _tab_PositionClosingSuccesEvent(Position obj)
+        {
+            _tab.SellAtStopCanсel();
+            _tab.BuyAtStopCanсel();
+        }
+
         private List<TradeSessions.SessionType> GetListSessionTypes()
         {
             List<TradeSessions.SessionType> _result = new List<TradeSessions.SessionType>();
@@ -276,7 +288,7 @@ namespace OsEngine.Robots.VSA
                 {
                     return;
                 }
-
+                /*
                 for (int i = 0; i < _tab.PositionsCloseAll.Count; i++)
                 {
                     if (_tab.PositionsCloseAll[i].State != PositionStateType.ClosingFail)
@@ -284,6 +296,21 @@ namespace OsEngine.Robots.VSA
                         continue;
                     }
                     _tab.CloseAtMarket(_tab.PositionsCloseAll[i], _tab.PositionsCloseAll[i].OpenVolume);
+                }
+                */
+                if (_tab.PositionsLast != null)
+                {
+
+                    if (_tab.PositionsLast.OpenVolume == 0)
+                    
+                        {
+                            _tab.GetJournal().DeletePosition(_tab.PositionsLast);
+                    }
+                    else
+                    {
+                        _tab.CloseAtMarket(_tab.PositionsLast, _tab.PositionsLast.OpenVolume);
+                    }
+                    
                 }
             }
 
@@ -721,53 +748,64 @@ namespace OsEngine.Robots.VSA
 
             //выставим новые стопы
             _tab.CloseAtTrailingStop(obj, LastStop, LastStop);
-            /*
-            LastStop = 0;
+            
+            decimal fixPOs = 2 * obj.EntryPrice - LastStop;
             if (obj.Direction == Side.Buy)
             {
-                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > obj.EntryPrice);//&& x.levlSide == side);
-                if (lvl != null && lvl.Count > 0)
-                {
-                    lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
-                    _tab.CloseAtProfit(obj, lvl[0].Value, lvl[0].Value);
-                }
+                _tab.SellAtStop((int)obj.OpenVolume/2,fixPOs,fixPOs, StopActivateType.HigherOrEqual);
             }
             else
             {
-                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < obj.EntryPrice);//&& x.levlSide == side);
-                if (lvl != null && lvl.Count>0)
+                _tab.BuyAtStop((int)obj.OpenVolume / 2, fixPOs, fixPOs, StopActivateType.LowerOrEqyal);
+            }
+            
+                /*
+                LastStop = 0;
+                if (obj.Direction == Side.Buy)
                 {
-                    lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
-                    _tab.CloseAtProfit(obj, lvl[lvl.Count-1].Value, lvl[lvl.Count - 1].Value);
+                    List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > obj.EntryPrice);//&& x.levlSide == side);
+                    if (lvl != null && lvl.Count > 0)
+                    {
+                        lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                        _tab.CloseAtProfit(obj, lvl[0].Value, lvl[0].Value);
+                    }
                 }
+                else
+                {
+                    List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < obj.EntryPrice);//&& x.levlSide == side);
+                    if (lvl != null && lvl.Count>0)
+                    {
+                        lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                        _tab.CloseAtProfit(obj, lvl[lvl.Count-1].Value, lvl[lvl.Count - 1].Value);
+                    }
 
-            }
-            */
+                }
+                */
 
-            //          _tab.CloseAtProfit(obj, obj.EntryPrice * 1.005m, obj.EntryPrice * 1.005m);
-            /*
-            //учтем комиссию за сделку
-            decimal fee = obj.OpenVolume * obj.EntryPrice * obj.fee;
-            if (obj.Direction == Side.Buy)
-            {
-                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > obj.EntryPrice);
-                if (lvl != null&& lvl.Count>0)
+                //          _tab.CloseAtProfit(obj, obj.EntryPrice * 1.005m, obj.EntryPrice * 1.005m);
+                /*
+                //учтем комиссию за сделку
+                decimal fee = obj.OpenVolume * obj.EntryPrice * obj.fee;
+                if (obj.Direction == Side.Buy)
                 {
-                    lvl.Sort((a, b) =>decimal.Compare(a.Value,b.Value));
-                    _tab.CloseAtProfit(obj, lvl[0].Value , lvl[0].Value + fee + lvl[0].Value*obj.OpenVolume*obj.fee);
+                    List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value > obj.EntryPrice);
+                    if (lvl != null&& lvl.Count>0)
+                    {
+                        lvl.Sort((a, b) =>decimal.Compare(a.Value,b.Value));
+                        _tab.CloseAtProfit(obj, lvl[0].Value , lvl[0].Value + fee + lvl[0].Value*obj.OpenVolume*obj.fee);
+                    }
                 }
-            }
-            else
-            {
-                List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < obj.EntryPrice);
-                if (lvl != null && lvl.Count > 0)
+                else
                 {
-                    lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
-                    _tab.CloseAtProfit(obj, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value -fee - lvl[lvl.Count - 1].Value * obj.OpenVolume * obj.fee);
+                    List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < obj.EntryPrice);
+                    if (lvl != null && lvl.Count > 0)
+                    {
+                        lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                        _tab.CloseAtProfit(obj, lvl[lvl.Count - 1].Value, lvl[lvl.Count - 1].Value -fee - lvl[lvl.Count - 1].Value * obj.OpenVolume * obj.fee);
+                    }
                 }
+                */
             }
-            */
-        }
         private void OpenAtLevel()
         {
             if (!CanOpenPosition())
