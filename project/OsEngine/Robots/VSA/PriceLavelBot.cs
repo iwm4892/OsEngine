@@ -298,7 +298,7 @@ namespace OsEngine.Robots.VSA
                     _tab.CloseAtMarket(_tab.PositionsCloseAll[i], _tab.PositionsCloseAll[i].OpenVolume);
                 }
                 */
-                if (_tab.PositionsLast != null)
+                if (_tab.PositionsLast != null && _tab.PositionsLast.State == PositionStateType.ClosingFail)
                 {
 
                     if (_tab.PositionsLast.OpenVolume == 0)
