@@ -243,6 +243,7 @@ namespace OsEngine.Robots.VSA
 
         private void _tab_PositionClosingSuccesEvent(Position obj)
         {
+            _tab.CloseAllOrderInSystem();
             _tab.SellAtStopCanсel();
             _tab.BuyAtStopCanсel();
         }
@@ -748,15 +749,19 @@ namespace OsEngine.Robots.VSA
 
             //выставим новые стопы
             _tab.CloseAtTrailingStop(obj, LastStop, LastStop);
-            
-            decimal fixPOs = 2 * obj.EntryPrice - LastStop;
-            if (obj.Direction == Side.Buy)
+            if (UseSafe.ValueBool)
             {
-                _tab.SellAtStop((int)obj.OpenVolume/2,fixPOs,fixPOs, StopActivateType.HigherOrEqual);
-            }
-            else
-            {
-                _tab.BuyAtStop((int)obj.OpenVolume / 2, fixPOs, fixPOs, StopActivateType.LowerOrEqyal);
+                decimal fixPOs = 2 * obj.EntryPrice - LastStop;
+                if (obj.Direction == Side.Buy)
+                {
+                    _tab.SellAtLimit((int)obj.OpenVolume / 2, fixPOs);
+                    // _tab.SellAtStop((int)obj.OpenVolume/2,fixPOs,fixPOs, StopActivateType.HigherOrEqual);
+                }
+                else
+                {
+                    _tab.BuyAtLimit((int)obj.OpenVolume / 2, fixPOs);
+                    // _tab.BuyAtStop((int)obj.OpenVolume / 2, fixPOs, fixPOs, StopActivateType.LowerOrEqyal);
+                }
             }
             
                 /*
