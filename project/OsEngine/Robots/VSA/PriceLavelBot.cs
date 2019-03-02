@@ -243,9 +243,10 @@ namespace OsEngine.Robots.VSA
 
         private void _tab_PositionClosingSuccesEvent(Position obj)
         {
-            _tab.CloseAllOrderInSystem();
-            _tab.SellAtStopCanсel();
-            _tab.BuyAtStopCanсel();
+            if (obj.OpenVolume == 0)
+            {
+                _tab.CloseAllOrderInSystem();
+            }
         }
 
         private List<TradeSessions.SessionType> GetListSessionTypes()
@@ -752,16 +753,21 @@ namespace OsEngine.Robots.VSA
             if (UseSafe.ValueBool)
             {
                 decimal fixPOs = 2 * obj.EntryPrice - LastStop;
+                decimal vol = obj.OpenVolume/2;
+                if (isContract.ValueBool)
+                {
+                    vol = (int)vol;
+                }
+                
                 if (obj.Direction == Side.Buy)
                 {
-                    _tab.SellAtLimit((int)obj.OpenVolume / 2, fixPOs);
-                    // _tab.SellAtStop((int)obj.OpenVolume/2,fixPOs,fixPOs, StopActivateType.HigherOrEqual);
+                    _tab.SellAtAcebergToPosition(obj, fixPOs, vol, 1);    
                 }
                 else
                 {
-                    _tab.BuyAtLimit((int)obj.OpenVolume / 2, fixPOs);
-                    // _tab.BuyAtStop((int)obj.OpenVolume / 2, fixPOs, fixPOs, StopActivateType.LowerOrEqyal);
+                    _tab.BuyAtAcebergToPosition(obj, fixPOs, vol, 1);
                 }
+                
             }
             
                 /*
