@@ -99,7 +99,14 @@ namespace OsEngine.Charts.CandleChart.Indicators
             _ts.Open = new DateTime(1, 1, 1, 10, 0, 0);
             _ts.Close = new DateTime(1, 1, 1, 19, 0, 0);
             SessionsAll.Add(_ts);
-            
+
+            _ts = new TS();
+            _ts.Name = "Сутки";
+            _ts.SessionType = SessionType.Day;
+            _ts.Open = new DateTime(1, 1, 1, 0, 0, 1);
+            _ts.Close = new DateTime(1, 1, 1, 23, 59, 0);
+            SessionsAll.Add(_ts);
+
             color = Color.Blue;
             TypeIndicator = IndicatorOneCandleChartType.Line;
             PaintOn = true;
@@ -146,7 +153,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
             /// <summary>
             /// Мосбиржа
             /// </summary>
-            RUS
+            RUS,
+            /// <summary>
+            /// Без сессий (0-24)
+            /// </summary>
+            Day
         }
         public enum DayType
         {

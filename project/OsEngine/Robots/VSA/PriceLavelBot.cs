@@ -123,6 +123,10 @@ namespace OsEngine.Robots.VSA
         /// </summary>
         private StrategyParameterBool SessionRUS;
         /// <summary>
+        /// Торги круглосуточно
+        /// </summary>
+        private StrategyParameterBool SessionDay;
+        /// <summary>
         /// Вылюта депозита (первая или вторая валюта валютной пары)
         /// </summary>
         private StrategyParameterString DepoCurrency;
@@ -157,6 +161,7 @@ namespace OsEngine.Robots.VSA
             SessionEU = CreateParameter("Торговать Европу", false);
             SessionUSA = CreateParameter("Торговать Америку", false);
             SessionRUS = CreateParameter("Торговать Россию", false);
+            SessionDay = CreateParameter("Круглосуточно", false);
 
 
             _TradeSessions = new TradeSessions(name + "_TradeSessions", false, GetListSessionTypes());
@@ -267,6 +272,10 @@ namespace OsEngine.Robots.VSA
             if (SessionUSA.ValueBool)
             {
                 _result.Add(TradeSessions.SessionType.USA);
+            }
+            if (SessionDay.ValueBool)
+            {
+                _result.Add(TradeSessions.SessionType.Day);
             }
             return _result;
         }
