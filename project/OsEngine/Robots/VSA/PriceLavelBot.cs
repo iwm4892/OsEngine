@@ -595,56 +595,38 @@ namespace OsEngine.Robots.VSA
 
             for (int i = 0; i < openPositions.Count && candles.Count > 1; i++)
             {
-                //    decimal localStop = GetStop(openPositions[i].Direction, candles[candles.Count-1].Close);
-                bool canClose = false;
-                if(openPositions[i].Direction== Side.Buy
-                     && (candles[candles.Count - 1].Close - openPositions[i].EntryPrice) / openPositions[i].EntryPrice >2* openPositions[i].fee
-                    )
+                List<decimal> stop = GetTrailingStopPrice(openPositions[i]);
+                foreach (var _st in stop)
                 {
-                    canClose = true;
-                }
-                if (openPositions[i].Direction == Side.Sell
-                     && -1*(candles[candles.Count - 1].Close - openPositions[i].EntryPrice) / openPositions[i].EntryPrice > 2 * openPositions[i].fee
-                    )
-                {
-                    canClose = true;
-                }
-                if (canClose)
-                {
-                    /*
-                    //+++ безубыток
-                    if(openPositions[i].Direction == Side.Buy)
+                    bool canClose = false;
+                    if (openPositions[i].Direction == Side.Buy
+                         && (_st - openPositions[i].EntryPrice) / openPositions[i].EntryPrice > 2 * openPositions[i].fee
+                        )
                     {
-                        _tab.CloseAtTrailingStop(openPositions[i], openPositions[i].EntryPrice * (1 + 2 * openPositions[i].fee), openPositions[i].EntryPrice * (1 + 2 * openPositions[i].fee));
+                        canClose = true;
                     }
-                    else
+                    if (openPositions[i].Direction == Side.Sell
+                         && -1 * (_st - openPositions[i].EntryPrice) / openPositions[i].EntryPrice > 2 * openPositions[i].fee
+                        )
                     {
-                        _tab.CloseAtTrailingStop(openPositions[i], openPositions[i].EntryPrice * (1 - 2 * openPositions[i].fee), openPositions[i].EntryPrice * (1 + 2 * openPositions[i].fee));
+                        canClose = true;
                     }
-                    */
-                    if (candles[candles.Count - 1].IsUp != candles[candles.Count - 2].IsUp)
+                    if (canClose)
                     {
-                        if ((openPositions[i].Direction == Side.Buy && candles[candles.Count - 1].ClasterData.MaxData.Price < candles[candles.Count - 2].ClasterData.MaxData.Price)
-                            )// openPositions[i].EntryPrice < Claster.data[Claster.data.Count - 1].MaxData.Price)
-                        {
-                            //   _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
-                            //    _tab.CloseAllAtMarket();
-                            //_tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count - 1], mA.Values[mA.Values.Count - 1]);
-
-                        }
-                        if ((openPositions[i].Direction == Side.Sell && candles[candles.Count - 1].ClasterData.MaxData.Price > candles[candles.Count - 2].ClasterData.MaxData.Price)
-                           )// && openPositions[i].EntryPrice > Claster.data[Claster.data.Count - 1].MaxData.Price)
-                        {
-                            //    _tab.SetNewLogMessage("Закрытие по развороту уровня объема", LogMessageType.Signal);
-                            //   _tab.CloseAllAtMarket();
-                        }
+                        _tab.CloseAtTrailingStop(openPositions[i], _st, _st);
                     }
-                    _tab.CloseAtTrailingStop(openPositions[i], mA.Values[mA.Values.Count - 1], mA.Values[mA.Values.Count - 1]);
                 }
 
 
             }
 
+        }
+        private List<decimal> GetTrailingStopPrice(Position position)
+        {
+            List<decimal> result = new List<decimal>();
+            result.Add(mA.Values[mA.Values.Count - 1]);
+            result.Add((position.EntryPrice + _tab.Trades[_tab.Trades.Count-1].Price) / 2);
+            return result;
         }
         /// <summary>
         /// Найдем последний уровень
