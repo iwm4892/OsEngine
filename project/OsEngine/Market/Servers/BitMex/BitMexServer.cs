@@ -391,8 +391,8 @@ namespace OsEngine.Market.Servers.BitMex
             _client.GetSecurities();
         }
 
-// data subscription
-// Подпись на данные
+        // data subscription
+        // Подпись на данные
 
         /// <summary>
         /// downloading candle master
@@ -901,7 +901,7 @@ namespace OsEngine.Market.Servers.BitMex
 
                 lock (_quoteLock)
                 {
-                    
+
 
                     if (quotes.action == "partial")
                     {
@@ -1396,8 +1396,8 @@ namespace OsEngine.Market.Servers.BitMex
                             param["side"] = order.Side == Side.Buy ? "Buy" : "Sell";
                             //param["orderIDs"] = order.NumberUser.ToString();
                             param["orderQty"] = order.Volume.ToString();
+                            param["origClOrdID"] = order.NumberUser.ToString();
                             param["clOrdID"] = order.NumberUser.ToString();
-
                             param["ordType"] = order.TypeOrder == OrderPriceType.Limit ? "Limit" : "Market";
 
                             var res = _client.CreateQuery("POST", "/order", param, true);

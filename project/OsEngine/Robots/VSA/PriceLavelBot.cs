@@ -718,7 +718,8 @@ namespace OsEngine.Robots.VSA
                 {
                     vol = (int)vol;
                 }
-                
+                _tab.CloseAtLimit(obj, fixPOs, vol);
+                /*
                 if (obj.Direction == Side.Buy)
                 {
                     _tab.SellAtAcebergToPosition(obj, fixPOs, vol, 1);    
@@ -727,7 +728,7 @@ namespace OsEngine.Robots.VSA
                 {
                     _tab.BuyAtAcebergToPosition(obj, fixPOs, vol, 1);
                 }
-                
+                */
             }
             
         }

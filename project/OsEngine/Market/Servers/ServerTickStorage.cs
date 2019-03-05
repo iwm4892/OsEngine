@@ -227,23 +227,29 @@ namespace OsEngine.Market.Servers
 
                 for (int i = 0; i < saves.Length; i++)
                 {
-                    // upload / загружаем
-                    StreamReader reader = new StreamReader(saves[i]);
-
-                    List<Trade> newList = new List<Trade>();
 
                     string nameSecurity;
 
                     try
                     {
                         string[] array = saves[i].Split('\\');
-
-                        nameSecurity = array[2].Split('_')[0];
+                        string[] _name = array[2].Split('_');
+                        nameSecurity = _name[0];
+                        DateTime _startDate = new DateTime(Convert.ToInt32(_name[1]), Convert.ToInt32(_name[2]), Convert.ToInt32(_name[3].Split('.')[0]));
+                        if (_startDate < DateTime.Now.AddDays(-DaysToLoad))
+                        {
+                            continue;
+                        }
                     }
                     catch
                     {
                         continue;
                     }
+
+                    // upload / загружаем
+                    StreamReader reader = new StreamReader(saves[i]);
+
+                    List<Trade> newList = new List<Trade>();
 
                     try
                     {
@@ -264,7 +270,7 @@ namespace OsEngine.Market.Servers
                             }
                             catch
                             {
-                               continue;
+                                continue;
                             }
 
                             newTrade.SecurityNameCode = nameSecurity;
@@ -297,7 +303,7 @@ namespace OsEngine.Market.Servers
                         _tradeSaveInfo.Add(tradeInfo);
                     }
 
-                    
+
 
                     if (allTrades == null)
                     {
@@ -309,7 +315,15 @@ namespace OsEngine.Market.Servers
                         List<Trade>[] newListsArray = new List<Trade>[_tradeSaveInfo.Count];
                         for (int ii = 0; ii < allTrades.Length; ii++)
                         {
+                            if (newListsArray[ii] == null)
+                            {
+                                newListsArray[ii] = new List<Trade>();
+                            }
                             newListsArray[ii] = allTrades[ii];
+                        }
+                        if (newListsArray[_indextradeinfo] == null)
+                        {
+                            newListsArray[_indextradeinfo] = new List<Trade>();
                         }
                         newListsArray[_indextradeinfo].AddRange(newList);
                         allTrades = newListsArray;
@@ -431,8 +445,8 @@ namespace OsEngine.Market.Servers
                         int lastSecond = allTrades[i1][tradeInfo.LastSaveIndex].Time.Second;
                         int lastMillisecond = allTrades[i1][tradeInfo.LastSaveIndex].MicroSeconds;
 
-                       
-                        string _timepath= allTrades[i1][0].Time.ToString("yyyy_MM_dd");
+
+                        string _timepath = allTrades[i1][0].Time.ToString("yyyy_MM_dd");
                         StreamWriter writer = new StreamWriter(_pathName + @"\" + allTrades[i1][0].SecurityNameCode + "_" + _timepath + ".txt", true);
 
                         for (int i = tradeInfo.LastSaveIndex; i < allTrades[i1].Count - 1; i++)
@@ -441,7 +455,7 @@ namespace OsEngine.Market.Servers
                             if (timepath != _timepath)
                             {
                                 writer.Close();
-                                writer = new StreamWriter(_pathName + @"\" + allTrades[i1][0].SecurityNameCode +"_"+ timepath + ".txt", true);
+                                writer = new StreamWriter(_pathName + @"\" + allTrades[i1][0].SecurityNameCode + "_" + timepath + ".txt", true);
                                 _timepath = timepath;
                             }
                             if (allTrades[i1][i].MicroSeconds == 0)
