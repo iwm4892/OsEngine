@@ -1390,7 +1390,6 @@ namespace OsEngine.Market.Servers.BitMex
                         if (_ordersToExecute.TryDequeue(out order))
                         {
                             Dictionary<string, string> param = new Dictionary<string, string>();
-
                             param["symbol"] = order.SecurityNameCode;
                             param["price"] = order.Price.ToString().Replace(",", ".");
                             param["side"] = order.Side == Side.Buy ? "Buy" : "Sell";
@@ -1398,8 +1397,25 @@ namespace OsEngine.Market.Servers.BitMex
                             param["orderQty"] = order.Volume.ToString();
                             param["origClOrdID"] = order.NumberUser.ToString();
                             param["clOrdID"] = order.NumberUser.ToString();
-                            param["ordType"] = order.TypeOrder == OrderPriceType.Limit ? "Limit" : "Market";
 
+                            if (order.TypeOrder == OrderPriceType.Limit)
+                            {
+                                param["ordType"] = "Limit";
+                            }
+                            else if(order.TypeOrder == OrderPriceType.Market)
+                            {
+                                param["ordType"] = "Market";
+                            }
+                            else if (order.TypeOrder == OrderPriceType.LimitStop)
+                            {
+                                param["ordType"] = "StopLimit";
+                                param["stopPx"] = order.priceRedLine.ToString().Replace(",", ".");
+                            }
+                            else if (order.TypeOrder == OrderPriceType.MarketStop)
+                            {
+                                param["ordType"] = "Stop";
+                                param["stopPx"] = order.priceRedLine.ToString().Replace(",", ".");
+                            }
                             var res = _client.CreateQuery("POST", "/order", param, true);
 
                             if (res == "")

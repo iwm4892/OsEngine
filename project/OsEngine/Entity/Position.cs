@@ -97,6 +97,15 @@ namespace OsEngine.Entity
                         trades.AddRange(newTrades);
                     }
                 }
+                for (int i = 0; _stopOrders != null && i < _stopOrders.Count; i++)
+                {
+                    List<MyTrade> newTrades = _stopOrders[i].MyTrades;
+                    if (newTrades != null &&
+                        newTrades.Count != 0)
+                    {
+                        trades.AddRange(newTrades);
+                    }
+                }
 
                 _myTrades = trades;
                 return trades;
@@ -584,13 +593,13 @@ namespace OsEngine.Entity
 
                     if (Direction == Side.Buy)
                     {
-                        ProfitOperationPersent = (medianPriceClose-medianPriceClose*fee) / (EntryPrice-EntryPrice*fee) * 100 - 100;
-                        ProfitOperationPunkt = medianPriceClose - EntryPrice - (medianPriceClose*fee+EntryPrice*fee);
+                        ProfitOperationPersent = (medianPriceClose - medianPriceClose * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100;
+                        ProfitOperationPunkt = medianPriceClose - EntryPrice - (medianPriceClose * fee + EntryPrice * fee);
                     }
                     else
                     {
                         ProfitOperationPunkt = EntryPrice - medianPriceClose - (medianPriceClose * fee + EntryPrice * fee);
-                        ProfitOperationPersent = -((medianPriceClose-medianPriceClose*fee) / (EntryPrice-EntryPrice*fee) * 100 - 100);
+                        ProfitOperationPersent = -((medianPriceClose - medianPriceClose * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100);
                     }
                     ProfitOperationPersent = Math.Round(ProfitOperationPersent, 5);
                 }
@@ -648,7 +657,27 @@ namespace OsEngine.Entity
                     }
                 }
             }
-
+            if (StopOrders != null)
+            {
+                for (int i = 0; i < StopOrders.Count; i++)
+                {
+                    if (StopOrders[i].NumberMarket == trade.NumberOrderParent ||
+                        StopOrders[i].NumberUser.ToString() == trade.NumberOrderParent)
+                    {
+                        trade.NumberPosition = Number.ToString();
+                        StopOrders[i].SetTrade(trade);
+                        if (OpenVolume == 0)
+                        {
+                            State = PositionStateType.Done;
+                            StopOrders[i].TimeDone = trade.Time;
+                        }
+                        else if (OpenVolume < 0)
+                        {
+                            State = PositionStateType.ClosingSurplus;
+                        }
+                    }
+                }
+            }
 
             if (State == PositionStateType.Done && CloseOrders != null && EntryPrice != 0)
             {
@@ -675,8 +704,8 @@ namespace OsEngine.Entity
                 }
                 if (Direction == Side.Buy)
                 {
-                    ProfitOperationPersent = (medianPriceClose - medianPriceClose*fee) / (EntryPrice - EntryPrice*fee) * 100 - 100;
-                    ProfitOperationPunkt = medianPriceClose - EntryPrice - fee*(medianPriceClose + EntryPrice);
+                    ProfitOperationPersent = (medianPriceClose - medianPriceClose * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100;
+                    ProfitOperationPunkt = medianPriceClose - EntryPrice - fee * (medianPriceClose + EntryPrice);
                 }
                 else
                 {
@@ -868,7 +897,7 @@ namespace OsEngine.Entity
             {
                 if (CloseOrders != null && CloseOrders.Count != 0)
                 {
-                    for (int i = CloseOrders.Count-1; i > -1 && i < CloseOrders.Count; i--)
+                    for (int i = CloseOrders.Count - 1; i > -1 && i < CloseOrders.Count; i--)
                     {
                         DateTime time = CloseOrders[i].GetLastTradeTime();
                         if (time != DateTime.MinValue)
@@ -998,6 +1027,29 @@ namespace OsEngine.Entity
 
         }
 
+        /// <summary>
+        /// Стопордера выставленные на бирже
+        /// </summary>
+        public List<Order> StopOrders
+        {
+            get
+            {
+                return _stopOrders;
+            }
+        }
+        private List<Order> _stopOrders;
+        /// <summary>
+        /// Добавить стоп
+        /// </summary>
+        /// <param name="stopOrder"></param>
+        public void AddNewStopOrder(Order stopOrder)
+        {
+            if (_stopOrders == null)
+            {
+                _stopOrders = new List<Order>();
+            }
+            _stopOrders.Add(stopOrder);
+        }
 
     }
 

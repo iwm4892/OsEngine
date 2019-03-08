@@ -508,8 +508,21 @@ namespace OsEngine.Journal.Internal
                         }
                     }
                 }
+                bool isStopOrder = false;
+                if (_deals[i].StopOrders !=null && _deals[i].StopOrders.Count > 0)
+                {
+                    for (int indStopOrd=0; indStopOrd<_deals[i].StopOrders.Count; indStopOrd++)
+                    {
+                        if (_deals[i].StopOrders[indStopOrd].NumberMarket == trade.NumberOrderParent ||
+                            _deals[i].StopOrders[indStopOrd].NumberUser.ToString() == trade.NumberOrderParent)
+                        {
+                            isStopOrder = true;
+                            break;
+                        }
 
-                if (isOpenOrder || isCloseOrder)
+                    }
+                }
+                if (isOpenOrder || isCloseOrder || isStopOrder)
                 {
                     PositionStateType positionState = _deals[i].State;
 

@@ -441,6 +441,11 @@ namespace OsEngine.Entity
             Comment = saveArray[18];
             TimeDone = Convert.ToDateTime(saveArray[19]);
         }
+        
+        /// <summary>
+        /// line price / цена линии, после достижения которой будет выставлен ордер на покупку/продажу
+        /// </summary>
+        public decimal priceRedLine;
     }
 
 
@@ -466,7 +471,18 @@ namespace OsEngine.Entity
         /// iceberg application. Those. An application whose volume is not fully visible in the glass.
         /// айсберг заявка. Т.е. заявка объём которой полностью не виден в стакане.
         /// </summary>
-        Iceberg
+        Iceberg,
+
+        /// <summary>
+        /// Лимитный стопордер
+        /// </summary>
+        LimitStop,
+
+        /// <summary>
+        /// Рыночный стопордеор
+        /// </summary>
+        MarketStop
+
     }
 
     /// <summary>

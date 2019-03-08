@@ -2501,6 +2501,14 @@ namespace OsEngine.OsTrader.Panels.Tab
                     }
                 }
 
+                for (int i = 0; position.StopOrders != null && i < position.StopOrders.Count; i++)
+                {
+                    if (position.StopOrders[i].State == OrderStateType.Activ)
+                    {
+                        _connector.OrderCancel(position.StopOrders[i]);
+                    }
+                }
+
                 if (Securiti == null)
                 {
                     return;
@@ -3773,9 +3781,125 @@ namespace OsEngine.OsTrader.Panels.Tab
                 BestBidAskChangeEvent(bestBid, bestAsk);
             }
         }
+        /// <summary>
+        /// Выставить на сервере стоп для позиции
+        /// </summary>
+        /// <param name="position">Позиция</param>
+        /// <param name="priceLimit">Цена стопа</param>
+        /// <param name="priceRedLine">Цена при достижении которой выставляется стоп ордер</param>
+        public void AddServerStopToPosition(Position position, decimal priceLimit, decimal priceRedLine)
+        {
+            try
+            {
+                Side side = Side.Buy;
+                if (position.Direction == Side.Buy)
+                {
+                    side = Side.Sell;
+                }
+                Order newOrder = _dealCreator.CreateOrder(Side.Sell, priceLimit, position.OpenVolume, OrderPriceType.LimitStop,
+                _manualControl.SecondToOpen, StartProgram);
 
-// исходящие события. Обработчики для стратегии
-// outgoing events. Handlers for strategy
+                position.AddNewStopOrder(newOrder);
+                _connector.OrderExecute(newOrder);
+            }
+            catch (Exception error)
+            {
+                SetNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+
+
+        }
+        /// <summary>
+        /// Выставить на сервере стоп для позиции
+        /// </summary>
+        /// <param name="position">Позиция</param>
+        /// <param name="priceLimit">Цена стопа</param>
+        /// <param name="priceRedLine">Цена при достижении которой выставляется стоп ордер</param>
+        public void AddServerStopToPosition(Position position, decimal priceLimit)
+        {
+            try
+            {
+                Side side = Side.Buy;
+                if (position.Direction == Side.Buy)
+                {
+                    side = Side.Sell;
+                }
+                Order newOrder = _dealCreator.CreateOrder(Side.Sell, priceLimit, position.OpenVolume, OrderPriceType.MarketStop,
+                _manualControl.SecondToOpen, StartProgram);
+
+                position.AddNewStopOrder(newOrder);
+                _connector.OrderExecute(newOrder);
+            }
+            catch (Exception error)
+            {
+                SetNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+
+        }
+        /// <summary>
+        /// place a trailing stop order for a position / 
+        /// выставить трейлинг стоп-ордер для позиции 
+        /// </summary>
+        /// <param name="position">position to be closed / позиция которую будем закрывать</param>
+        /// <param name="priceActivation">price activation / цена стоп приказа, после достижения которой выставиться ордер</param>
+        /// <param name="priceOrder">order price / цена ордера</param>
+        public void CloseAtServerTrailingStop(Position position, decimal priceActivation, decimal priceOrder)
+        {
+            if (position.Direction == Side.Buy &&
+                position.StopOrderPrice > priceOrder)
+            {
+                return;
+            }
+
+            if (position.Direction == Side.Sell &&
+                position.StopOrderPrice < priceOrder)
+            {
+                return;
+            }
+
+            TryReloadServerStop(position, priceActivation, priceOrder);
+        }
+        public void TryReloadServerStop(Position position, decimal priceActivation,decimal priceOrder)
+        {
+            try
+            {
+                if (position == null)
+                {
+                    return;
+                }
+
+                if (position.State == PositionStateType.Done ||
+                    position.State == PositionStateType.OpeningFail                     )
+                {
+                    return;
+                }
+
+
+                decimal volume = position.OpenVolume;
+
+                if (volume == 0)
+                {
+                    return;
+                }
+                for(int i=0; i< position.StopOrders.Count; i++)
+                {
+                    if (position.StopOrders[i].Volume == position.OpenVolume)
+                    {
+                        _connector.OrderCancel(position.StopOrders[i]);
+                    }
+                }
+                AddServerStopToPosition(position, priceOrder);
+                _journal.PaintPosition(position);
+                _journal.Save();
+            }
+            catch (Exception error)
+            {
+                SetNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+
+        }
+        // исходящие события. Обработчики для стратегии
+        // outgoing events. Handlers for strategy
 
         /// <summary>
         /// The morning session started. Send the first trades

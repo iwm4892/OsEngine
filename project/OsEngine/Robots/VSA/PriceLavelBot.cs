@@ -304,16 +304,6 @@ namespace OsEngine.Robots.VSA
                 {
                     return;
                 }
-                /*
-                for (int i = 0; i < _tab.PositionsCloseAll.Count; i++)
-                {
-                    if (_tab.PositionsCloseAll[i].State != PositionStateType.ClosingFail)
-                    {
-                        continue;
-                    }
-                    _tab.CloseAtMarket(_tab.PositionsCloseAll[i], _tab.PositionsCloseAll[i].OpenVolume);
-                }
-                */
                 if (_tab.PositionsLast != null
                     && _tab.PositionsLast.State == PositionStateType.Closing 
                     && _tab.PositionsLast.CloseActiv==false 
@@ -389,7 +379,7 @@ namespace OsEngine.Robots.VSA
                     if (signal[0].Side == TradeSide)
                     {
                         _tab.SetNewLogMessage("Открытие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
-                        OpenPosition(signal[0].Side, candles[candles.Count - 1].Close);
+                        OpenPosition(signal[0].Side, candles[candles.Count - 1].Close,signal[0].GetType().Name);
                     }
                 }
             }
@@ -457,7 +447,7 @@ namespace OsEngine.Robots.VSA
                 return 1 / price;
             }
         }
-        private void OpenPosition(Side side, decimal price)
+        private void OpenPosition(Side side, decimal price,string Signal)
         {
             Slipage = _Slipage.ValueInt * _tab.Securiti.PriceStep;
 
@@ -491,11 +481,11 @@ namespace OsEngine.Robots.VSA
             {
                 if (side == Side.Buy)
                 {
-                    _tab.BuyAtMarket(_Vol);
+                    _tab.BuyAtMarket(_Vol,Signal);
                 }
                 else
                 {
-                    _tab.SellAtMarket(_Vol);
+                    _tab.SellAtMarket(_Vol,Signal);
                 }
             }
 
@@ -598,7 +588,7 @@ namespace OsEngine.Robots.VSA
                     }
                     if (canClose)
                     {
-                        _tab.CloseAtTrailingStop(openPositions[i], _st, _st);
+                        _tab.CloseAtServerTrailingStop(openPositions[i], _st, _st);
                     }
                 }
 
@@ -716,7 +706,8 @@ namespace OsEngine.Robots.VSA
         {
 
             //выставим новые стопы
-            _tab.CloseAtTrailingStop(obj, LastStop, LastStop);
+            _tab.AddServerStopToPosition(obj, LastStop);
+            //_tab.CloseAtTrailingStop(obj, LastStop, LastStop);
             if (UseSafe.ValueBool)
             {
                 decimal fixPOs = 2 * obj.EntryPrice - LastStop;
