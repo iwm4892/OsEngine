@@ -314,6 +314,13 @@ namespace OsEngine.Robots.VSA
                     _tab.CloseAtMarket(_tab.PositionsCloseAll[i], _tab.PositionsCloseAll[i].OpenVolume);
                 }
                 */
+                if (_tab.PositionsLast != null
+                    && _tab.PositionsLast.State == PositionStateType.Closing 
+                    && _tab.PositionsLast.CloseActiv==false 
+                    && _tab.PositionsLast.CloseOrders.Count>0)
+                {
+                    _tab.CloseAtMarket(_tab.PositionsLast, _tab.PositionsLast.OpenVolume);
+                }
                 if (_tab.PositionsLast != null && _tab.PositionsLast.State == PositionStateType.ClosingFail)
                 {
 
