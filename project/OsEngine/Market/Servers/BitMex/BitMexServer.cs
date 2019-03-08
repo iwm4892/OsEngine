@@ -1391,9 +1391,13 @@ namespace OsEngine.Market.Servers.BitMex
                         {
                             Dictionary<string, string> param = new Dictionary<string, string>();
                             param["symbol"] = order.SecurityNameCode;
-                            param["price"] = order.Price.ToString().Replace(",", ".");
                             param["side"] = order.Side == Side.Buy ? "Buy" : "Sell";
-                            //param["orderIDs"] = order.NumberUser.ToString();
+                            if (order.TypeOrder != OrderPriceType.MarketStop)
+                            {
+                                param["price"] = order.Price.ToString().Replace(",", ".");
+                            }
+
+                                //param["orderIDs"] = order.NumberUser.ToString();
                             param["orderQty"] = order.Volume.ToString();
                             param["origClOrdID"] = order.NumberUser.ToString();
                             param["clOrdID"] = order.NumberUser.ToString();
@@ -1414,7 +1418,7 @@ namespace OsEngine.Market.Servers.BitMex
                             else if (order.TypeOrder == OrderPriceType.MarketStop)
                             {
                                 param["ordType"] = "Stop";
-                                param["stopPx"] = order.priceRedLine.ToString().Replace(",", ".");
+                                param["stopPx"] = order.Price.ToString().Replace(",", ".");
                             }
                             var res = _client.CreateQuery("POST", "/order", param, true);
 

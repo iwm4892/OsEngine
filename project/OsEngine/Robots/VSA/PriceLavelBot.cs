@@ -704,7 +704,6 @@ namespace OsEngine.Robots.VSA
         }
         private void _tab_PositionOpeningSuccesEvent(Position obj)
         {
-
             //выставим новые стопы
             _tab.AddServerStopToPosition(obj, LastStop);
             //_tab.CloseAtTrailingStop(obj, LastStop, LastStop);

@@ -3824,7 +3824,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 {
                     side = Side.Sell;
                 }
-                Order newOrder = _dealCreator.CreateOrder(Side.Sell, priceLimit, position.OpenVolume, OrderPriceType.MarketStop,
+                Order newOrder = _dealCreator.CreateOrder(side, priceLimit, position.OpenVolume, OrderPriceType.MarketStop,
                 _manualControl.SecondToOpen, StartProgram);
 
                 position.AddNewStopOrder(newOrder);
