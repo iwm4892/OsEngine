@@ -66,6 +66,8 @@ namespace OsEngine.OsTrader.Panels.Tab
                 _journal.UserSelectActionEvent += _journal_UserSelectActionEvent;
                 _journal.LogMessageEvent += SetNewLogMessage;
 
+                _journal.PositionNetVolumeChangeEvent += UpdateServerStop;
+
                 _chartMaster = new ChartCandleMaster(TabName, StartProgram);
                 _chartMaster.LogMessageEvent += SetNewLogMessage;
                 _chartMaster.SetNewSecurity(_connector.NamePaper, _connector.TimeFrameBuilder, _connector.PortfolioName, _connector.ServerType);
@@ -2501,14 +2503,6 @@ namespace OsEngine.OsTrader.Panels.Tab
                     }
                 }
 
-                for (int i = 0; position.StopOrders != null && i < position.StopOrders.Count; i++)
-                {
-                    if (position.StopOrders[i].State == OrderStateType.Activ)
-                    {
-                        _connector.OrderCancel(position.StopOrders[i]);
-                    }
-                }
-
                 if (Securiti == null)
                 {
                     return;
@@ -2816,7 +2810,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
-                if (position.CloseOrders != null &&
+                if (position.CloseOrders != null && position.CloseOrders.Count > 0 &&
                     position.CloseOrders[position.CloseOrders.Count - 1].State == OrderStateType.Activ)
                 {
                     return;
@@ -2899,7 +2893,13 @@ namespace OsEngine.OsTrader.Panels.Tab
                 {
                     return false;
                 }
-
+                foreach(var ord in position.CloseOrders)
+                {
+                    if(ord.Volume==position.OpenVolume && ord.State == OrderStateType.Activ)
+                    {
+                        return false;
+                    }
+                }
                 if (position.StopOrderIsActiv)
                 {
 
@@ -3765,7 +3765,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 OrderUpdateEvent(orderInJournal);
             }
         }
-
+            
         /// <summary>
         /// incoming new bid with ask / 
         /// входящие новые бид с аском
@@ -3791,16 +3791,13 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
-                Side side = Side.Buy;
-                if (position.Direction == Side.Buy)
-                {
-                    side = Side.Sell;
-                }
-                Order newOrder = _dealCreator.CreateOrder(Side.Sell, priceLimit, position.OpenVolume, OrderPriceType.LimitStop,
-                _manualControl.SecondToOpen, StartProgram);
+                Order newOrder = _dealCreator.CreateCloseOrderForDeal(position, priceLimit, OrderPriceType.LimitStop, _manualControl.SecondToClose, StartProgram);
+                newOrder.Price = RoundPrice(newOrder.Price, Securiti, newOrder.Side);
+                newOrder.priceRedLine = RoundPrice(newOrder.priceRedLine, Securiti, newOrder.Side);
 
                 position.AddNewStopOrder(newOrder);
                 _connector.OrderExecute(newOrder);
+                position.StopOrderRedLine = priceLimit;
             }
             catch (Exception error)
             {
@@ -3819,16 +3816,11 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
-                Side side = Side.Buy;
-                if (position.Direction == Side.Buy)
-                {
-                    side = Side.Sell;
-                }
-                Order newOrder = _dealCreator.CreateOrder(side, priceLimit, position.OpenVolume, OrderPriceType.MarketStop,
-                _manualControl.SecondToOpen, StartProgram);
-
+                Order newOrder = _dealCreator.CreateCloseOrderForDeal(position, priceLimit, OrderPriceType.MarketStop, _manualControl.SecondToClose, StartProgram);
+                newOrder.Price = RoundPrice(newOrder.Price, Securiti, newOrder.Side);
                 position.AddNewStopOrder(newOrder);
                 _connector.OrderExecute(newOrder);
+                position.StopOrderRedLine = priceLimit;
             }
             catch (Exception error)
             {
@@ -3846,13 +3838,15 @@ namespace OsEngine.OsTrader.Panels.Tab
         public void CloseAtServerTrailingStop(Position position, decimal priceActivation, decimal priceOrder)
         {
             if (position.Direction == Side.Buy &&
-                position.StopOrderPrice > priceOrder)
+                position.StopOrderPrice > priceOrder &&
+                position.StopOrderPrice >0)
             {
                 return;
             }
 
             if (position.Direction == Side.Sell &&
-                position.StopOrderPrice < priceOrder)
+                position.StopOrderPrice < priceOrder &&
+                position.StopOrderPrice > 0)
             {
                 return;
             }
@@ -3881,14 +3875,24 @@ namespace OsEngine.OsTrader.Panels.Tab
                 {
                     return;
                 }
-                for(int i=0; i< position.StopOrders.Count; i++)
+
+                foreach (var ord in position.CloseOrders)
                 {
-                    if (position.StopOrders[i].Volume == position.OpenVolume)
+                    if (ord.Volume == position.OpenVolume)
                     {
-                        _connector.OrderCancel(position.StopOrders[i]);
+                        _connector.OrderCancel(ord);
                     }
                 }
-                AddServerStopToPosition(position, priceOrder);
+
+                if (priceActivation != priceOrder)
+                {
+                    AddServerStopToPosition(position, priceOrder, priceActivation);
+                }
+                else
+                {
+                    AddServerStopToPosition(position, priceOrder);
+                }
+                _chartMaster.SetPosition(_journal.AllPosition);
                 _journal.PaintPosition(position);
                 _journal.Save();
             }
@@ -3898,6 +3902,45 @@ namespace OsEngine.OsTrader.Panels.Tab
             }
 
         }
+        private void UpdateServerStop(Position obj)
+        {
+            try
+            {
+                foreach (var ord in obj.CloseOrders)
+                {
+                    if (ord.State == OrderStateType.Activ)
+                    {
+                        if (ord.Volume > obj.OpenVolume)
+                        {
+                            CloseOrder(ord);
+                            AddServerStopToPosition(obj, ord.Price);
+                        }
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                SetNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+        }
+        private decimal RoundPrice(decimal price)
+        {
+            if (Securiti != null && Securiti.PriceStep < 1 && Convert.ToDouble(Securiti.PriceStep).ToString(new CultureInfo("ru-RU")).Split(',').Length != 1)
+            {
+                int countPoint = Convert.ToDouble(Securiti.PriceStep).ToString(new CultureInfo("ru-RU")).Split(',')[1].Length;
+                price = Math.Round(price, countPoint);
+            }
+            else if (Securiti != null && Securiti.PriceStep >= 1)
+            {
+                price = Math.Round(price, 0);
+                while (price % Securiti.PriceStep != 0)
+                {
+                    price = price - 1;
+                }
+            }
+            return price;
+        }
+
         // исходящие события. Обработчики для стратегии
         // outgoing events. Handlers for strategy
 

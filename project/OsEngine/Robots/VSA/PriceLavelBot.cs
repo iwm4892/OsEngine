@@ -304,13 +304,7 @@ namespace OsEngine.Robots.VSA
                 {
                     return;
                 }
-                if (_tab.PositionsLast != null
-                    && _tab.PositionsLast.State == PositionStateType.Closing 
-                    && _tab.PositionsLast.CloseActiv==false 
-                    && _tab.PositionsLast.CloseOrders.Count>0)
-                {
-                    _tab.CloseAtMarket(_tab.PositionsLast, _tab.PositionsLast.OpenVolume);
-                }
+
                 if (_tab.PositionsLast != null && _tab.PositionsLast.State == PositionStateType.ClosingFail)
                 {
 
@@ -326,6 +320,7 @@ namespace OsEngine.Robots.VSA
                     
                 }
             }
+            
 
         }
         private void _tab_FirstTickToDayEvent(Trade obj)
@@ -516,6 +511,7 @@ namespace OsEngine.Robots.VSA
             {
                 //    return false;
             }
+            /*
             if (RiskOnDay < -1 * MaxStop.ValueDecimal / 100)
             {
                return false;
@@ -539,6 +535,7 @@ namespace OsEngine.Robots.VSA
             {
                 return false;
             }
+            */
             
             return true;
         }
@@ -704,8 +701,16 @@ namespace OsEngine.Robots.VSA
         }
         private void _tab_PositionOpeningSuccesEvent(Position obj)
         {
+            if(
+               (obj.Direction == Side.Buy && LastStop > obj.EntryPrice) ||
+               (obj.Direction == Side.Sell && LastStop < obj.EntryPrice)
+              )
+            {
+                LastStop = GetStopLevel(obj.Direction, obj.EntryPrice);
+            }
+
             //выставим новые стопы
-            _tab.AddServerStopToPosition(obj, LastStop);
+            _tab.CloseAtServerTrailingStop(obj, LastStop, LastStop);
             //_tab.CloseAtTrailingStop(obj, LastStop, LastStop);
             if (UseSafe.ValueBool)
             {
@@ -803,13 +808,12 @@ namespace OsEngine.Robots.VSA
 
                 if (_tab.PositionsCloseAll[i].TimeClose.DayOfYear == candles[candles.Count - 1].TimeStart.DayOfYear)
                 {
-                    /*
-                    if (_tab.PositionsCloseAll[i].ProfitOperationPersent < 0)
+                    int koeff = 1;
+                    if (_tab.PositionsCloseAll[i].Direction == Side.Sell)
                     {
-                        RiskOnDay += -1*_tab.PositionsCloseAll[i].ProfitPortfolioPersent;
+                        koeff = -1;
                     }
-                    */
-                    RiskOnDay += _tab.PositionsCloseAll[i].ProfitPortfolioPersent;
+                    RiskOnDay += koeff * (_tab.PositionsCloseAll[i].ClosePrice - _tab.PositionsCloseAll[i].EntryPrice) / _tab.PositionsCloseAll[i].EntryPrice;
                 }
                 else
                 {

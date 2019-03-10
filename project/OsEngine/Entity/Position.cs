@@ -58,6 +58,10 @@ namespace OsEngine.Entity
         {
             get
             {
+                if (_closeOrders == null)
+                {
+                    _closeOrders = new List<Order>();
+                }
                 return _closeOrders;
             }
         }
@@ -97,15 +101,6 @@ namespace OsEngine.Entity
                         trades.AddRange(newTrades);
                     }
                 }
-                for (int i = 0; _stopOrders != null && i < _stopOrders.Count; i++)
-                {
-                    List<MyTrade> newTrades = _stopOrders[i].MyTrades;
-                    if (newTrades != null &&
-                        newTrades.Count != 0)
-                    {
-                        trades.AddRange(newTrades);
-                    }
-                }
 
                 _myTrades = trades;
                 return trades;
@@ -128,6 +123,19 @@ namespace OsEngine.Entity
             _closeOrders.Add(closeOrder);
 
             State = PositionStateType.Closing;
+        }
+        /// <summary>
+        /// load a new order to a position
+        /// загрузить в позицию новый стоп ордер
+        /// </summary>
+        /// <param name="closeOrder"></param>
+        public void AddNewStopOrder(Order closeOrder)
+        {
+            if (CloseOrders == null)
+            {
+                _closeOrders = new List<Order>();
+            }
+            _closeOrders.Add(closeOrder);
         }
 
         /// <summary>
@@ -184,8 +192,41 @@ namespace OsEngine.Entity
         /// order price stop order
         /// цена заявки стоп приказа
         /// </summary>
-        public decimal StopOrderPrice;
-
+        public decimal StopOrderPrice
+        {
+            set
+            {
+                _stopOrderPrice = value;
+            }
+            get
+            {
+                if (_stopOrderPrice != 0)
+                {
+                    return _stopOrderPrice;
+                }
+                decimal st = 0;
+                foreach( var ord in CloseOrders)
+                {
+                    if (ord.Volume == OpenVolume)
+                    {
+                        if (ProfitOrderPrice != 0)
+                        {
+                            if (ord.Price != ProfitOrderPrice)
+                            {
+                                st = ord.Price;
+                            }
+                        }
+                        else
+                        {
+                            st = ord.Price;
+                        }
+                    }
+                }
+                return st;
+            }
+        }
+        private decimal _stopOrderPrice;
+ 
         /// <summary>
         /// stop - the price, the price after which the order will be entered into the system
         /// стоп - цена, цена после достижения которой в систему будет выставлени приказ
@@ -604,6 +645,7 @@ namespace OsEngine.Entity
                     ProfitOperationPersent = Math.Round(ProfitOperationPersent, 5);
                 }
             }
+
         }
 
         /// <summary>
@@ -649,27 +691,6 @@ namespace OsEngine.Entity
                         {
                             State = PositionStateType.Done;
                             CloseOrders[i].TimeDone = trade.Time;
-                        }
-                        else if (OpenVolume < 0)
-                        {
-                            State = PositionStateType.ClosingSurplus;
-                        }
-                    }
-                }
-            }
-            if (StopOrders != null)
-            {
-                for (int i = 0; i < StopOrders.Count; i++)
-                {
-                    if (StopOrders[i].NumberMarket == trade.NumberOrderParent ||
-                        StopOrders[i].NumberUser.ToString() == trade.NumberOrderParent)
-                    {
-                        trade.NumberPosition = Number.ToString();
-                        StopOrders[i].SetTrade(trade);
-                        if (OpenVolume == 0)
-                        {
-                            State = PositionStateType.Done;
-                            StopOrders[i].TimeDone = trade.Time;
                         }
                         else if (OpenVolume < 0)
                         {
@@ -1026,31 +1047,6 @@ namespace OsEngine.Entity
             }
 
         }
-
-        /// <summary>
-        /// Стопордера выставленные на бирже
-        /// </summary>
-        public List<Order> StopOrders
-        {
-            get
-            {
-                return _stopOrders;
-            }
-        }
-        private List<Order> _stopOrders;
-        /// <summary>
-        /// Добавить стоп
-        /// </summary>
-        /// <param name="stopOrder"></param>
-        public void AddNewStopOrder(Order stopOrder)
-        {
-            if (_stopOrders == null)
-            {
-                _stopOrders = new List<Order>();
-            }
-            _stopOrders.Add(stopOrder);
-        }
-
     }
 
     /// <summary>
