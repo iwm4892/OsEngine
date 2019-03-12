@@ -3818,6 +3818,7 @@ namespace OsEngine.OsTrader.Panels.Tab
             {
                 Order newOrder = _dealCreator.CreateCloseOrderForDeal(position, priceLimit, OrderPriceType.MarketStop, _manualControl.SecondToClose, StartProgram);
                 newOrder.Price = RoundPrice(newOrder.Price, Securiti, newOrder.Side);
+                newOrder.IsStopOrProfit = true;
                 position.AddNewStopOrder(newOrder);
                 _connector.OrderExecute(newOrder);
                 position.StopOrderRedLine = priceLimit;
@@ -3853,6 +3854,12 @@ namespace OsEngine.OsTrader.Panels.Tab
 
             TryReloadServerStop(position, priceActivation, priceOrder);
         }
+        /// <summary>
+        /// Переставить серверный стоп
+        /// </summary>
+        /// <param name="position">Позиция</param>
+        /// <param name="priceActivation">Тригерная цена</param>
+        /// <param name="priceOrder">Цена стопа</param>
         public void TryReloadServerStop(Position position, decimal priceActivation,decimal priceOrder)
         {
             try
@@ -3875,23 +3882,34 @@ namespace OsEngine.OsTrader.Panels.Tab
                 {
                     return;
                 }
-
+                Order stOrd=null;
                 foreach (var ord in position.CloseOrders)
                 {
                     if (ord.Volume == position.OpenVolume)
                     {
-                        _connector.OrderCancel(ord);
+                        stOrd = ord;
                     }
                 }
-
-                if (priceActivation != priceOrder)
+                if (CheckNewServerStop(position, priceOrder))
                 {
-                    AddServerStopToPosition(position, priceOrder, priceActivation);
+                    if (priceActivation != priceOrder)
+                    {
+                        AddServerStopToPosition(position, priceOrder, priceActivation);
+                    }
+                    else
+                    {
+                        AddServerStopToPosition(position, priceOrder);
+                    }
+                    if (stOrd != null)
+                    {
+                        CloseOrder(stOrd);
+                    }
                 }
                 else
                 {
-                    AddServerStopToPosition(position, priceOrder);
+                    CloseDeal(position, OrderPriceType.Market, Trades[Trades.Count - 1].Price, _manualControl.SecondToClose, true);
                 }
+
                 _chartMaster.SetPosition(_journal.AllPosition);
                 _journal.PaintPosition(position);
                 _journal.Save();
@@ -3901,6 +3919,24 @@ namespace OsEngine.OsTrader.Panels.Tab
                 SetNewLogMessage(error.ToString(), LogMessageType.Error);
             }
 
+        }
+        /// <summary>
+        /// Проверка стоит ли выставлять новый стоп
+        /// </summary>
+        /// <param name="position">Отрктыя позиция</param>
+        /// <param name="StopPrice">Предполагаемый новый стоп</param>
+        /// <returns></returns>        
+        private bool CheckNewServerStop(Position position,decimal StopPrice)
+        {
+            if (position.Direction == Side.Buy && StopPrice > Trades[Trades.Count - 1].Price)
+            {
+                return false;
+            }
+            if (position.Direction == Side.Sell && StopPrice < Trades[Trades.Count - 1].Price)
+            {
+                return false;
+            }
+            return true;
         }
         private void UpdateServerStop(Position obj)
         {
@@ -3923,23 +3959,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 SetNewLogMessage(error.ToString(), LogMessageType.Error);
             }
         }
-        private decimal RoundPrice(decimal price)
-        {
-            if (Securiti != null && Securiti.PriceStep < 1 && Convert.ToDouble(Securiti.PriceStep).ToString(new CultureInfo("ru-RU")).Split(',').Length != 1)
-            {
-                int countPoint = Convert.ToDouble(Securiti.PriceStep).ToString(new CultureInfo("ru-RU")).Split(',')[1].Length;
-                price = Math.Round(price, countPoint);
-            }
-            else if (Securiti != null && Securiti.PriceStep >= 1)
-            {
-                price = Math.Round(price, 0);
-                while (price % Securiti.PriceStep != 0)
-                {
-                    price = price - 1;
-                }
-            }
-            return price;
-        }
+
 
         // исходящие события. Обработчики для стратегии
         // outgoing events. Handlers for strategy
