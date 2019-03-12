@@ -805,7 +805,10 @@ namespace OsEngine.Robots.VSA
 
             for (int i = _tab.PositionsCloseAll.Count - 1; i >= 0; i--)
             {
-
+                if(_tab.PositionsCloseAll[i].State != PositionStateType.Done)
+                {
+                    continue;
+                }
                 if (_tab.PositionsCloseAll[i].TimeClose.DayOfYear == candles[candles.Count - 1].TimeStart.DayOfYear)
                 {
                     int koeff = 1;
