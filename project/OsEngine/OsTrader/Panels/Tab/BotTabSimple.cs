@@ -2489,7 +2489,10 @@ namespace OsEngine.OsTrader.Panels.Tab
 
                 for (int i = 0; position.CloseOrders != null && i < position.CloseOrders.Count; i++)
                 {
-                    if (position.CloseOrders[i].State == OrderStateType.Activ)
+                    if (position.CloseOrders[i].State == OrderStateType.Activ
+                        && position.CloseOrders[i].TypeOrder != OrderPriceType.LimitStop
+                        && position.CloseOrders[i].TypeOrder != OrderPriceType.MarketStop
+                        )
                     {
                         _connector.OrderCancel(position.CloseOrders[i]);
                     }
@@ -2497,7 +2500,10 @@ namespace OsEngine.OsTrader.Panels.Tab
 
                 for (int i = 0; position.OpenOrders != null && i < position.OpenOrders.Count; i++)
                 {
-                    if (position.OpenOrders[i].State == OrderStateType.Activ)
+                    if (position.OpenOrders[i].State == OrderStateType.Activ
+                        && position.OpenOrders[i].TypeOrder != OrderPriceType.LimitStop
+                        && position.OpenOrders[i].TypeOrder != OrderPriceType.MarketStop
+                        )
                     {
                         _connector.OrderCancel(position.OpenOrders[i]);
                     }
@@ -3793,11 +3799,12 @@ namespace OsEngine.OsTrader.Panels.Tab
             {
                 Order newOrder = _dealCreator.CreateCloseOrderForDeal(position, priceLimit, OrderPriceType.LimitStop, _manualControl.SecondToClose, StartProgram);
                 newOrder.Price = RoundPrice(newOrder.Price, Securiti, newOrder.Side);
-                newOrder.priceRedLine = RoundPrice(newOrder.priceRedLine, Securiti, newOrder.Side);
+                newOrder.priceRedLine = RoundPrice(priceRedLine, Securiti, newOrder.Side);
+                position.StopOrderRedLine = newOrder.priceRedLine;
 
                 position.AddNewStopOrder(newOrder);
+
                 _connector.OrderExecute(newOrder);
-                position.StopOrderRedLine = priceLimit;
             }
             catch (Exception error)
             {
@@ -3818,10 +3825,13 @@ namespace OsEngine.OsTrader.Panels.Tab
             {
                 Order newOrder = _dealCreator.CreateCloseOrderForDeal(position, priceLimit, OrderPriceType.MarketStop, _manualControl.SecondToClose, StartProgram);
                 newOrder.Price = RoundPrice(newOrder.Price, Securiti, newOrder.Side);
+                newOrder.priceRedLine = RoundPrice(priceLimit, Securiti, newOrder.Side);
                 newOrder.IsStopOrProfit = true;
+                position.StopOrderRedLine = newOrder.Price;
+
                 position.AddNewStopOrder(newOrder);
+
                 _connector.OrderExecute(newOrder);
-                position.StopOrderRedLine = priceLimit;
             }
             catch (Exception error)
             {
@@ -3948,8 +3958,8 @@ namespace OsEngine.OsTrader.Panels.Tab
                     {
                         if (ord.Volume > obj.OpenVolume)
                         {
-                            CloseOrder(ord);
                             AddServerStopToPosition(obj, ord.Price);
+                            CloseOrder(ord);
                         }
                     }
                 }

@@ -703,7 +703,8 @@ namespace OsEngine.Robots.VSA
         {
             if(
                (obj.Direction == Side.Buy && LastStop > obj.EntryPrice) ||
-               (obj.Direction == Side.Sell && LastStop < obj.EntryPrice)
+               (obj.Direction == Side.Sell && LastStop < obj.EntryPrice) ||
+               LastStop ==0
               )
             {
                 LastStop = GetStopLevel(obj.Direction, obj.EntryPrice);

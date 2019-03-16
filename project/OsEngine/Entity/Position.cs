@@ -207,7 +207,7 @@ namespace OsEngine.Entity
                 decimal st = 0;
                 foreach( var ord in CloseOrders)
                 {
-                    if (ord.Volume == OpenVolume)
+                    if (ord.Volume == OpenVolume && ord.State == OrderStateType.Activ && ord.IsStopOrProfit)
                     {
                         if (ProfitOrderPrice != 0)
                         {

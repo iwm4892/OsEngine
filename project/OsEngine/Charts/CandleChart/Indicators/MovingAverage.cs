@@ -550,7 +550,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
             average = average/Lenght;
 
-            return Math.Round(average, 6);
+            return Math.Round(average, 8);
         }
 
         /// <summary>
@@ -622,7 +622,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
                 // decimal a = 2.0m / (length * 2 - 0.15m);
 
-                decimal a = Math.Round(2.0m / (Lenght + 1), 6);
+                decimal a = Math.Round(2.0m / (Lenght + 1), 8);
 
                 decimal emaLast = Values[index-1];
 
@@ -928,7 +928,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
             average = average / Lenght;
 
-            return Math.Round(average, 6);
+            return Math.Round(average, 8);
         }
 
         /// <summary>
@@ -958,7 +958,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 // decimal a = 2.0m / (length * 2 - 0.15m);
 
-                decimal a = Math.Round(2.0m / (Lenght + 1), 6);
+                decimal a = Math.Round(2.0m / (Lenght + 1), 8);
 
                 decimal emaLast = Values[index - 1];
 
@@ -1122,8 +1122,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 // 2 calculate the coefficient
                 // 2 высчитываем коэффициент
 
-                decimal aFast = Math.Round(2.0m / (KaufmanFastEma + 1), 6);
-                decimal aSlow = Math.Round(2.0m / (KaufmanSlowEma + 1), 6);
+                decimal aFast = Math.Round(2.0m / (KaufmanFastEma + 1), 8);
+                decimal aSlow = Math.Round(2.0m / (KaufmanSlowEma + 1), 8);
 
                 decimal aDunamic = er*(aFast - aSlow) + aSlow;
                 
@@ -1139,7 +1139,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 //result = emaLast + (aDunamic * (p - emaLast));
             }
 
-            return Math.Round(result, 5);
+            return Math.Round(result, 8);
         }
 
         private decimal GetValueKaufmanAdaptive(List<decimal> values, int index)
@@ -1177,8 +1177,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 // 2 calculate the coefficient
                 // 2 высчитываем коэффициент
 
-                decimal aFast = Math.Round(2.0m / (KaufmanFastEma + 1), 6);
-                decimal aSlow = Math.Round(2.0m / (KaufmanSlowEma + 1), 6);
+                decimal aFast = Math.Round(2.0m / (KaufmanFastEma + 1), 8);
+                decimal aSlow = Math.Round(2.0m / (KaufmanSlowEma + 1), 8);
 
                 decimal aDunamic = er * (aFast - aSlow) + aSlow;
 
@@ -1194,7 +1194,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 //result = emaLast + (aDunamic * (p - emaLast));
             }
 
-            return Math.Round(result, 5);
+            return Math.Round(result, 8);
         }
     }
 }

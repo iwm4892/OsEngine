@@ -1381,6 +1381,7 @@ namespace OsEngine.Market.Servers.BitMex
 
                     if (_ordersToExecute != null && _ordersToExecute.Count != 0)
                     {
+                        bool _dontSent=false;
                         Order order;
                         if (_ordersToExecute.TryDequeue(out order))
                         {
@@ -1398,24 +1399,20 @@ namespace OsEngine.Market.Servers.BitMex
                             param["clOrdID"] = order.NumberUser.ToString();
                             param["origClOrdID"] = order.NumberUser.ToString();
 
-                            if (order.TypeOrder == OrderPriceType.Limit)
+                            switch (order.TypeOrder)
                             {
-                                param["ordType"] = "Limit";
+                                case OrderPriceType.Limit: param["ordType"] = "Limit";
+                                //    param["execInst"] = "ParticipateDoNotInitiate";
+                                    break;
+                                case OrderPriceType.Market: param["ordType"] = "Market"; break;
+                                case OrderPriceType.LimitStop: param["ordType"] = "StopLimit";
+                                    param["stopPx"] = order.priceRedLine.ToString().Replace(",", ".");
+                                    break;
+                                case OrderPriceType.MarketStop: param["ordType"] = "Stop";
+                                    param["stopPx"] = order.Price.ToString().Replace(",", ".");
+                                    break;
                             }
-                            else if(order.TypeOrder == OrderPriceType.Market)
-                            {
-                                param["ordType"] = "Market";
-                            }
-                            else if (order.TypeOrder == OrderPriceType.LimitStop)
-                            {
-                                param["ordType"] = "StopLimit";
-                                param["stopPx"] = order.priceRedLine.ToString().Replace(",", ".");
-                            }
-                            else if (order.TypeOrder == OrderPriceType.MarketStop)
-                            {
-                                param["ordType"] = "Stop";
-                                param["stopPx"] = order.Price.ToString().Replace(",", ".");
-                            }
+
                             var res = _client.CreateQuery("POST", "/order", param, true);
 
                             if (res == "")
@@ -1432,7 +1429,7 @@ namespace OsEngine.Market.Servers.BitMex
                         if (_ordersToCansel.TryDequeue(out order))
                         {
                             Dictionary<string, string> param = new Dictionary<string, string>();
-                            //param["clOrdID"] = order.NumberUser.ToString();
+                         //   param["clOrdID"] = order.NumberUser.ToString();
                             param["orderID"] = order.NumberMarket;
 
                             var res = _client.CreateQuery("DELETE", "/order", param, true);
@@ -1539,10 +1536,18 @@ namespace OsEngine.Market.Servers.BitMex
                     order.Comment = myOrders[i].text;
                     order.TimeCallBack = Convert.ToDateTime(myOrders[0].transactTime);
                     order.PortfolioNumber = myOrders[i].account.ToString();
+                    switch (myOrders[i].ordType)
+                    {
+                        case "Limit" : order.TypeOrder = OrderPriceType.Limit;break;
+                        case "Market": order.TypeOrder = OrderPriceType.Market; break;
+                        case "StopLimit": order.TypeOrder = OrderPriceType.LimitStop; break;
+                        case "Stop": order.TypeOrder = OrderPriceType.MarketStop; break;
+                    }
+                    /*
                     order.TypeOrder = myOrders[i].ordType == "Limit"
                         ? OrderPriceType.Limit
                         : OrderPriceType.Market;
-
+                    */
                     if (myOrders[i].side == "Sell")
                     {
                         order.Side = Side.Sell;
