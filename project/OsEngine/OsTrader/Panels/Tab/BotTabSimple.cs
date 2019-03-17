@@ -3854,14 +3854,14 @@ namespace OsEngine.OsTrader.Panels.Tab
         public void CloseAtServerTrailingStop(Position position, decimal priceActivation, decimal priceOrder)
         {
             if (position.Direction == Side.Buy &&
-                position.StopOrderPrice > priceOrder &&
+                position.StopOrderPrice >= priceOrder &&
                 position.StopOrderPrice >0)
             {
                 return;
             }
 
             if (position.Direction == Side.Sell &&
-                position.StopOrderPrice < priceOrder &&
+                position.StopOrderPrice <= priceOrder &&
                 position.StopOrderPrice > 0)
             {
                 return;
