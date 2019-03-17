@@ -3673,6 +3673,11 @@ namespace OsEngine.OsTrader.Panels.Tab
 
             int curCount = trades.Count;
 
+            if(curCount == _lastTickIndex)
+            {
+                return;
+            }
+
             List<Position> openPositions = _journal.OpenPositions;
 
             if (openPositions != null)
@@ -3716,7 +3721,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 }
             }
 
-            _lastTickIndex = curCount-1;
+            _lastTickIndex = curCount;
 
             if (StartProgram == StartProgram.IsOsTrader)
             {
