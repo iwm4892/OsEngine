@@ -56,7 +56,9 @@ namespace OsEngine.OsTrader.Panels.Tab
                 _connector.LogMessageEvent += SetNewLogMessage;
                 _connector.ConnectorStartedReconnectEvent += _connector_ConnectorStartedReconnectEvent;
 
-                _marketDepthPainter = new MarketDepthPainter(TabName);
+                _connector.OrderChangeEvent += CanselServersStops;
+                
+                    _marketDepthPainter = new MarketDepthPainter(TabName);
                 _marketDepthPainter.LogMessageEvent += SetNewLogMessage;
 
                 _journal = new Journal.Journal(TabName,startProgram);
@@ -3897,14 +3899,6 @@ namespace OsEngine.OsTrader.Panels.Tab
                 {
                     return;
                 }
-                Order stOrd=null;
-                foreach (var ord in position.CloseOrders)
-                {
-                    if (ord.Volume == position.OpenVolume)
-                    {
-                        stOrd = ord;
-                    }
-                }
                 if (CheckNewServerStop(position, priceOrder))
                 {
                     if (priceActivation != priceOrder)
@@ -3914,10 +3908,6 @@ namespace OsEngine.OsTrader.Panels.Tab
                     else
                     {
                         AddServerStopToPosition(position, priceOrder);
-                    }
-                    if (stOrd != null)
-                    {
-                        CloseOrder(stOrd);
                     }
                 }
                 else
@@ -3972,6 +3962,43 @@ namespace OsEngine.OsTrader.Panels.Tab
             catch (Exception error)
             {
                 SetNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+        }
+        private void CanselServersStops(Order ord)
+        {
+            if (ord.TypeOrder != OrderPriceType.LimitStop && ord.TypeOrder != OrderPriceType.MarketStop)
+            {
+                return;
+            }
+            if (ord.State == OrderStateType.Activ &&
+                ord.IsStopOrProfit == true
+                )
+            {
+                foreach (var pos in PositionsOpenAll)
+                {
+                    bool CheckPosition=false;
+                    foreach(var _ord in pos.CloseOrders)
+                    {
+                        if (_ord.NumberUser == ord.NumberUser)
+                        {
+                            CheckPosition = true;
+                        }
+                    }
+                    if (CheckPosition)
+                    {
+                        foreach (var _ord in pos.CloseOrders)
+                        {
+                            if (_ord.State == OrderStateType.Activ &&
+                                _ord.Price != ord.Price &&
+                                _ord.IsStopOrProfit == true &&
+                                (_ord.TypeOrder == OrderPriceType.LimitStop || _ord.TypeOrder == OrderPriceType.MarketStop))
+                            {
+                                CloseOrder(_ord);
+                            }
+                        }
+
+                    }
+                }
             }
         }
 
