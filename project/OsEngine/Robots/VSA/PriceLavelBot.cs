@@ -520,7 +520,7 @@ namespace OsEngine.Robots.VSA
             {
                 //return false;
             }
-            
+            */
             if(Math.Abs(_TradeSessions.MaxSessionPrice -_tab.CandlesAll[_tab.CandlesAll.Count-1].Close)<
                 Math.Abs(_TradeSessions.MinSessionPrice - _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close) 
                 && TradeSide == Side.Buy
@@ -535,7 +535,7 @@ namespace OsEngine.Robots.VSA
             {
                 return false;
             }
-            */
+            
             
             return true;
         }
