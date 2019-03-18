@@ -280,7 +280,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 findlvl.levlSide = lvl.levlSide;
                 findlvl.Value = lvl.Value;
                 return true;
-                Save();
             }
             return false;
         }

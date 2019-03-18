@@ -558,23 +558,21 @@ namespace OsEngine.Robots.VSA
 
             for (int i = 0; i < openPositions.Count && candles.Count > 1; i++)
             {
-                List<decimal> stop = GetTrailingStopPrice(openPositions[i]);
-                foreach (var _st in stop)
-                {
+                decimal stop = GetTrailingStopPrice(openPositions[i]);
                     if(openPositions[i].EntryPrice == 0)
                     {
                         continue;
                     }
-                    if(openPositions[i].Direction == Side.Buy && _st < openPositions[i].EntryPrice)
+                    if(openPositions[i].Direction == Side.Buy && stop < openPositions[i].EntryPrice)
                     {
                         continue;
                     }
-                    if(openPositions[i].Direction == Side.Sell && _st > openPositions[i].EntryPrice)
+                    if(openPositions[i].Direction == Side.Sell && stop > openPositions[i].EntryPrice)
                     {
                         continue;
                     }
                     bool canClose = false;
-                    decimal _profit = (_st - openPositions[i].EntryPrice) * 100 / openPositions[i].EntryPrice;
+                    decimal _profit = (stop - openPositions[i].EntryPrice) * 100 / openPositions[i].EntryPrice;
                     if (openPositions[i].Direction == Side.Sell)
                     {
                         _profit = -1 * _profit;
@@ -585,20 +583,26 @@ namespace OsEngine.Robots.VSA
                     }
                     if (canClose)
                     {
-                        _tab.CloseAtServerTrailingStop(openPositions[i], _st, _st);
+                        _tab.CloseAtServerTrailingStop(openPositions[i], stop, stop);
                     }
-                }
-
 
             }
 
         }
-        private List<decimal> GetTrailingStopPrice(Position position)
+        private decimal GetTrailingStopPrice(Position position)
         {
             List<decimal> result = new List<decimal>();
             result.Add(mA.Values[mA.Values.Count - 1]);
             result.Add((position.EntryPrice + _tab.Trades[_tab.Trades.Count-1].Price) / 2);
-            return result;
+            result.Sort((a, b) => decimal.Compare(a, b));
+            if(position.Direction == Side.Buy)
+            {
+                return result[result.Count - 1];
+            }
+            else
+            {
+                return result[0];
+            }
         }
         /// <summary>
         /// Найдем последний уровень

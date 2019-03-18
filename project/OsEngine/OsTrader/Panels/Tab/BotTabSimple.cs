@@ -3989,7 +3989,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                         foreach (var _ord in pos.CloseOrders)
                         {
                             if (_ord.State == OrderStateType.Activ &&
-                                _ord.NumberMarket != ord.NumberMarket &&
+                                _ord.NumberUser != pos.CloseOrders[pos.CloseOrders.Count-1].NumberUser &&
                                 _ord.IsStopOrProfit == true &&
                                 (_ord.TypeOrder == OrderPriceType.LimitStop || _ord.TypeOrder == OrderPriceType.MarketStop))
                             {
