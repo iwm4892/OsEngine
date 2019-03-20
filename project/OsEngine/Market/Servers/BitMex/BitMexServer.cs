@@ -2046,7 +2046,7 @@ namespace OsEngine.Market.Servers.BitMex
         public string trdMatchID { get; set; }
         public object grossValue { get; set; }
         public double homeNotional { get; set; }
-        public int foreignNotional { get; set; }
+        public decimal foreignNotional { get; set; }
     }
 
     /// <summary>
