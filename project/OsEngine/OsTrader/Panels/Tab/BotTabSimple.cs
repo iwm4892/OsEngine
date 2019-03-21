@@ -2890,6 +2890,22 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
+                bool isstop = false;
+                foreach (var ord in position.CloseOrders)
+                {
+                    if (ord.Volume == position.OpenVolume && ord.State == OrderStateType.Activ)
+                    {
+                        isstop = true;
+                    }
+                }
+                if (!isstop && position.StopOrderRedLine != 0 && position.StopOrderPrice == 0)
+                {
+                    AddServerStopToPosition(position, position.StopOrderRedLine);
+                }
+                if (isstop)
+                {
+                    return false;
+                }
                 if (!position.StopOrderIsActiv && !position.ProfitOrderIsActiv)
                 {
                     return false;
@@ -2900,13 +2916,6 @@ namespace OsEngine.OsTrader.Panels.Tab
                     Portfolio == null)
                 {
                     return false;
-                }
-                foreach(var ord in position.CloseOrders)
-                {
-                    if(ord.Volume==position.OpenVolume && ord.State == OrderStateType.Activ)
-                    {
-                        return false;
-                    }
                 }
                 if (position.StopOrderIsActiv)
                 {
