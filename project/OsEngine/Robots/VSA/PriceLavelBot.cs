@@ -397,6 +397,7 @@ namespace OsEngine.Robots.VSA
         }
         private void _tab_pattern_CandleFinishedEvent(List<Candle> candles)
         {
+            LogicClosePositions(candles);
             if (!ValidateParams())
             {
                 return;
@@ -810,7 +811,8 @@ namespace OsEngine.Robots.VSA
 
             for (int i = _tab.PositionsCloseAll.Count - 1; i >= 0; i--)
             {
-                if(_tab.PositionsCloseAll[i].State != PositionStateType.Done)
+                if(_tab.PositionsCloseAll[i].State != PositionStateType.Done ||
+                    _tab.PositionsCloseAll[i].EntryPrice==0)
                 {
                     continue;
                 }
