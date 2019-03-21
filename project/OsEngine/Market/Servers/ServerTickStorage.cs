@@ -236,7 +236,7 @@ namespace OsEngine.Market.Servers
                         string[] _name = array[2].Split('_');
                         nameSecurity = _name[0];
                         DateTime _startDate = new DateTime(Convert.ToInt32(_name[1]), Convert.ToInt32(_name[2]), Convert.ToInt32(_name[3].Split('.')[0]));
-                        if (_startDate < DateTime.Now.AddDays(-DaysToLoad))
+                        if (_startDate < DateTime.Now.ToUniversalTime().AddDays(-DaysToLoad))
                         {
                             continue;
                         }
