@@ -138,6 +138,10 @@ namespace OsEngine.Robots.VSA
         /// торгуем контрактами
         /// </summary>
         private StrategyParameterBool isContract;
+        /// <summary>
+        /// отрисовывать ли уровни
+        /// </summary>
+        private StrategyParameterBool PaintLevels;
         public override string GetNameStrategyType()
         {
             return "PriceLavelBot";
@@ -201,6 +205,8 @@ namespace OsEngine.Robots.VSA
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
             isContract = CreateParameter("Торгуем контрактами", false);
+
+            PaintLevels = CreateParameter("Отрисовывать уровни", true);
 
             DeltaSizeK = CreateParameter("Делитель основного ТФ", 6, 1, 40, 1);
 
@@ -360,6 +366,14 @@ namespace OsEngine.Robots.VSA
                     CanFindPattern = true;
                 }
             }
+            if(TradeSide == Side.Buy && candles[candles.Count - 2].Close< LastSessionEndPrice)
+            {
+                CanFindPattern = false;
+            }
+            if (TradeSide == Side.Sell && candles[candles.Count - 2].Close > LastSessionEndPrice)
+            {
+                CanFindPattern = false;
+            }
             if (!CanFindPattern)
             {
                 return;
@@ -397,7 +411,7 @@ namespace OsEngine.Robots.VSA
         }
         private void _tab_pattern_CandleFinishedEvent(List<Candle> candles)
         {
-            LogicClosePositions(candles);
+        //    LogicClosePositions(candles);
             if (!ValidateParams())
             {
                 return;
@@ -512,33 +526,35 @@ namespace OsEngine.Robots.VSA
             {
                 //    return false;
             }
-            /*
+            
             if (RiskOnDay < -1 * MaxStop.ValueDecimal / 100)
             {
-               return false;
+             //  return false;
             }
             if (_TradeSessions.MinSessionPrice == 0 || (_TradeSessions.MaxSessionPrice - _TradeSessions.MinSessionPrice) / _TradeSessions.MinSessionPrice < MaxStop.ValueDecimal / 100)
             {
                 //return false;
             }
-            */
-            if(Math.Abs(_TradeSessions.MaxSessionPrice -_tab.CandlesAll[_tab.CandlesAll.Count-1].Close)<
-                Math.Abs(_TradeSessions.MinSessionPrice - _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close) 
-                && TradeSide == Side.Buy
-                && _TradeSessions.MaxSessionPrice > _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close)
+            
+            if (_TradeSessions.DayChanel / _TradeSessions.MaxSessionPrice < 0.02m)
             {
-                return false;
-            }
-            if (Math.Abs(_TradeSessions.MaxSessionPrice - _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close) >
-                Math.Abs(_TradeSessions.MinSessionPrice - _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close) 
-                && TradeSide == Side.Sell
-                 && _TradeSessions.MinSessionPrice < _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close)
-            {
-                return false;
+                if (_tab.CandlesAll[_tab.CandlesAll.Count - 1].Close > _TradeSessions.MinSessionPrice + 0.1m * _TradeSessions.DayChanel
+                    && TradeSide == Side.Buy
+                      && _TradeSessions.MaxSessionPrice > _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close
+                    )
+                {
+                    return false;
+                }
+                if (_tab.CandlesAll[_tab.CandlesAll.Count - 1].Close < _TradeSessions.MaxSessionPrice - 0.1m * _TradeSessions.DayChanel
+                    && TradeSide == Side.Sell
+                         && _TradeSessions.MinSessionPrice < _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close
+                     )
+                {
+                    return false;
+                }
             }
             
-            
-            return true;
+                return true;
         }
         private bool CanOpenPosition()
         {
@@ -593,6 +609,9 @@ namespace OsEngine.Robots.VSA
         private decimal GetTrailingStopPrice(Position position)
         {
             List<decimal> result = new List<decimal>();
+            if ((position.Direction == Side.Buy && mA.Values[mA.Values.Count - 1] < _tab.Trades[_tab.Trades.Count - 1].Price) ||
+                (position.Direction == Side.Sell && mA.Values[mA.Values.Count - 1] > _tab.Trades[_tab.Trades.Count - 1].Price)
+                )
             result.Add(mA.Values[mA.Values.Count - 1]);
             result.Add((position.EntryPrice + _tab.Trades[_tab.Trades.Count-1].Price) / 2);
             result.Sort((a, b) => decimal.Compare(a, b));
@@ -714,9 +733,9 @@ namespace OsEngine.Robots.VSA
             {
                 LastStop = GetStopLevel(obj.Direction, obj.EntryPrice);
             }
-
             //выставим новые стопы
             _tab.CloseAtServerTrailingStop(obj, LastStop, LastStop);
+            
             //_tab.CloseAtTrailingStop(obj, LastStop, LastStop);
             if (UseSafe.ValueBool)
             {
@@ -780,12 +799,23 @@ namespace OsEngine.Robots.VSA
         }
         private void _tab_CandleFinishedEvent(List<Candle> candles)
         {
+            LogicClosePositions(candles);
             DeltaStepCheck();
             ///Отрисовка линий
-            PriceLevleLine.PaintLevleData(TabsSimple);
+            if (PaintLevels.ValueBool)
+            {
+                PriceLevleLine.PaintLevleData(TabsSimple);
+            }
+            
             //Определяем направление торговли по прошлой сессии
-            LastSessionEndPrice = _TradeSessions.Values[_TradeSessions.Values.Count - 1];//_TradeSessions.LastSessionEndPrice;
-
+            if (_TradeSessions.Values.Count > 0)
+            {
+                LastSessionEndPrice = _TradeSessions.Values[_TradeSessions.Values.Count - 1];//_TradeSessions.LastSessionEndPrice;
+            }
+            else
+            {
+                return;
+            }
 
             //LastSessionEndPrice = TradeSessions.LastSessionEndPrice(_tab.CandlesAll, candles[candles.Count - 1].TimeStart);
             if (LastSessionEndPrice > 0)
@@ -799,6 +829,7 @@ namespace OsEngine.Robots.VSA
                 {
                     TradeSide = Side.Sell;
                 }
+                
                 if (oldTradeSide != TradeSide)
                 {
                     _tab.SetNewLogMessage("Направление торговли " + TradeSide, LogMessageType.Signal);
@@ -831,7 +862,6 @@ namespace OsEngine.Robots.VSA
                 }
             }
 
-            LogicClosePositions(candles);
 
             if (!ValidateParams())
             {
@@ -842,6 +872,19 @@ namespace OsEngine.Robots.VSA
             {
                 return;
             }
+            /*
+            if (_TradeSessions.DayChanel / _TradeSessions.MaxSessionPrice < 0.02m)
+            {
+                _tab.SellAtStop(1, _TradeSessions.MaxSessionPrice, _TradeSessions.MaxSessionPrice, StopActivateType.HigherOrEqual);
+                _tab.BuyAtStop(1, _TradeSessions.MinSessionPrice, _TradeSessions.MinSessionPrice, StopActivateType.LowerOrEqyal);
+            }
+            else
+            {
+                _tab.BuyAtStopCanсel();
+                _tab.SellAtStopCanсel();
+            }
+            */
+
             // если трендовый день то открываемся сразу
             /*
             if (_TradeSessions.TypeOfDay == TradeSessions.DayType.TrendDay)

@@ -147,10 +147,12 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 {
                     writer.WriteLine(ColorBase.ToArgb());
                     writer.WriteLine(PaintOn);
-                    foreach(levlel el in LevleData)
+                    /*
+                    foreach (levlel el in LevleData)
                     {
                         writer.WriteLine(el.Value);
                     }
+                    */
                     writer.Close();
                 }
             }
@@ -176,6 +178,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 {
                     ColorBase = Color.FromArgb(Convert.ToInt32(reader.ReadLine()));
                     PaintOn = Convert.ToBoolean(reader.ReadLine());
+                    /*
                     while (!reader.EndOfStream)
                     {
                         decimal readerStr = Convert.ToDecimal(reader.ReadLine());
@@ -188,6 +191,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                         el.Value = readerStr;
                         LevleData.Add(el);
                     }
+                    */
                     reader.Close();
                 }
 

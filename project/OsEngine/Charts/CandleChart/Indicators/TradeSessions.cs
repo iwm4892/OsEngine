@@ -103,7 +103,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             _ts = new TS();
             _ts.Name = "Сутки";
             _ts.SessionType = SessionType.Day;
-            _ts.Open = new DateTime(1, 1, 1, 0, 0, 1);
+            _ts.Open = new DateTime(1, 1, 1, 0, 0, 0);
             _ts.Close = new DateTime(1, 1, 1, 23, 59, 0);
             SessionsAll.Add(_ts);
 
@@ -132,6 +132,14 @@ namespace OsEngine.Charts.CandleChart.Indicators
             public DateTime Close;
 
             public SessionType SessionType;
+            /// <summary>
+            /// Кластера сессий
+            /// </summary>
+            public List<ClasterData> clasterDatas = new List<ClasterData>();
+            /// <summary>
+            /// Максимальные Объемы по дням
+            /// </summary>
+            public List<decimal> Values = new List<decimal>();
         }
         /// <summary>
         /// Перечисление видов сессий
@@ -307,6 +315,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public bool PaintOn
         { get; set; }
+        /// <summary>
+        /// Размер канала (максимум - минимум) за последние сутки
+        /// </summary>
+        public Decimal DayChanel;
 
        public List<Color> ColorSeries { get; set; }
 
@@ -422,10 +434,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         /// <param name="date">дата для проверки</param>
         /// <returns></returns>
-        public bool itsSessionStart(DateTime date)
+        public TS itsSessionStart(DateTime date)
         {
             TS ts =  Sessions.Find(x => x.Open == new DateTime(1, 1, 1, date.Hour, date.Minute, date.Second));
-            return (ts != null);
+            return ts;
         }
         /// <summary>
         /// Получение даты окончания прошлой сесии
@@ -563,10 +575,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 Values = new List<decimal>();
                 ColorSeries = new List<Color>();
             }
-            Values.Add(LastSessionEndPrice);
             UpdateDate(candles, candles.Count - 1);
-
-
+            Values.Add(GetValue(candles, candles.Count - 1));
             updateNullValue();
             ColorSeries.Add(color);
 
@@ -583,7 +593,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             for(int i = 0; i < candles.Count; i++)
             {
                 UpdateDate(candles, i);
-                Values.Add(LastSessionEndPrice);
+                Values.Add(GetValue(candles, i));
                 updateNullValue();
                 ColorSeries.Add(color);
             }
@@ -595,8 +605,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
         private void ProcessLastCanlde(List<Candle> candles)
         {
             UpdateDate(candles, candles.Count - 1);
+            Values[Values.Count - 1] = GetValue(candles, candles.Count - 1);
             updateNullValue();
-            Values[Values.Count - 1] = LastSessionEndPrice;
         }
         private void updateNullValue()
         {
@@ -605,20 +615,89 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 Values[Values.Count - 1] = Values[Values.Count - 2];
             }
         }
+        private decimal GetValue(List<Candle> candles, int i)
+        {
+            SessionNow = SessionOnTime(candles[i].TimeStart);
+            if (SessionNow != null && SessionNow.Values.Count>1)
+            {
+                return SessionNow.Values[SessionNow.Values.Count - 2];
+            }
+            return 0;
+        }
+        private void UpdateSessions(List<Candle> candles, int i)
+        {
+            TS ns = itsSessionStart(candles[i].TimeStart);
+            if(ns!=null)
+            {
+                if (ns.Values == null)
+                {
+                    ns.Values = new List<decimal>();
+                }
+                if (ns.clasterDatas.Count > 0)
+                {
+                    ns.Values.Add(ns.clasterDatas[ns.clasterDatas.Count - 1].MaxData.Price);
+                    ns.clasterDatas[ns.clasterDatas.Count - 1] = null;
+                    ns.clasterDatas.Add(new ClasterData());
+                }
+            }
+            foreach (var ts in Sessions)
+            {
+                DateTime date = candles[i].TimeStart;
+                DateTime testDateOpen = new DateTime(date.Year, date.Month, date.Day, ts.Open.Hour, ts.Open.Minute, ts.Open.Second);
+                DateTime testDateClose = new DateTime(date.Year, date.Month, date.Day, ts.Close.Hour, ts.Close.Minute, ts.Close.Second);
+
+                if (date >= testDateOpen && date < testDateClose)
+                {
+                    if (ts.clasterDatas.Count == 0)
+                    {
+                        ts.clasterDatas.Add(new ClasterData());
+                    }
+                    if (ts.Values.Count == 0)
+                    {
+                        ts.Values.Add(0);
+                    }
+                    ts.clasterDatas[ts.clasterDatas.Count - 1].update(candles[i].Trades);
+                    ts.Values[ts.Values.Count - 1] = ts.clasterDatas[ts.clasterDatas.Count - 1].MaxData.Price;
+                }
+            }
+        }
         private void UpdateDate(List<Candle> candles,int i)
         {
+            UpdateSessions(candles, i);
+            /*
             SessionNow = SessionOnTime(candles[i].TimeStart);
             CanTrade = GetCanTrade(candles, i);
             TypeOfDay = GetDayType(candles, i);
             LastSessionEndDate = GetLastSessionEndDate(candles[i].TimeStart);
             LastSessionEndPrice = GetLastSessionEndPrice(candles, candles[i].TimeStart);
             TradeSide = GetTradeSyde(candles, i);
+            */
             UpdateMinMax(candles, i);
         }
         private void UpdateMinMax(List<Candle> candles, int i)
         {
             if (i > 0)
             {
+                MaxSessionPrice = 0;
+                MinSessionPrice = decimal.MaxValue;
+
+                DateTime endDate = candles[i].TimeStart;
+                DateTime startDate = endDate.AddDays(-1);
+                List<Candle> analizCandles = candles.FindAll(o=>o.TimeStart>=startDate && o.TimeStart <= endDate);
+                foreach(var candle in analizCandles)
+                {
+                    if (candle.ClasterData.MaxData.Price > MaxSessionPrice)
+                    {
+                        MaxSessionPrice = candle.ClasterData.MaxData.Price;
+                    }
+                    if (candle.ClasterData.MaxData.Price < MinSessionPrice)
+                    {
+                        MinSessionPrice = candle.ClasterData.MaxData.Price;
+                    }
+
+                }
+                DayChanel = MaxSessionPrice - MinSessionPrice;
+                /*
                 if (candles[i].TimeStart.Date != candles[i - 1].TimeStart.Date)
                 {
                     MaxSessionPrice = candles[i].ClasterData.MaxData.Price;
@@ -633,6 +712,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 {
                     MinSessionPrice = candles[i].ClasterData.MaxData.Price;
                 }
+                */
 
             }
             /*

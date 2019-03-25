@@ -2900,7 +2900,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 }
                 if (!isstop && position.StopOrderRedLine != 0 && position.StopOrderPrice == 0)
                 {
-                    AddServerStopToPosition(position, position.StopOrderRedLine);
+                    CloseAtServerTrailingStop(position, position.StopOrderRedLine, position.StopOrderRedLine);
                 }
                 if (isstop)
                 {

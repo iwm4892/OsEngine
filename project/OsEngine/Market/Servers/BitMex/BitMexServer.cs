@@ -1397,7 +1397,8 @@ namespace OsEngine.Market.Servers.BitMex
                             Dictionary<string, string> param = new Dictionary<string, string>();
                             param["symbol"] = order.SecurityNameCode;
                             param["side"] = order.Side == Side.Buy ? "Buy" : "Sell";
-                            if (order.TypeOrder != OrderPriceType.MarketStop)
+                            if (order.TypeOrder != OrderPriceType.MarketStop && 
+                                order.TypeOrder != OrderPriceType.Market)
                             {
                                 param["price"] = order.Price.ToString().Replace(",", ".");
                             }
