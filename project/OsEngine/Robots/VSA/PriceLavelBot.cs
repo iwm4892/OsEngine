@@ -302,6 +302,7 @@ namespace OsEngine.Robots.VSA
 
         private void CloseFailPosition()
         {
+            /*
             while (true)
             {
                 Thread.Sleep(1000);
@@ -326,8 +327,7 @@ namespace OsEngine.Robots.VSA
                     
                 }
             }
-            
-
+            */
         }
         private void _tab_FirstTickToDayEvent(Trade obj)
         {

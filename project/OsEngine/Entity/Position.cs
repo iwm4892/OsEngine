@@ -200,29 +200,32 @@ namespace OsEngine.Entity
             }
             get
             {
-                if (_stopOrderPrice != 0)
+                lock (locker)
                 {
-                    return _stopOrderPrice;
-                }
-                decimal st = 0;
-                foreach( var ord in CloseOrders)
-                {
-                    if (ord.Volume == OpenVolume && ord.State == OrderStateType.Activ && ord.IsStopOrProfit)
+                    if (_stopOrderPrice != 0)
                     {
-                        if (ProfitOrderPrice != 0)
+                        return _stopOrderPrice;
+                    }
+                    decimal st = 0;
+                    foreach (var ord in CloseOrders)
+                    {
+                        if (ord.Volume == OpenVolume && ord.State == OrderStateType.Activ && ord.IsStopOrProfit)
                         {
-                            if (ord.Price != ProfitOrderPrice)
+                            if (ProfitOrderPrice != 0)
+                            {
+                                if (ord.Price != ProfitOrderPrice)
+                                {
+                                    st = ord.Price;
+                                }
+                            }
+                            else
                             {
                                 st = ord.Price;
                             }
                         }
-                        else
-                        {
-                            st = ord.Price;
-                        }
                     }
+                    return st;
                 }
-                return st;
             }
         }
         private decimal _stopOrderPrice;
@@ -1036,6 +1039,7 @@ namespace OsEngine.Entity
         /// </summary>
         public decimal PortfolioValueOnOpenPosition;
 
+        private object locker = new Object();
         /// <summary>
         /// Размер комиссии
         /// </summary>

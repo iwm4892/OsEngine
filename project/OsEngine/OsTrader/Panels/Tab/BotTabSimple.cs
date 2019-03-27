@@ -2651,8 +2651,8 @@ namespace OsEngine.OsTrader.Panels.Tab
                 }
 
                 if (position.State == PositionStateType.Done ||
-                    position.State == PositionStateType.OpeningFail //||
-                  //  position.State == PositionStateType.Closing
+                    position.State == PositionStateType.OpeningFail || 
+                    position.State == PositionStateType.Closing
                     )
                 {
                     return;
@@ -3963,12 +3963,12 @@ namespace OsEngine.OsTrader.Panels.Tab
             {
                 foreach (var ord in obj.CloseOrders)
                 {
-                    if (ord.State == OrderStateType.Activ)
+                    if (ord.State == OrderStateType.Activ &&
+                        ord.IsStopOrProfit)
                     {
-                        if (ord.Volume > obj.OpenVolume)
+                        if (ord.Volume != obj.OpenVolume)
                         {
                             AddServerStopToPosition(obj, ord.Price);
-                            CloseOrder(ord);
                         }
                     }
                 }
