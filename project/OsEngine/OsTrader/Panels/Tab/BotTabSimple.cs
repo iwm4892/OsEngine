@@ -2881,7 +2881,10 @@ namespace OsEngine.OsTrader.Panels.Tab
             }
            
         }
-
+        /// <summary>
+        /// Дата последней проверки стопов
+        /// </summary>
+        private DateTime _lastCheckStopTime = DateTime.MinValue;
         /// <summary>
         /// check if the trade has a stop or profit / 
         /// проверить, не сработал ли стоп или профит у сделки
@@ -2890,22 +2893,29 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
-                bool isstop = false;
-                foreach (var ord in position.CloseOrders)
+                if (_lastCheckStopTime != DateTime.MinValue && _lastCheckStopTime.AddSeconds(5) < DateTime.Now)
                 {
-                    if (ord.Volume == position.OpenVolume && ord.State == OrderStateType.Activ)
+                    bool isstop = false;
+                    foreach (var ord in position.CloseOrders)
                     {
-                        isstop = true;
+                        if (ord.Volume == position.OpenVolume &&
+                            ord.State == OrderStateType.Activ &&
+                            ord.IsStopOrProfit)
+                        {
+                            isstop = true;
+                        }
                     }
+                    if (!isstop && position.StopOrderRedLine != 0 && position.StopOrderPrice == 0)
+                    {
+                        CloseAtServerTrailingStop(position, position.StopOrderRedLine, position.StopOrderRedLine);
+                    }
+                    if (isstop)
+                    {
+                        return false;
+                    }
+                    _lastCheckStopTime = DateTime.Now;
                 }
-                if (!isstop && position.StopOrderRedLine != 0 && position.StopOrderPrice == 0)
-                {
-                    CloseAtServerTrailingStop(position, position.StopOrderRedLine, position.StopOrderRedLine);
-                }
-                if (isstop)
-                {
-                    return false;
-                }
+
                 if (!position.StopOrderIsActiv && !position.ProfitOrderIsActiv)
                 {
                     return false;
@@ -3969,6 +3979,10 @@ namespace OsEngine.OsTrader.Panels.Tab
                         if (ord.Volume != obj.OpenVolume)
                         {
                             AddServerStopToPosition(obj, ord.Price);
+
+                            _chartMaster.SetPosition(_journal.AllPosition);
+                            _journal.PaintPosition(obj);
+                            _journal.Save();
                         }
                     }
                 }
@@ -4000,17 +4014,23 @@ namespace OsEngine.OsTrader.Panels.Tab
                     }
                     if (CheckPosition)
                     {
-                        foreach (var _ord in pos.CloseOrders)
+                        Order laststop = pos.CloseOrders.FindLast(o => o.State == OrderStateType.Activ && o.IsStopOrProfit);
+                        if (laststop != null)
                         {
-                            if (_ord.State == OrderStateType.Activ &&
-                                _ord.NumberUser != pos.CloseOrders[pos.CloseOrders.Count-1].NumberUser &&
-                                _ord.IsStopOrProfit == true &&
-                                (_ord.TypeOrder == OrderPriceType.LimitStop || _ord.TypeOrder == OrderPriceType.MarketStop))
+                            foreach (var _ord in pos.CloseOrders)
                             {
-                                CloseOrder(_ord);
+                                if (_ord.State == OrderStateType.Activ &&
+                                    _ord.NumberUser != laststop.NumberUser &&
+                                    _ord.IsStopOrProfit == true &&
+                                    (_ord.TypeOrder == OrderPriceType.LimitStop || _ord.TypeOrder == OrderPriceType.MarketStop))
+                                {
+                                    CloseOrder(_ord);
+                                }
                             }
                         }
-
+                        _chartMaster.SetPosition(_journal.AllPosition);
+                        _journal.PaintPosition(pos);
+                        _journal.Save();
                     }
                 }
             }
