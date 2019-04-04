@@ -3874,11 +3874,16 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// <param name="priceOrder">order price / цена ордера</param>
         public void CloseAtServerTrailingStop(Position position, decimal priceActivation, decimal priceOrder)
         {
+
             if (StartProgram == StartProgram.IsTester)
             {
                 CloseAtTrailingStop(position, priceActivation, priceOrder);
                 return;
             }
+
+            priceOrder = RoundPrice(priceOrder, Securiti, position.Direction);
+            priceActivation = RoundPrice(priceActivation, Securiti, position.Direction);
+
             if (position.Direction == Side.Buy &&
                 position.StopOrderPrice >= priceOrder &&
                 position.StopOrderPrice >0)

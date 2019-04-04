@@ -202,27 +202,26 @@ namespace OsEngine.Entity
             {
                 lock (locker)
                 {
-                    if (_stopOrderPrice != 0)
-                    {
-                        return _stopOrderPrice;
-                    }
                     decimal st = 0;
-                    foreach (var ord in CloseOrders)
+                    Order ord = CloseOrders.FindLast(o=>(o.State == OrderStateType.Activ || o.State == OrderStateType.None) && o.IsStopOrProfit && o.Volume == OpenVolume);
+                    if(ord != null)
                     {
-                        if (ord.Volume == OpenVolume && ord.State == OrderStateType.Activ && ord.IsStopOrProfit)
+                        if (ProfitOrderPrice != 0)
                         {
-                            if (ProfitOrderPrice != 0)
-                            {
-                                if (ord.Price != ProfitOrderPrice)
-                                {
-                                    st = ord.Price;
-                                }
-                            }
-                            else
+                            if (ord.Price != ProfitOrderPrice)
                             {
                                 st = ord.Price;
                             }
                         }
+                        else
+                        {
+                            st = ord.Price;
+                        }
+
+                    }
+                    if(st==0 && _stopOrderPrice != 0)
+                    {
+                        return _stopOrderPrice;
                     }
                     return st;
                 }
