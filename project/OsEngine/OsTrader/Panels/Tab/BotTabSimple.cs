@@ -2884,7 +2884,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// <summary>
         /// Дата последней проверки стопов
         /// </summary>
-        private DateTime _lastCheckStopTime = DateTime.MinValue;
+        private DateTime _lastCheckStopTime = DateTime.Now;
         /// <summary>
         /// check if the trade has a stop or profit / 
         /// проверить, не сработал ли стоп или профит у сделки
