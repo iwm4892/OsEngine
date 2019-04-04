@@ -1404,7 +1404,7 @@ namespace OsEngine.Market.Servers.BitMex
                             }
 
                                 //param["orderIDs"] = order.NumberUser.ToString();
-                            param["orderQty"] = order.Volume.ToString();
+                            
                             param["origClOrdID"] = order.NumberUser.ToString();
                             param["clOrdID"] = order.NumberUser.ToString();
                             param["origClOrdID"] = order.NumberUser.ToString();
@@ -1412,14 +1412,19 @@ namespace OsEngine.Market.Servers.BitMex
                             switch (order.TypeOrder)
                             {
                                 case OrderPriceType.Limit: param["ordType"] = "Limit";
-                                //    param["execInst"] = "ParticipateDoNotInitiate";
+                                    param["orderQty"] = order.Volume.ToString();
+                                    //    param["execInst"] = "ParticipateDoNotInitiate";
                                     break;
-                                case OrderPriceType.Market: param["ordType"] = "Market"; break;
+                                case OrderPriceType.Market: param["ordType"] = "Market";
+                                    param["orderQty"] = order.Volume.ToString();
+                                    break;
                                 case OrderPriceType.LimitStop: param["ordType"] = "StopLimit";
                                     param["stopPx"] = order.priceRedLine.ToString().Replace(",", ".");
+                                    param["execInst"] = "LastPrice,Close";
                                     break;
                                 case OrderPriceType.MarketStop: param["ordType"] = "Stop";
                                     param["stopPx"] = order.Price.ToString().Replace(",", ".");
+                                    param["execInst"] = "LastPrice,Close";
                                     break;
                             }
 

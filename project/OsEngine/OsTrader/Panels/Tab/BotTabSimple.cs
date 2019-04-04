@@ -2909,11 +2909,12 @@ namespace OsEngine.OsTrader.Panels.Tab
                     {
                         CloseAtServerTrailingStop(position, position.StopOrderRedLine, position.StopOrderRedLine);
                     }
+                    _lastCheckStopTime = DateTime.Now;
                     if (isstop)
                     {
                         return false;
                     }
-                    _lastCheckStopTime = DateTime.Now;
+                    
                 }
 
                 if (!position.StopOrderIsActiv && !position.ProfitOrderIsActiv)
