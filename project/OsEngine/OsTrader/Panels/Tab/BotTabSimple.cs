@@ -3885,15 +3885,13 @@ namespace OsEngine.OsTrader.Panels.Tab
             priceActivation = RoundPrice(priceActivation, Securiti, position.Direction);
 
             if (position.Direction == Side.Buy &&
-                position.StopOrderPrice >= priceOrder &&
-                position.StopOrderPrice >0)
+                position.StopOrderPrice >= priceOrder)
             {
                 return;
             }
 
             if (position.Direction == Side.Sell &&
-                position.StopOrderPrice <= priceOrder &&
-                position.StopOrderPrice > 0)
+                position.StopOrderPrice <= priceOrder)
             {
                 return;
             }
