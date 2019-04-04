@@ -2899,7 +2899,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                     foreach (var ord in position.CloseOrders)
                     {
                         if (ord.Volume == position.OpenVolume &&
-                            ord.State == OrderStateType.Activ &&
+                            (ord.State == OrderStateType.Activ || ord.State == OrderStateType.None) &&
                             ord.IsStopOrProfit)
                         {
                             isstop = true;
