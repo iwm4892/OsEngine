@@ -80,7 +80,10 @@ namespace OsEngine.Robots.VSA
         /// </summary>
         private StrategyParameterInt _Slipage;
         private decimal Slipage;
-
+        /// <summary>
+        /// Плечо
+        /// </summary>
+        private StrategyParameterInt leverage;
         /// <summary>
         /// коэффицент для расчета размера дельты
         /// </summary>
@@ -201,7 +204,7 @@ namespace OsEngine.Robots.VSA
             MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
 
             _Slipage = CreateParameter("_Slipage", 1, 1, 50, 1);
-
+            leverage = CreateParameter("Маржинальное плечо", 1, 1, 10, 1);
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
             isContract = CreateParameter("Торгуем контрактами", false);
@@ -467,7 +470,7 @@ namespace OsEngine.Robots.VSA
             {
                 return;
             }
-            decimal VollAll = (_tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked) / GetPrice(price);
+            decimal VollAll = leverage.ValueInt * (_tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked) / GetPrice(price);
             
             decimal StopSize = Math.Abs((LastStop - price) / price);
             if (StopSize <= 0)
