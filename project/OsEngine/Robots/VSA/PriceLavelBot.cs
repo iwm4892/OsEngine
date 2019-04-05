@@ -542,7 +542,7 @@ namespace OsEngine.Robots.VSA
             decimal _volOst = LastPositionVolume_All - pos.OpenVolume;
             decimal v = pos.OpenVolume;
             decimal price = pos.EntryPrice;
-            decimal step = Math.Abs(pos.EntryPrice - LastStop) / StepCount.ValueInt;
+            decimal step = Math.Abs(pos.EntryPrice - LastStop) / (StepCount.ValueInt+1);
             for (int i = 0; i < StepCount.ValueInt; i++) { 
                 v = GetVol(Math.Min(_volOst, 2 * v));
                 if (v > 0)
