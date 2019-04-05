@@ -85,6 +85,10 @@ namespace OsEngine.Robots.VSA
         /// </summary>
         private StrategyParameterInt leverage;
         /// <summary>
+        /// Количество ордеров в лесенке набора позиции
+        /// </summary>
+        private StrategyParameterInt StepCount;
+        /// <summary>
         /// коэффицент для расчета размера дельты
         /// </summary>
         private StrategyParameterInt DeltaSizeK;
@@ -205,6 +209,8 @@ namespace OsEngine.Robots.VSA
 
             _Slipage = CreateParameter("_Slipage", 1, 1, 50, 1);
             leverage = CreateParameter("Маржинальное плечо", 1, 1, 10, 1);
+            StepCount = CreateParameter("Ордеров в лесенке", 1, 1, 10, 1);
+
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
             isContract = CreateParameter("Торгуем контрактами", false);
@@ -460,6 +466,8 @@ namespace OsEngine.Robots.VSA
                 return 1 / price;
             }
         }
+        private Decimal LastPositionVolume_All;
+        private bool NeadStepOpen;
         private void OpenPosition(Side side, decimal price,string Signal)
         {
             Slipage = _Slipage.ValueInt * _tab.Securiti.PriceStep;
@@ -486,25 +494,101 @@ namespace OsEngine.Robots.VSA
             {
                 _Vol = VollAll;
             }
-            if (isContract.ValueBool)
-            {
-                _Vol = (int)_Vol;
-            }
+
+            _Vol = GetVol(_Vol);
+
+            LastPositionVolume_All = _Vol;
             if (_Vol > 0)
             {
-                if (side == Side.Buy)
+                if ((side == Side.Buy && price > (_TradeSessions.MinSessionPrice + _TradeSessions.MaxSessionPrice) / 2) ||
+                    (side == Side.Sell && price < (_TradeSessions.MinSessionPrice + _TradeSessions.MaxSessionPrice) / 2))
                 {
-                    _tab.BuyAtMarket(_Vol,Signal);
+                    decimal v = GetVol(_Vol / GetPieceCount());
+
+                    if (v == 0 && _Vol > 0)
+                    {
+                        v = 1;
+                    }
+                    if (side == Side.Buy)
+                    {
+                        _tab.BuyAtMarket(v, Signal);
+                    }
+                    else
+                    {
+                        _tab.SellAtMarket(v, Signal);
+                    }
+                    NeadStepOpen = true;
                 }
                 else
                 {
-                    _tab.SellAtMarket(_Vol,Signal);
+                    if (side == Side.Buy)
+                    {
+                        _tab.BuyAtMarket(_Vol, Signal);
+                    }
+                    else
+                    {
+                        _tab.SellAtMarket(_Vol, Signal);
+                    }
                 }
             }
 
 
         }
-
+        private void OpenStepLimit(Position pos)
+        {
+            NeadStepOpen = false;
+            decimal _volOst = LastPositionVolume_All - pos.OpenVolume;
+            decimal v = pos.OpenVolume;
+            decimal price = pos.EntryPrice;
+            decimal step = Math.Abs(pos.EntryPrice - LastStop) / StepCount.ValueInt;
+            for (int i = 0; i < StepCount.ValueInt; i++) { 
+                v = GetVol(Math.Min(_volOst, 2 * v));
+                if (v > 0)
+                {
+                    if (pos.Direction == Side.Buy)
+                    {
+                        price = price - step;
+                        if (price > LastStop)
+                        {
+                            _tab.BuyAtLimitToPosition(pos, price, v);
+                        }
+                    }
+                    if (pos.Direction == Side.Sell)
+                    {
+                        price = price + step;
+                        if (price < LastStop)
+                        {
+                            _tab.SellAtLimitToPosition(pos, price, v);
+                        }
+                    }
+                }
+                _volOst = _volOst - v;
+            }
+        }
+        private decimal GetVol(decimal v)
+        {
+            if (isContract.ValueBool)
+            {
+                return (int)v;
+            }
+            else
+            {
+                return v;
+            }
+        }
+        /// <summary>
+        /// Получить количество долей для лесенки
+        /// </summary>
+        /// <returns></returns>
+        private int GetPieceCount()
+        {
+            int result = 1;
+            for (int i = 1; i < StepCount.ValueInt; i++)
+            {
+                result = result +result * 2;
+            }
+            return result;
+        }
         private void _tab_CandleUpdateEvent(List<Candle> candles)
         {
 
@@ -738,7 +822,10 @@ namespace OsEngine.Robots.VSA
             }
             //выставим новые стопы
             _tab.CloseAtServerTrailingStop(obj, LastStop, LastStop);
-            
+            if (NeadStepOpen)
+            {
+                OpenStepLimit(obj);
+            }
             //_tab.CloseAtTrailingStop(obj, LastStop, LastStop);
             if (UseSafe.ValueBool)
             {
