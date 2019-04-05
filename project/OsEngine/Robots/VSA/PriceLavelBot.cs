@@ -500,8 +500,10 @@ namespace OsEngine.Robots.VSA
             LastPositionVolume_All = _Vol;
             if (_Vol > 0)
             {
-                if ((side == Side.Buy && price > (_TradeSessions.MinSessionPrice + _TradeSessions.MaxSessionPrice) / 2) ||
-                    (side == Side.Sell && price < (_TradeSessions.MinSessionPrice + _TradeSessions.MaxSessionPrice) / 2))
+
+                if (StepCount.ValueInt > 1 
+                    && ((side == Side.Buy && price > (_TradeSessions.MinSessionPrice + _TradeSessions.MaxSessionPrice) / 2) ||
+                        (side == Side.Sell && price < (_TradeSessions.MinSessionPrice + _TradeSessions.MaxSessionPrice) / 2)))
                 {
                     decimal v = GetVol(_Vol / GetPieceCount());
 
