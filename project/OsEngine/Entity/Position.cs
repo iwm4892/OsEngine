@@ -121,8 +121,10 @@ namespace OsEngine.Entity
                 _closeOrders = new List<Order>();
             }
             _closeOrders.Add(closeOrder);
-
-            State = PositionStateType.Closing;
+            if (!closeOrder.IsStopOrProfit)
+            {
+                State = PositionStateType.Closing;
+            }
         }
         /// <summary>
         /// load a new order to a position
@@ -174,7 +176,8 @@ namespace OsEngine.Entity
                     return false;
                 }
 
-                if (CloseOrders.Find(order => order.State == OrderStateType.Activ || order.State == OrderStateType.Pending) != null)
+                if (CloseOrders.Find(order => (order.State == OrderStateType.Activ || order.State == OrderStateType.Pending)&&
+                    !order.IsStopOrProfit) != null)
                 {
                     return true;
                 }
