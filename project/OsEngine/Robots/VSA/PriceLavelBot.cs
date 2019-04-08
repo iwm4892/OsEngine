@@ -542,9 +542,9 @@ namespace OsEngine.Robots.VSA
             decimal _volOst = LastPositionVolume_All - pos.OpenVolume;
             decimal v = pos.OpenVolume;
             decimal price = pos.EntryPrice;
-            decimal step = Math.Abs(pos.EntryPrice - LastStop) / (StepCount.ValueInt+1);
+            decimal step = Math.Abs(pos.EntryPrice - LastStop) / (StepCount.ValueInt);
             for (int i = 1; i < StepCount.ValueInt; i++) { 
-                v = GetVol(Math.Min(_volOst, 2 * v));
+                v = GetVol(Math.Min(_volOst, v + 2 * v));
                 if (v > 0)
                 {
                     if (pos.Direction == Side.Buy)
@@ -782,6 +782,10 @@ namespace OsEngine.Robots.VSA
                 if (lvl != null)
                 {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                    if (lvl.Count > 2)
+                    {
+                        return lvl[lvl.Count - 3].Value - Slipage;
+                    }
                     if (lvl.Count > 1)
                     {
                         return lvl[lvl.Count - 2].Value - Slipage;
@@ -800,6 +804,10 @@ namespace OsEngine.Robots.VSA
                 if (lvl != null)
                 {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                    if (lvl != null && lvl.Count > 2)
+                    {
+                        return lvl[2].Value + Slipage;
+                    }
                     if (lvl != null && lvl.Count > 1)
                     {
                         return lvl[1].Value + Slipage;

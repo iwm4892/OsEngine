@@ -104,7 +104,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             _ts.Name = "Сутки";
             _ts.SessionType = SessionType.Day;
             _ts.Open = new DateTime(1, 1, 1, 0, 0, 0);
-            _ts.Close = new DateTime(1, 1, 1, 23, 59, 0);
+            _ts.Close = new DateTime(1, 1, 1, 23, 59, 59);
             SessionsAll.Add(_ts);
 
             color = Color.Blue;
