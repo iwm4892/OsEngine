@@ -593,7 +593,11 @@ namespace OsEngine.Robots.VSA
         }
         private void _tab_CandleUpdateEvent(List<Candle> candles)
         {
-
+            if(_tab.PositionsLast != null && _tab.PositionsLast.OpenVolume>0 && _tab.PositionsLast.StopOrderRedLine == 0)
+            {
+                LastStop = GetStopLevel(_tab.PositionsLast.Direction, _tab.PositionsLast.EntryPrice);
+                _tab.CloseAtServerTrailingStop(_tab.PositionsLast, LastStop, LastStop);
+            }
         }
 
 
