@@ -3892,7 +3892,9 @@ namespace OsEngine.OsTrader.Panels.Tab
             }
 
             if (position.Direction == Side.Sell &&
-                position.StopOrderPrice <= priceOrder)
+                position.StopOrderPrice <= priceOrder 
+                && position.StopOrderPrice >0
+                )
             {
                 return;
             }
