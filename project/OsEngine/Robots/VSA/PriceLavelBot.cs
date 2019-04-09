@@ -149,6 +149,12 @@ namespace OsEngine.Robots.VSA
         /// отрисовывать ли уровни
         /// </summary>
         private StrategyParameterBool PaintLevels;
+        /// <summary>
+        /// Использовать безубыточный стоп
+        /// </summary>
+        private StrategyParameterBool Breakeven;
+        private bool NeedBreakeven;
+
         public override string GetNameStrategyType()
         {
             return "PriceLavelBot";
@@ -216,6 +222,8 @@ namespace OsEngine.Robots.VSA
             isContract = CreateParameter("Торгуем контрактами", false);
 
             PaintLevels = CreateParameter("Отрисовывать уровни", true);
+
+            Breakeven = CreateParameter("Использовать безубыток", true);
 
             DeltaSizeK = CreateParameter("Делитель основного ТФ", 6, 1, 40, 1);
 
@@ -598,6 +606,14 @@ namespace OsEngine.Robots.VSA
                 LastStop = GetStopLevel(_tab.PositionsLast.Direction, _tab.PositionsLast.EntryPrice);
                 _tab.CloseAtServerTrailingStop(_tab.PositionsLast, LastStop, LastStop);
             }
+            if (NeedBreakeven)
+            {
+                if (_tab.PositionsLast != null && _tab.PositionsLast.OpenVolume > 0)
+                {
+                    LogicClosePositions(candles);
+                    NeedBreakeven = false;
+                }
+            }
         }
 
 
@@ -775,7 +791,7 @@ namespace OsEngine.Robots.VSA
         }
         private Decimal GetStopLevel(Side side, decimal price)
         {
-
+         //   return _tab.CandlesAll[_tab.CandlesAll.Count - 1].Open;
             if (side == Side.Buy)
             {
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < price);
@@ -840,6 +856,8 @@ namespace OsEngine.Robots.VSA
             {
                 OpenStepLimit(obj);
             }
+//            _tab.CloseAtProfit(obj, 3*(obj.EntryPrice - LastStop)+ obj.EntryPrice, 3 * (obj.EntryPrice - LastStop) + obj.EntryPrice);
+
             //_tab.CloseAtTrailingStop(obj, LastStop, LastStop);
             if (UseSafe.ValueBool)
             {
@@ -860,6 +878,10 @@ namespace OsEngine.Robots.VSA
                     _tab.BuyAtAcebergToPosition(obj, fixPOs, vol, 1);
                 }
                 */
+            }
+            if (Breakeven.ValueBool)
+            {
+                NeedBreakeven = true;
             }
             
         }
