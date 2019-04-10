@@ -286,7 +286,7 @@ namespace OsEngine.Robots.VSA
                 if (_tab.PositionsLast != null && _tab.PositionsLast.OpenVolume > 0)
                 {
                     LogicClosePositions(_tab.CandlesAll);
-                    NeedBreakeven = false;
+                    
                 }
             }
 
@@ -715,6 +715,7 @@ namespace OsEngine.Robots.VSA
                     if (canClose)
                     {
                         _tab.CloseAtServerTrailingStop(openPositions[i], stop, stop);
+                        NeedBreakeven = false;
                     }
 
             }
