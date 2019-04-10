@@ -856,6 +856,7 @@ namespace OsEngine.Robots.VSA
                 LastStop = GetStopLevel(obj.Direction, obj.EntryPrice);
             }
             //выставим новые стопы
+            
             _tab.CloseAtServerTrailingStop(obj, LastStop, LastStop);
             if (NeadStepOpen)
             {
@@ -952,7 +953,7 @@ namespace OsEngine.Robots.VSA
             if (LastSessionEndPrice > 0)
             {
                 Side oldTradeSide = TradeSide;
-                if (LastSessionEndPrice < candles[candles.Count - 1].Open)
+                if (LastSessionEndPrice < candles[candles.Count - 1].Close)
                 {
                     TradeSide = Side.Buy;
                 }
@@ -960,11 +961,25 @@ namespace OsEngine.Robots.VSA
                 {
                     TradeSide = Side.Sell;
                 }
-                
+                /*
+                if(_TradeSessions.MaxSessionPrice>LastSessionEndPrice 
+                    && _TradeSessions.MinSessionPrice< LastSessionEndPrice)
+                {
+                    if (LastSessionEndPrice < candles[candles.Count - 1].Close)
+                    {
+                        TradeSide = Side.Sell;
+                    }
+                    else
+                    {
+                        TradeSide = Side.Buy;
+                    }
+                }
+                */
                 if (oldTradeSide != TradeSide)
                 {
                     _tab.SetNewLogMessage("Направление торговли " + TradeSide, LogMessageType.Signal);
                 }
+                oldTradeSide = TradeSide;
             }
             if (candles.Count > 1 && candles[candles.Count - 1].TimeStart.DayOfYear != candles[candles.Count - 2].TimeStart.DayOfYear)
             {
