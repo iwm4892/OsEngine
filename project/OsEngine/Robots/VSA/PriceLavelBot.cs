@@ -230,7 +230,7 @@ namespace OsEngine.Robots.VSA
             _tab.CandleFinishedEvent += _tab_CandleFinishedEvent;
             _tab.CandleUpdateEvent += _tab_CandleUpdateEvent;
             _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
-
+            _tab.NewTickEvent += _tab_NewTickEvent;
             _tab.FirstTickToDayEvent += _tab_FirstTickToDayEvent;
             _tab.PositionClosingSuccesEvent += _tab_PositionClosingSuccesEvent;
 
@@ -271,6 +271,24 @@ namespace OsEngine.Robots.VSA
             Thread closerThread = new Thread(CloseFailPosition);
             closerThread.IsBackground = true;
             closerThread.Start();
+
+        }
+
+        private void _tab_NewTickEvent(Trade obj)
+        {
+            if (_tab.PositionsLast != null && _tab.PositionsLast.OpenVolume > 0 && _tab.PositionsLast.StopOrderRedLine == 0)
+            {
+                LastStop = GetStopLevel(_tab.PositionsLast.Direction, _tab.PositionsLast.EntryPrice);
+                _tab.CloseAtServerTrailingStop(_tab.PositionsLast, LastStop, LastStop);
+            }
+            if (NeedBreakeven)
+            {
+                if (_tab.PositionsLast != null && _tab.PositionsLast.OpenVolume > 0)
+                {
+                    LogicClosePositions(_tab.CandlesAll);
+                    NeedBreakeven = false;
+                }
+            }
 
         }
 
@@ -601,19 +619,6 @@ namespace OsEngine.Robots.VSA
         }
         private void _tab_CandleUpdateEvent(List<Candle> candles)
         {
-            if(_tab.PositionsLast != null && _tab.PositionsLast.OpenVolume>0 && _tab.PositionsLast.StopOrderRedLine == 0)
-            {
-                LastStop = GetStopLevel(_tab.PositionsLast.Direction, _tab.PositionsLast.EntryPrice);
-                _tab.CloseAtServerTrailingStop(_tab.PositionsLast, LastStop, LastStop);
-            }
-            if (NeedBreakeven)
-            {
-                if (_tab.PositionsLast != null && _tab.PositionsLast.OpenVolume > 0)
-                {
-                    LogicClosePositions(candles);
-                    NeedBreakeven = false;
-                }
-            }
         }
 
 
