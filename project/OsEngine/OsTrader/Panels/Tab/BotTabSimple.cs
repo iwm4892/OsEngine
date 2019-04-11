@@ -57,7 +57,8 @@ namespace OsEngine.OsTrader.Panels.Tab
                 _connector.ConnectorStartedReconnectEvent += _connector_ConnectorStartedReconnectEvent;
 
                 _connector.OrderChangeEvent += CanselServersStops;
-                
+                _connector.NewCandlesChangeEvent += _connector_NewCandlesChangeEvent;
+
                     _marketDepthPainter = new MarketDepthPainter(TabName);
                 _marketDepthPainter.LogMessageEvent += SetNewLogMessage;
 
@@ -94,6 +95,15 @@ namespace OsEngine.OsTrader.Panels.Tab
             catch (Exception error)
             {
                 SetNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+        }
+
+        private void _connector_NewCandlesChangeEvent(List<Candle> candles)
+        {
+            if (candles.Count > 1)
+            {
+                candles[candles.Count - 2].Trades = new List<Trade>();
+                candles[candles.Count - 2].ClasterData.data = new List<ClasterData.PriseData>();
             }
         }
 
