@@ -100,7 +100,7 @@ namespace OsEngine.OsTrader.Panels.Tab
 
         private void _connector_NewCandlesChangeEvent(List<Candle> candles)
         {
-            if (candles.Count > 1)
+            if (candles != null && candles.Count > 1)
             {
                 candles[candles.Count - 2].Trades = new List<Trade>();
                 candles[candles.Count - 2].ClasterData.data = new List<ClasterData.PriseData>();
