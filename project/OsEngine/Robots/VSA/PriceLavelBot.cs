@@ -398,7 +398,19 @@ namespace OsEngine.Robots.VSA
 
                 if (lvl != null && lvl.Count > 0)
                 {
-                    CanFindPattern = true;
+                    foreach (PriceLevleLine.levlel l in lvl)
+                    {
+                        if (
+                            (TradeSide == Side.Buy && l.Value != _TradeSessions.MaxSessionPrice) ||
+                            (TradeSide == Side.Sell && l.Value != _TradeSessions.MinSessionPrice)
+                            )
+                        {
+                            CanFindPattern = true;
+                        }
+                    }
+                    
+
+                        
                 }
             }
             if(TradeSide == Side.Buy && candles[candles.Count - 2].Close< LastSessionEndPrice)
@@ -500,6 +512,7 @@ namespace OsEngine.Robots.VSA
 
             decimal _Vol;
             LastStop = GetStopLevel(side, price);
+         //   LastStop = GetStopByPattern(side, price, Signal);
             if (LastStop == 0)
             {
                 return;
@@ -797,21 +810,24 @@ namespace OsEngine.Robots.VSA
         }
         private Decimal GetStopLevel(Side side, decimal price)
         {
-         //   return _tab.CandlesAll[_tab.CandlesAll.Count - 1].Open;
+            
+
             if (side == Side.Buy)
             {
                 List<PriceLevleLine.levlel> lvl = PriceLevleLine.LevleData.FindAll(x => x.Value < price);
                 if (lvl != null)
                 {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                    /*
                     if (lvl.Count > 2)
                     {
                         return lvl[lvl.Count - 3].Value - Slipage;
-                    }
+                    }*/
                     if (lvl.Count > 1)
                     {
                         return lvl[lvl.Count - 2].Value - Slipage;
                     }
+                    
                     if (lvl.Count > 0)
                     {
                         return lvl[lvl.Count - 1].Value - Slipage;
@@ -826,14 +842,16 @@ namespace OsEngine.Robots.VSA
                 if (lvl != null)
                 {
                     lvl.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                    /*
                     if (lvl != null && lvl.Count > 2)
                     {
                         return lvl[2].Value + Slipage;
-                    }
+                    }*/
                     if (lvl != null && lvl.Count > 1)
                     {
                         return lvl[1].Value + Slipage;
                     }
+                    
                     if (lvl != null && lvl.Count > 0)
                     {
                         return lvl[0].Value + Slipage;
@@ -845,6 +863,20 @@ namespace OsEngine.Robots.VSA
             return GetStop(side, price);
 
 
+        }
+        private Decimal GetStopByPattern(Side side, decimal price, string Signal)
+        {
+            if (Signal == "Signal_pattern")
+            {
+                if (
+                    (side == Side.Buy && _tab.CandlesAll[_tab.CandlesAll.Count-1].ClasterData.maxPrice<price) ||
+                    (side == Side.Sell && _tab.CandlesAll[_tab.CandlesAll.Count - 1].ClasterData.maxPrice > price)
+                    )
+                {
+                    return _tab.CandlesAll[_tab.CandlesAll.Count - 1].ClasterData.maxPrice;
+                }
+            }
+            return GetStopLevel(side, price);
         }
         private void _tab_PositionOpeningSuccesEvent(Position obj)
         {
@@ -863,7 +895,7 @@ namespace OsEngine.Robots.VSA
             {
                 OpenStepLimit(obj);
             }
-//            _tab.CloseAtProfit(obj, 3*(obj.EntryPrice - LastStop)+ obj.EntryPrice, 3 * (obj.EntryPrice - LastStop) + obj.EntryPrice);
+    //        _tab.CloseAtProfit(obj, 2*(obj.EntryPrice - LastStop)+ obj.EntryPrice, 2 * (obj.EntryPrice - LastStop) + obj.EntryPrice);
 
             //_tab.CloseAtTrailingStop(obj, LastStop, LastStop);
             if (UseSafe.ValueBool)
