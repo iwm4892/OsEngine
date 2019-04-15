@@ -744,20 +744,27 @@ namespace OsEngine.Robots.VSA
         }
         private decimal GetTrailingStopPrice(Position position)
         {
-            List<decimal> result = new List<decimal>();
-            if ((position.Direction == Side.Buy && mA.Values[mA.Values.Count - 1] < _tab.Trades[_tab.Trades.Count - 1].Price) ||
-                (position.Direction == Side.Sell && mA.Values[mA.Values.Count - 1] > _tab.Trades[_tab.Trades.Count - 1].Price)
-                )
-            result.Add(mA.Values[mA.Values.Count - 1]);
-            result.Add((position.EntryPrice + _tab.Trades[_tab.Trades.Count-1].Price) / 2);
-            result.Sort((a, b) => decimal.Compare(a, b));
-            if(position.Direction == Side.Buy)
+            if (position != null)
             {
-                return result[result.Count - 1];
+                List<decimal> result = new List<decimal>();
+                if ((position.Direction == Side.Buy && mA.Values[mA.Values.Count - 1] < _tab.Trades[_tab.Trades.Count - 1].Price) ||
+                    (position.Direction == Side.Sell && mA.Values[mA.Values.Count - 1] > _tab.Trades[_tab.Trades.Count - 1].Price)
+                    )
+                    result.Add(mA.Values[mA.Values.Count - 1]);
+                result.Add((position.EntryPrice + _tab.Trades[_tab.Trades.Count - 1].Price) / 2);
+                result.Sort((a, b) => decimal.Compare(a, b));
+                if (position.Direction == Side.Buy)
+                {
+                    return result[result.Count - 1];
+                }
+                else
+                {
+                    return result[0];
+                }
             }
             else
             {
-                return result[0];
+                return 0;
             }
         }
         /// <summary>
