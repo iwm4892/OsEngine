@@ -224,6 +224,7 @@ namespace OsEngine.Robots.VSA
             PaintLevels = CreateParameter("Отрисовывать уровни", true);
 
             Breakeven = CreateParameter("Использовать безубыток", true);
+            NeedBreakeven = Breakeven.ValueBool;
 
             DeltaSizeK = CreateParameter("Делитель основного ТФ", 6, 1, 40, 1);
 
