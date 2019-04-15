@@ -693,15 +693,22 @@ namespace OsEngine.Robots.VSA
         }
         private void LogicClosePositions(List<Candle> candles)
         {
-            List<Position> openPositions = _tab.PositionsOpenAll;
             if (CanOpenPosition())
             {
                 return;
             }
+            List<Position> openPositions = _tab.PositionsOpenAll;
 
 
             for (int i = 0; i < openPositions.Count && candles.Count > 1; i++)
             {
+                /*
+                if (openPositions[i].TimeOpen.AddHours(1) < _tab.TimeServerCurrent &&
+                    openPositions[i].ProfitPortfolioPunkt<0)
+                {
+                    _tab.CloseAllAtMarket();
+                }
+                */
                 decimal stop = GetTrailingStopPrice(openPositions[i]);
                     if(openPositions[i].EntryPrice == 0)
                     {
