@@ -282,6 +282,18 @@ namespace OsEngine.Robots.VSA
                 LastStop = GetStopLevel(_tab.PositionsLast.Direction, _tab.PositionsLast.EntryPrice);
                 _tab.CloseAtServerTrailingStop(_tab.PositionsLast, LastStop, LastStop);
             }
+            /*
+            if (_tab.PositionsLast != null && _tab.PositionsLast.OpenVolume > 0) {
+
+                if (
+                    ((obj.Price - _tab.PositionsLast.EntryPrice) / _tab.PositionsLast.EntryPrice > 0.02m && _tab.PositionsLast.Direction == Side.Buy) 
+                    || ((obj.Price - _tab.PositionsLast.EntryPrice) / _tab.PositionsLast.EntryPrice < -0.02m && _tab.PositionsLast.Direction == Side.Sell)
+                    )
+                {
+                    _tab.CloseAllAtMarket();
+                }
+            }
+            */
             if (NeedBreakeven)
             {
                 if (_tab.PositionsLast != null && _tab.PositionsLast.OpenVolume > 0)
