@@ -25,10 +25,6 @@ namespace OsEngine.Robots.VSA
         /// </summary>
         private StrategyParameterDecimal _Volume;
         /// <summary>
-        /// Индикатор кластера цен
-        /// </summary>
-        private Claster Claster;
-        /// <summary>
         /// Индикатор дельты
         /// </summary>
         private Delta delta_pattern;
@@ -92,9 +88,14 @@ namespace OsEngine.Robots.VSA
         /// коэффицент для расчета размера дельты
         /// </summary>
         private StrategyParameterInt DeltaSizeK;
-
+        /// <summary>
+        /// Средняя по объему (для расчета графика дельты)
+        /// </summary>
         private MovingAverage maVolume;
-
+        /// <summary>
+        /// Средняя по объему (для вычисления флета)
+        /// </summary>
+        private MovingAverage maVolumeSlow;
         /// <summary>
         /// Максимальный размер стопа (% от депозита)
         /// </summary>
@@ -173,11 +174,6 @@ namespace OsEngine.Robots.VSA
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
 
-            Claster = new Claster(name + "Claster", false);
-            Claster = (Claster)_tab.CreateCandleIndicator(Claster, "Prime");
-            Claster.Save();
-
-
             SessionAsia = CreateParameter("Торговать Азию", false);
             SessionEU = CreateParameter("Торговать Европу", false);
             SessionUSA = CreateParameter("Торговать Америку", false);
@@ -201,6 +197,14 @@ namespace OsEngine.Robots.VSA
             maVolume.TypeCalculationAverage = MovingAverageTypeCalculation.Exponential;
             maVolume.TypePointsToSearch = PriceTypePoints.Volume;
             maVolume.Save();
+
+            maVolumeSlow = new MovingAverage(name + "maVolumeSlow", false);
+            maVolumeSlow = (MovingAverage)_tab.CreateCandleIndicator(maVolumeSlow, "New1");
+            maVolumeSlow.ColorBase = System.Drawing.Color.Green;
+            maVolumeSlow.Lenght = 48;
+            maVolumeSlow.TypeCalculationAverage = MovingAverageTypeCalculation.Simple;
+            maVolumeSlow.TypePointsToSearch = PriceTypePoints.Volume; 
+            maVolumeSlow.Save();
 
             mA = new MovingAverage(name + "mA", false) { Lenght = 9 };
             mA = (MovingAverage)_tab.CreateCandleIndicator(mA, "Prime");
@@ -411,19 +415,15 @@ namespace OsEngine.Robots.VSA
 
                 if (lvl != null && lvl.Count > 0)
                 {
+                    List<PriceLevleLine.levlel> filter = GetFilterlvl();
                     foreach (PriceLevleLine.levlel l in lvl)
                     {
-                        if (
-                            (TradeSide == Side.Buy && l.Value != _TradeSessions.MaxSessionPrice) ||
-                            (TradeSide == Side.Sell && l.Value != _TradeSessions.MinSessionPrice)
-                            )
+                        if (filter != null && filter.Find(f => f.Value == l.Value) != null)
                         {
-                            CanFindPattern = true;
+                            continue;
                         }
+                        CanFindPattern = true;
                     }
-                    
-
-                        
                 }
             }
             if(TradeSide == Side.Buy && candles[candles.Count - 2].Close< LastSessionEndPrice)
@@ -453,6 +453,58 @@ namespace OsEngine.Robots.VSA
                 }
             }
 
+        }
+        private List<PriceLevleLine.levlel> GetFilterlvl()
+        {
+            List<PriceLevleLine.levlel> result = new List<PriceLevleLine.levlel>();
+            List<PriceLevleLine.levlel> lvls;
+            PriceLevleLine.levlel lvl;
+            if (TradeSide == Side.Buy)
+            {
+                lvl = PriceLevleLine.LevleData.Find(l => l.Value == _TradeSessions.MaxSessionPrice);
+                if (lvl != null)
+                {
+                    result.Add(lvl);
+                }
+            }
+            else
+            {
+                lvl = PriceLevleLine.LevleData.Find(l => l.Value == _TradeSessions.MinSessionPrice);
+                if (lvl != null)
+                {
+                    result.Add(lvl);
+                }
+            }
+            if(maVolume.Values[maVolume.Values.Count-1]< maVolumeSlow.Values[maVolumeSlow.Values.Count - 1])
+            {
+
+                if (TradeSide == Side.Buy)
+                {
+                    lvls = PriceLevleLine.LevleData.FindAll(l => l.Value < _TradeSessions.MaxSessionPrice && l.Value>LastSessionEndPrice);
+                    if(lvls != null && lvls.Count > 1)
+                    {
+                        lvls.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                        for( int i = 1; i < lvls.Count; i++)
+                        {
+                            result.Add(lvls[i]);
+                        }
+                    }
+                }
+                else
+                {
+                    lvls = PriceLevleLine.LevleData.FindAll(l => l.Value > _TradeSessions.MinSessionPrice && l.Value < LastSessionEndPrice);
+                    if (lvls != null && lvls.Count > 1)
+                    {
+                        lvls.Sort((a, b) => decimal.Compare(a.Value, b.Value));
+                        for (int i = 0; i < lvls.Count-1; i++)
+                        {
+                            result.Add(lvls[i]);
+                        }
+                    }
+                }
+
+            }
+            return result;
         }
         private void _tab_delta_CandleFinishedEvent(List<Candle> candles)
         {
@@ -786,45 +838,25 @@ namespace OsEngine.Robots.VSA
         /// <returns></returns>
         private Decimal GetStop(Side side, decimal price)
         {
-            // берем последние 6 свечек
-            List<decimal> maxVolumes = Claster.Values.GetRange(Claster.Values.Count - 21, 20);
-            maxVolumes.Sort((a, b) => decimal.Compare(a, b));
+            // берем последние 20 свечек
+            List<Candle> LastCandles = _tab.CandlesAll.GetRange(_tab.CandlesAll.Count - 21, 20);
+            LastCandles.Sort((a, b) => decimal.Compare(a.ClasterData.maxPrice, b.ClasterData.maxPrice));
             if (side == Side.Buy)
             {
-                List<decimal> lvl = maxVolumes.FindAll(x => x < price);
+                List<Candle> lvl = LastCandles.FindAll(x => x.ClasterData.maxPrice < price);
                 if (lvl != null && lvl.Count > 1)
                 {
-                    return lvl[lvl.Count - 2] - Slipage;
+                    return lvl[lvl.Count - 2].ClasterData.maxPrice - Slipage;
                 }
             }
             if (side == Side.Sell)
             {
-                List<decimal> lvl = maxVolumes.FindAll(x => x > price);
+                List<Candle> lvl = LastCandles.FindAll(x => x.ClasterData.maxPrice > price);
                 if (lvl != null && lvl.Count > 1)
                 {
-                    return lvl[1] + Slipage;
+                    return lvl[1].ClasterData.maxPrice + Slipage;
                 }
             }
-            /*
-            if (side == Side.Buy)
-            {
-                List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price < price);
-                lvls.Sort((a, b) => decimal.Compare(a.MaxData.Price, b.MaxData.Price));
-                if (lvls != null && lvls.Count > 1)
-                {
-                    return lvls[lvls.Count - 2].MaxData.Price;
-                }
-            }
-            if (side == Side.Sell)
-            {
-                List<ClasterData> lvls = Claster.data.FindAll(x => x.MaxData.Price > price);
-                lvls.Sort((a, b) => decimal.Compare(a.MaxData.Price, b.MaxData.Price));
-                if (lvls != null && lvls.Count > 1)
-                {
-                    return lvls[1].MaxData.Price;
-                }
-            }
-            */
             if (side == Side.Buy)
             {
                 return price - price * MaxStop.ValueDecimal / 100;
