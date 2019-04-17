@@ -312,7 +312,15 @@ namespace OsEngine.Market.Servers.BitMex
         public List<Trade> GetTickDataToSecurity(Security security, DateTime startTime, DateTime endTime, DateTime lastDate)
         {
             List<Trade> lastTrades = new List<Trade>();
-
+            //+++
+            PreSaveDataSet ds = new PreSaveDataSet("Bimex",security.Name);
+            ds.NewLogMessageEvent += SendLogMessage;
+            lastTrades = ds.LoadTrades();
+            if (lastTrades.Count > 0)
+            {
+                lastDate = lastTrades[lastTrades.Count - 1].Time;
+            }
+            //---
             while (lastDate < endTime)
             {
                 lastDate = TimeZoneInfo.ConvertTimeToUtc(lastDate);
@@ -355,7 +363,9 @@ namespace OsEngine.Market.Servers.BitMex
                 }
 
                 lastTrades.AddRange(trades);
-
+                //+++
+                ds.SaveTrades(trades);
+                //---
                 Thread.Sleep(2000);
             }
 

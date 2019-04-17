@@ -329,6 +329,7 @@
     <Compile Include="Entity\TimeFrameBuilder.cs" />
     <Compile Include="Entity\ClasterData.cs" />
     <Compile Include="Entity\Pattern.cs" />
+    <Compile Include="Entity\PreSaveDataSet.cs" />
     <Compile Include="Journal\JournalUi.xaml.cs">
       <DependentUpon>JournalUi.xaml</DependentUpon>
     </Compile>

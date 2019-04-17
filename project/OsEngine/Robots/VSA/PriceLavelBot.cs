@@ -302,7 +302,7 @@ namespace OsEngine.Robots.VSA
             {
                 if (_tab.PositionsLast != null && _tab.PositionsLast.OpenVolume > 0)
                 {
-                    LogicClosePositions(_tab.CandlesAll);
+                    CloseAtBreakeven(_tab.CandlesAll);
                     
                 }
             }
@@ -806,6 +806,48 @@ namespace OsEngine.Robots.VSA
             }
 
         }
+        private void CloseAtBreakeven(List<Candle> candles)
+        {
+            if (CanOpenPosition())
+            {
+                return;
+            }
+            List<Position> openPositions = _tab.PositionsOpenAll;
+            for (int i = 0; i < openPositions.Count && candles.Count > 1; i++)
+            {
+                decimal stop = GetTrailingStopPrice(openPositions[i]);
+                if (openPositions[i].EntryPrice == 0)
+                {
+                    continue;
+                }
+                if (openPositions[i].Direction == Side.Buy && stop < openPositions[i].EntryPrice)
+                {
+                    continue;
+                }
+                if (openPositions[i].Direction == Side.Sell && stop > openPositions[i].EntryPrice)
+                {
+                    continue;
+                }
+                bool canClose = false;
+                decimal _profit = (stop - openPositions[i].EntryPrice) * 100 / openPositions[i].EntryPrice;
+                if (openPositions[i].Direction == Side.Sell)
+                {
+                    _profit = -1 * _profit;
+                }
+                if (_profit >= 0.2m)
+                {
+                    canClose = true;
+                }
+                if (canClose)
+                {
+                    _tab.CloseAtServerTrailingStop(openPositions[i], stop, stop);
+                    NeedBreakeven = false;
+                }
+
+            }
+
+        }
+
         private decimal GetTrailingStopPrice(Position position)
         {
             if (position != null)
