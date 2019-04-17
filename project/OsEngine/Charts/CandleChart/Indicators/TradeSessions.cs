@@ -633,12 +633,15 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 {
                     ns.Values = new List<decimal>();
                 }
+                ns.Values.Add(candles[i].ClasterData.MaxData.Price);
+                /*
                 if (ns.clasterDatas.Count > 0)
                 {
                     ns.Values.Add(ns.clasterDatas[ns.clasterDatas.Count - 1].MaxData.Price);
                     ns.clasterDatas[ns.clasterDatas.Count - 1] = null;
                     ns.clasterDatas.Add(new ClasterData());
                 }
+                */
             }
             foreach (var ts in Sessions)
             {
@@ -648,16 +651,19 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
                 if (date >= testDateOpen && date < testDateClose)
                 {
+                    /*
                     if (ts.clasterDatas.Count == 0)
                     {
                         ts.clasterDatas.Add(new ClasterData());
                     }
+                    */
                     if (ts.Values.Count == 0)
                     {
                         ts.Values.Add(0);
                     }
-                    ts.clasterDatas[ts.clasterDatas.Count - 1].update(candles[i].Trades);
-                    ts.Values[ts.Values.Count - 1] = ts.clasterDatas[ts.clasterDatas.Count - 1].MaxData.Price;
+                 //   ts.clasterDatas[ts.clasterDatas.Count - 1].update(candles[i].Trades);
+                 //   ts.Values[ts.Values.Count - 1] = ts.clasterDatas[ts.clasterDatas.Count - 1].MaxData.Price;
+                    ts.Values[ts.Values.Count - 1] = candles[i].ClasterData.MaxData.Price;
                 }
             }
         }

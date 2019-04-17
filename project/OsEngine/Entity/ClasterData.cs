@@ -88,7 +88,7 @@ namespace OsEngine.Entity
             
             for(int i= _lastTradeIndex;i < trades.Count; i++)
             {
-                add(trades[i]);
+                addTrade(trades[i]);
             }
             
             /*
@@ -101,6 +101,14 @@ namespace OsEngine.Entity
             _lastTradeIndex = trades.Count;
             
         }
+        public void addTrades(List<Trade> trades)
+        {
+            foreach(Trade trade in trades)
+            {
+                addTrade(trade);
+            }
+            _lastTradeIndex = _lastTradeIndex + trades.Count;
+        }
 
         /// <summary>
         /// данные объемов по ценам свечи
@@ -110,7 +118,7 @@ namespace OsEngine.Entity
         /// <summary>
         /// Добавление данных в колекцию
         /// </summary>
-        public void add(Trade trade)
+        public void addTrade(Trade trade)
         {
             /*
             lock (locker)
