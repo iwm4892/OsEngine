@@ -459,6 +459,7 @@ namespace OsEngine.Robots.VSA
             List<PriceLevleLine.levlel> result = new List<PriceLevleLine.levlel>();
             List<PriceLevleLine.levlel> lvls;
             PriceLevleLine.levlel lvl;
+            
             if (TradeSide == Side.Buy)
             {
                 lvl = PriceLevleLine.LevleData.Find(l => l.Value == _TradeSessions.MaxSessionPrice);
@@ -475,7 +476,8 @@ namespace OsEngine.Robots.VSA
                     result.Add(lvl);
                 }
             }
-            if(maVolume.Values[maVolume.Values.Count-1]< maVolumeSlow.Values[maVolumeSlow.Values.Count - 1])
+            
+            if(isFlat())
             {
 
                 if (TradeSide == Side.Buy)
@@ -503,6 +505,17 @@ namespace OsEngine.Robots.VSA
                     }
                 }
 
+            }
+            
+            
+            return result;
+        }
+        private bool isFlat()
+        {
+            bool result = false;
+            if (maVolume!=null && maVolume.Values.Count>0 && maVolumeSlow != null && maVolumeSlow.Values.Count > 0)
+            {
+                result = maVolume.Values[maVolume.Values.Count - 1] < maVolumeSlow.Values[maVolumeSlow.Values.Count - 1];
             }
             return result;
         }
@@ -1008,22 +1021,11 @@ namespace OsEngine.Robots.VSA
                     vol = (int)vol;
                 }
                 _tab.CloseAtLimit(obj, fixPOs, vol);
-                /*
-                if (obj.Direction == Side.Buy)
-                {
-                    _tab.SellAtAcebergToPosition(obj, fixPOs, vol, 1);    
-                }
-                else
-                {
-                    _tab.BuyAtAcebergToPosition(obj, fixPOs, vol, 1);
-                }
-                */
             }
             if (Breakeven.ValueBool)
             {
                 NeedBreakeven = true;
             }
-            
         }
         private void OpenAtLevel()
         {
