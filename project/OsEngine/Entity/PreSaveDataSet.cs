@@ -92,14 +92,15 @@ namespace OsEngine.Entity
                             while (!reader.EndOfStream)
                             {
                                 str = reader.ReadLine();
-                            }
-                            if (str != "")
-                            {
-                                Trade trade = new Trade();
-                                trade.SetTradeFromString(str);
-                                tradeSaveInfo.LastSaveObjectTime = trade.Time;
-                                tradeSaveInfo.LastTradeId = trade.Id;
-                                result.Add(trade);
+                                if (str != "")
+                                {
+                                    Trade trade = new Trade();
+                                    trade.SetTradeFromString(str);
+                                    trade.SecurityNameCode = SecurityName;
+                                    tradeSaveInfo.LastSaveObjectTime = trade.Time;
+                                    tradeSaveInfo.LastTradeId = trade.Id;
+                                    result.Add(trade);
+                                }
                             }
 
                         }
