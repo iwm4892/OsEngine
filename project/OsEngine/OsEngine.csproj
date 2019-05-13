@@ -297,6 +297,10 @@
     <Compile Include="Charts\CandleChart\Indicators\VolumeUi.xaml.cs">
       <DependentUpon>VolumeUi.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Charts\CandleChart\Indicators\VWAP.cs" />
+    <Compile Include="Charts\CandleChart\Indicators\VwapUi.xaml.cs">
+      <DependentUpon>VwapUi.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Charts\CandleChart\Indicators\WilliamsRange.cs" />
     <Compile Include="Charts\CandleChart\Indicators\WilliamsRangeUi.xaml.cs">
       <DependentUpon>WilliamsRangeUi.xaml</DependentUpon>
@@ -367,6 +371,7 @@
     <Compile Include="Market\Servers\Binance\BinanceEntity\ErrorMessage.cs" />
     <Compile Include="Market\Servers\Binance\BinanceEntity\ExecutionReport.cs" />
     <Compile Include="Market\Servers\Binance\BinanceEntity\HistoryOrderReport.cs" />
+    <Compile Include="Market\Servers\Binance\BinanceEntity\HistoryTrade.cs" />
     <Compile Include="Market\Servers\Binance\BinanceEntity\ListenKey.cs" />
     <Compile Include="Market\Servers\Binance\BinanceEntity\OutboundAccountInfo.cs" />
     <Compile Include="Market\Servers\Binance\BinanceEntity\SecurityResponce.cs" />
@@ -381,6 +386,9 @@
     <Compile Include="Market\Servers\Bitfinex\BitfitnexEntity\JsonConverter.cs" />
     <Compile Include="Market\Servers\Bitfinex\BitfitnexEntity\NewOrderPayload.cs" />
     <Compile Include="Market\Servers\Bitfinex\BitfitnexEntity\SubscriptionInformation.cs" />
+    <Compile Include="Market\Servers\BitMax\BitMaxClient.cs" />
+    <Compile Include="Market\Servers\BitMax\BitMaxEntity.cs" />
+    <Compile Include="Market\Servers\BitMax\BitMaxServer.cs" />
     <Compile Include="Market\Servers\BitMex\BitMexClient.cs" />
     <Compile Include="Market\Servers\BitMex\BitMexEntity\BitMexMyOrders.cs" />
     <Compile Include="Market\Servers\BitMex\BitMexEntity\BitMexOrder.cs" />
@@ -514,6 +522,7 @@
     <Compile Include="Market\Servers\Transaq\TransaqClient.cs" />
     <Compile Include="Market\Servers\Transaq\TransaqEntity\TransaqEntities.cs" />
     <Compile Include="Market\Servers\Transaq\TransaqEntity\TransaqPortfolio.cs" />
+    <Compile Include="Market\Servers\Transaq\TransaqEntity\TransaqPositions.cs" />
     <Compile Include="Market\Servers\Transaq\TransaqServer.cs" />
     <Compile Include="OsMiner\OsMinerMaster.cs" />
     <Compile Include="OsMiner\OsMinerSet.cs" />
@@ -588,6 +597,7 @@
     <Compile Include="Robots\BotFactory.cs" />
     <Compile Include="Robots\CounterTrend\ClusterCountertrend.cs" />
     <Compile Include="Robots\High Frequency\HighFrequencyTrader.cs" />
+    <Compile Include="Robots\Trend\EnvelopTrend.cs" />
     <Compile Include="Robots\Trend\MomentumMacd.cs" />
     <Compile Include="Robots\MarketMaker\PairTraderSpreadSma.cs" />
     <Compile Include="Robots\Trend\ParabolicSarTrade.cs" />
@@ -888,6 +898,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Charts\CandleChart\Indicators\VolumeUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Charts\CandleChart\Indicators\VwapUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

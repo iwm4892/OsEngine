@@ -29,6 +29,7 @@ namespace OsEngine.Robots
             result.Add("PatternTrader");
             result.Add("HighFrequencyTrader");
             result.Add("Bollinger");
+            result.Add("EnvelopTrend");
             result.Add("Williams Band");
             result.Add("TwoLegArbitrage");
             result.Add("ThreeSoldier");
@@ -55,7 +56,11 @@ namespace OsEngine.Robots
         {
             BotPanel bot = null;
             // примеры и бесплатные боты
-
+            
+            if (nameClass == "EnvelopTrend")
+            {
+                bot = new EnvelopTrend(name, startProgram);
+            }
             if (nameClass == "ClusterCountertrend")
             {
                 bot = new ClusterCountertrend(name, startProgram);
