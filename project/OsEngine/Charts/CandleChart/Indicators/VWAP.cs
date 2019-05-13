@@ -325,6 +325,8 @@ namespace OsEngine.Charts.CandleChart.Indicators
             }
         }
 
+        public List<Color> ColorSeries => throw new NotImplementedException();
+
         public List<decimal> VwapDate;
         public List<List<decimal>> DateDeviationsValues;
 
