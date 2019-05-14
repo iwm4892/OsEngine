@@ -100,7 +100,7 @@ namespace OsEngine.Robots.Trend
 
                 decimal orderPrice = activationPrice - _tab.Securiti.PriceStep * Slippage.ValueInt;
 
-                _tab.CloseAtTrailingStop(position,
+                _tab.CloseAtServerTrailingStop(position,
                     activationPrice, orderPrice);
             }
             if (position.Direction == Side.Sell)
@@ -110,7 +110,7 @@ namespace OsEngine.Robots.Trend
 
                 decimal orderPrice = activationPrice + _tab.Securiti.PriceStep * Slippage.ValueInt;
 
-                _tab.CloseAtTrailingStop(position,
+                _tab.CloseAtServerTrailingStop(position,
                     activationPrice, orderPrice);
             }
 
@@ -155,7 +155,7 @@ namespace OsEngine.Robots.Trend
 
                     decimal orderPrice = activationPrice - _tab.Securiti.PriceStep * Slippage.ValueInt;
 
-                    _tab.CloseAtTrailingStop(positions[0],
+                    _tab.CloseAtServerTrailingStop(positions[0],
                         activationPrice, orderPrice);
                 }
                 if (positions[0].Direction == Side.Sell)
@@ -165,7 +165,7 @@ namespace OsEngine.Robots.Trend
 
                     decimal orderPrice = activationPrice + _tab.Securiti.PriceStep * Slippage.ValueInt;
 
-                    _tab.CloseAtTrailingStop(positions[0],
+                    _tab.CloseAtServerTrailingStop(positions[0],
                         activationPrice, orderPrice);
                 }
             }
