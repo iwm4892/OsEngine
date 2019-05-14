@@ -3954,7 +3954,10 @@ namespace OsEngine.OsTrader.Panels.Tab
                 }
                 else
                 {
-                    CloseDeal(position, OrderPriceType.Market, Trades[Trades.Count - 1].Price, _manualControl.SecondToClose, true);
+                    if (position.State != PositionStateType.Closing)
+                    {
+                        CloseDeal(position, OrderPriceType.Market, Trades[Trades.Count - 1].Price, _manualControl.SecondToClose, true);
+                    }
                 }
 
                 _chartMaster.SetPosition(_journal.AllPosition);

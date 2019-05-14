@@ -1413,8 +1413,8 @@ namespace OsEngine.Market.Servers.BitMex
                                 param["price"] = order.Price.ToString().Replace(",", ".");
                             }
 
-                                //param["orderIDs"] = order.NumberUser.ToString();
-                            
+                            //param["orderIDs"] = order.NumberUser.ToString();
+                            order.Volume = (int)order.Volume;
                             param["origClOrdID"] = order.NumberUser.ToString();
                             param["clOrdID"] = order.NumberUser.ToString();
                             param["origClOrdID"] = order.NumberUser.ToString();
