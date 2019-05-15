@@ -22,6 +22,7 @@ namespace OsEngine.Entity
         {
             OrderCreateBarNumber = thisBarNumber;
             ExpiresBars = expiresBars;
+            orderPriceType = OrderPriceType.Limit;
         }
 
 
@@ -79,6 +80,11 @@ namespace OsEngine.Entity
             get { return _orderCreateBarNumber; }
             set { _orderCreateBarNumber = value; }
         }
+
+        /// <summary>
+        /// Тип ордера
+        /// </summary>
+        public OrderPriceType orderPriceType;
 
 
     }

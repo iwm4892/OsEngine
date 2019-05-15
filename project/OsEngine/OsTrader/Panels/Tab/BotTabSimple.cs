@@ -1306,6 +1306,35 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             BuyAtStop(volume, priceLimit, priceRedLine, activateType, 1);
         }
+        /// <summary>
+        /// enter position Long at price intersection / 
+        /// купить по пересечению цены
+        /// </summary>
+        /// <param name="volume">volume / объём</param>
+        /// <param name="priceLimit">order price / цена ордера</param>
+        /// <param name="priceRedLine">line price / цена линии, после достижения которой будет выставлен ордер на покупку</param>
+        /// <param name="activateType">activation type / тип активации ордера</param>
+        /// /// <param name="expiresBars">life time in candels count / время жизни ордера в барах</param>
+        public void BuyAtStopMarket(decimal volume, decimal priceLimit, decimal priceRedLine, StopActivateType activateType, int expiresBars)
+        {
+            try
+            {
+                PositionOpenerToStop positionOpener = new PositionOpenerToStop(CandlesFinishedOnly.Count, expiresBars);
+                positionOpener.Volume = volume;
+                positionOpener.PriceOrder = priceLimit;
+                positionOpener.PriceRedLine = priceRedLine;
+                positionOpener.ActivateType = activateType;
+                positionOpener.Side = Side.Buy;
+                positionOpener.orderPriceType = OrderPriceType.Market;
+
+                _stopsOpener.Add(positionOpener);
+            }
+            catch (Exception error)
+            {
+                SetNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+
+        }
 
         /// <summary>
         /// add new order to Long position at limit
@@ -1734,6 +1763,34 @@ namespace OsEngine.OsTrader.Panels.Tab
         public void SellAtStop(decimal volume, decimal priceLimit, decimal priceRedLine, StopActivateType activateType)
         {
             SellAtStop(volume, priceLimit, priceRedLine, activateType, 1);
+        }
+        /// <summary>
+        /// enter position Short at price intersection / 
+        /// продать по пересечению цены
+        /// </summary>
+        /// <param name="volume">volume / объём</param>
+        /// <param name="priceLimit">order price / цена ордера</param>
+        /// <param name="priceRedLine">line price / цена линии, после достижения которой будет выставлен ордер на продажу</param>
+        /// <param name="activateType">activation type /тип активации ордера</param>
+        /// <param name="expiresBars">life time in candels count / через сколько свечей заявка будет снята</param>
+        public void SellAtStopMarket(decimal volume, decimal priceLimit, decimal priceRedLine, StopActivateType activateType, int expiresBars)
+        {
+            try
+            {
+                PositionOpenerToStop positionOpener = new PositionOpenerToStop(CandlesFinishedOnly.Count, expiresBars);
+                positionOpener.Volume = volume;
+                positionOpener.PriceOrder = priceLimit;
+                positionOpener.PriceRedLine = priceRedLine;
+                positionOpener.ActivateType = activateType;
+                positionOpener.Side = Side.Sell;
+                positionOpener.orderPriceType = OrderPriceType.Market;
+
+                _stopsOpener.Add(positionOpener);
+            }
+            catch (Exception error)
+            {
+                SetNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
         }
 
         /// <summary>
@@ -3277,7 +3334,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                         if (_stopsOpener[i].Side == Side.Buy)
                         {
                             PositionOpenerToStop opener = _stopsOpener[i];
-                            LongCreate(_stopsOpener[i].PriceOrder, _stopsOpener[i].Volume, OrderPriceType.Limit,
+                            LongCreate(_stopsOpener[i].PriceOrder, _stopsOpener[i].Volume, _stopsOpener[i].orderPriceType,
                                 _manualControl.SecondToOpen, true);
                             _stopsOpener.Remove(opener);
                             i--;
@@ -3286,7 +3343,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                         else if (_stopsOpener[i].Side == Side.Sell)
                         {
                             PositionOpenerToStop opener = _stopsOpener[i];
-                            ShortCreate(_stopsOpener[i].PriceOrder, _stopsOpener[i].Volume, OrderPriceType.Limit,
+                            ShortCreate(_stopsOpener[i].PriceOrder, _stopsOpener[i].Volume, _stopsOpener[i].orderPriceType,
                                 _manualControl.SecondToOpen, true);
                             _stopsOpener.Remove(opener);
                             i--;

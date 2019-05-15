@@ -148,13 +148,13 @@ namespace OsEngine.Robots.Trend
                 if (_tab.PositionOpenerToStopsAll.Count == 0 || _tab.PositionOpenerToStopsAll == null)
                 {
                     // open logic
-                    _tab.BuyAtStop(Volume.ValueDecimal,
+                    _tab.BuyAtStopMarket(Volume.ValueDecimal,
                         _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] +
                         Slippage.ValueInt * _tab.Securiti.PriceStep,
                         _envelop.ValuesUp[_envelop.ValuesUp.Count - 1],
                         StopActivateType.HigherOrEqual, 1);
 
-                    _tab.SellAtStop(Volume.ValueDecimal,
+                    _tab.SellAtStopMarket(Volume.ValueDecimal,
                          _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] -
                          Slippage.ValueInt * _tab.Securiti.PriceStep,
                         _envelop.ValuesDown[_envelop.ValuesDown.Count - 1],
@@ -168,7 +168,9 @@ namespace OsEngine.Robots.Trend
                 {
                     return;
                 }
-
+                decimal pr = (positions[0].EntryPrice + candles[candles.Count - 1].Close) / 2;
+                _tab.CloseAtServerTrailingStop(positions[0], pr, pr);
+                /*
                 if(positions[0].Direction == Side.Buy)
                 {
                     decimal activationPrice = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] -
@@ -189,6 +191,7 @@ namespace OsEngine.Robots.Trend
                     _tab.CloseAtServerTrailingStop(positions[0],
                         activationPrice, orderPrice);
                 }
+                */
             }
         }
 
