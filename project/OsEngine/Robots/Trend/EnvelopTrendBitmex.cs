@@ -118,8 +118,8 @@ namespace OsEngine.Robots.Trend
         }
         private bool ValidateParams()
         {
-            
-            if(Regime.ToString() == "Off")
+
+            if (Regime.ValueString == "Off")
             {
                 return false;
             }
