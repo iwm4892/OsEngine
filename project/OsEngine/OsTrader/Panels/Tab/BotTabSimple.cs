@@ -3267,7 +3267,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                             continue;
                         }
                     }
-
+                    
                     if ((_stopsOpener[i].ActivateType == StopActivateType.HigherOrEqual &&
                          price >= _stopsOpener[i].PriceRedLine)
                         ||
@@ -3978,11 +3978,11 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// <returns></returns>        
         private bool CheckNewServerStop(Position position,decimal StopPrice)
         {
-            if (position.Direction == Side.Buy && StopPrice > Trades[Trades.Count - 1].Price)
+            if (position.Direction == Side.Buy && StopPrice > Trades[Trades.Count - 1].Price && position.StopOrderPrice < Trades[Trades.Count - 1].Price)
             {
                 return false;
             }
-            if (position.Direction == Side.Sell && StopPrice < Trades[Trades.Count - 1].Price)
+            if (position.Direction == Side.Sell && StopPrice < Trades[Trades.Count - 1].Price && position.StopOrderPrice > Trades[Trades.Count - 1].Price)
             {
                 return false;
             }

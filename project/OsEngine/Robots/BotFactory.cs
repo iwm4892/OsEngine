@@ -44,7 +44,7 @@ namespace OsEngine.Robots
             result.Add("PinBarTrade");
             //+++
             result.Add("PriceLavelBot");
-
+            result.Add("EnvelopTrendBitmex");
             return result;
         }
 
@@ -129,6 +129,10 @@ namespace OsEngine.Robots
             if (nameClass == "PriceLavelBot")
             {
                 bot = new PriceLavelBot(name, startProgram);
+            }
+            if (nameClass == "EnvelopTrendBitmex")
+            {
+                bot = new EnvelopTrendBitmex(name, startProgram);
             }
 
 
