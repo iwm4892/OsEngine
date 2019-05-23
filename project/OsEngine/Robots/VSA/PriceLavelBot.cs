@@ -525,6 +525,8 @@ namespace OsEngine.Robots.VSA
             {
                 return;
             }
+            //CloseByPattern(candles);
+
             List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
             indicators.Add(delta_delta);
             indicators.Add(Volume_delta);
@@ -818,6 +820,72 @@ namespace OsEngine.Robots.VSA
 
             }
 
+        }
+        private void CloseByPattern(List<Candle> candles)
+        {
+
+            List<Position> positions = _tab.PositionsOpenAll;
+            if (_tab.PositionsLast != null && _tab.PositionsLast.State == PositionStateType.Open)
+            {
+                List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
+                indicators.Add(delta_delta);
+                indicators.Add(Volume_delta);
+                List<string> patterns = new List<string>();
+                patterns.Add("Signal_pattern"); //сигналка
+
+                // Закрытие в случае конт паттерна
+                List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
+                if (signal.Count > 0 && signal[0].isPattern)
+                {
+                    if (signal.Count != 0 && signal[0].isPattern)
+                    {
+                        if (signal[0].Side != _tab.PositionsLast.Direction && CanCloseByPattern(candles))
+                        {
+                            _tab.SetNewLogMessage("Закрытие по патерну " + signal[0].GetType().Name, LogMessageType.Signal);
+                            _tab.CloseAtServerTrailingStop(_tab.PositionsLast, candles[candles.Count - 1].Close, candles[candles.Count - 1].Close);
+                        }
+                    }
+                }
+
+            }
+        }
+        private bool CanCloseByPattern(List<Candle> candles)
+        {
+            List<Position> openPositions = _tab.PositionsOpenAll;
+
+
+            for (int i = 0; i < openPositions.Count && candles.Count > 1; i++)
+            {
+                decimal stop = candles[candles.Count - 1].Close;
+                if (openPositions[i].EntryPrice == 0)
+                {
+                    continue;
+                }
+                if (openPositions[i].Direction == Side.Buy && stop < openPositions[i].EntryPrice)
+                {
+                    continue;
+                }
+                if (openPositions[i].Direction == Side.Sell && stop > openPositions[i].EntryPrice)
+                {
+                    continue;
+                }
+                bool canClose = false;
+                decimal _profit = (stop - openPositions[i].EntryPrice) * 100 / openPositions[i].EntryPrice;
+                if (openPositions[i].Direction == Side.Sell)
+                {
+                    _profit = -1 * _profit;
+                }
+                if (_profit >= MinProfitTraling.ValueDecimal)
+                {
+                    canClose = true;
+                }
+                if (canClose)
+                {
+                    return true;
+                }
+
+            }
+            return false;
         }
         private void CloseAtBreakeven(List<Candle> candles)
         {

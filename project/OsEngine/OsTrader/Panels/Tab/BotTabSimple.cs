@@ -3945,7 +3945,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         public void CloseAtServerTrailingStop(Position position, decimal priceActivation, decimal priceOrder)
         {
 
-            if (StartProgram == StartProgram.IsTester)
+            if (StartProgram == StartProgram.IsTester || StartProgram == StartProgram.IsOsOptimizer)
             {
                 CloseAtTrailingStop(position, priceActivation, priceOrder);
                 return;
