@@ -1779,6 +1779,13 @@ namespace OsEngine.Market.Servers.Tester
                             break;
                         }
                     }
+                    if (order.State != OrderStateType.Done)
+                    {
+                        if (CheckOrdersInCandleTest(order, security.LastCandle))
+                        {
+                            i--;
+                        }
+                    }
                 }
                 else if(security.DataType == SecurityTesterDataType.Candle)
                 { // test with using candles / прогон на свечках
@@ -1828,7 +1835,25 @@ namespace OsEngine.Market.Servers.Tester
                 //CanselOnBoardOrder(order);
                 return false;
             }
-
+            /*
+            //++
+            if (lastCandle.Trades !=null && lastCandle.Trades.Count > 1)
+            {
+                bool CheckCandle = true;
+                for (int i = lastCandle.Trades.Count-1;i>=0;i--)
+                {
+                    if(lastCandle.Trades[i].Time> order.TimeCallBack)
+                    {
+                        CheckCandle = false;
+                    }
+                }
+                if (CheckCandle)
+                {
+                    return false;
+                }
+            }
+            //--
+            */
             // check whether the order passed / проверяем, прошёл ли ордер
             if (order.Side == Side.Buy)
             {

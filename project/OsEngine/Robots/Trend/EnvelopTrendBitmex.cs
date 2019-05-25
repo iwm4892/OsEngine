@@ -32,18 +32,25 @@ namespace OsEngine.Robots.Trend
             _envelop = (Envelops)_tab.CreateCandleIndicator(_envelop, "Prime");
             _envelop.Save();
 
+            this.ParametrsChangeByUser += EnvelopTrendBitmex_ParametrsChangeByUser;
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On" });
             Slippage = CreateParameter("Slippage", 0, 0, 20, 1);
             Volume= CreateParameter("Volume", 0.1m, 0.1m, 50, 0.1m);
-            EnvelopDeviation = CreateParameter("Envelop Deviation", 0.3m, 0.3m, 4, 0.3m);
+            EnvelopDeviation = CreateParameter("Envelop Deviation", 0.3m, 0.3m, 4, 0.1m);
             EnvelopMovingLength = CreateParameter("Envelop Moving Length", 10, 10, 200, 5);
-            TrailStop = CreateParameter("Trail Stop", 0.1m, 0.1m, 5, 0.1m);
+            TrailStop = CreateParameter("Trail Stop", 0.1m, 0m, 5, 0.1m);
             MinProfitTraling = CreateParameter("Минимальный профит для трэйлинга", 0.2m, 0.2m, 2, 0.1m);
             leverage = CreateParameter("Маржинальное плечо", 1, 1, 10, 1);
             MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
             isContract = CreateParameter("Торгуем контрактами", false);
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
+            _envelop.Deviation = EnvelopDeviation.ValueDecimal;
+            _envelop.MovingAverage.Lenght = EnvelopMovingLength.ValueInt;
+        }
+
+        private void EnvelopTrendBitmex_ParametrsChangeByUser()
+        {
             _envelop.Deviation = EnvelopDeviation.ValueDecimal;
             _envelop.MovingAverage.Lenght = EnvelopMovingLength.ValueInt;
         }
@@ -117,6 +124,9 @@ namespace OsEngine.Robots.Trend
 
         private Envelops _envelop;
 
+        private int CandleCount;
+
+        private bool CanTrade;
         // trade logic
 
         private void _tab_PositionOpeningSuccesEvent(Position position)
@@ -125,13 +135,14 @@ namespace OsEngine.Robots.Trend
             _tab.SellAtStopCanсel();
 
             decimal activationPrice = GetTrailingStopPrice(position.Direction, position.EntryPrice,true);
-
+            _tab.CloseAtServerTrailingStop(position, activationPrice, activationPrice);
+            /*
             if (position.Direction == Side.Buy)
             {
-                /*
+                
                 decimal activationPrice = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] -
                     _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] * (TrailStop.ValueDecimal / 100);
-                */
+                
                
                 decimal orderPrice = activationPrice - _tab.Securiti.PriceStep * Slippage.ValueInt;
 
@@ -140,16 +151,16 @@ namespace OsEngine.Robots.Trend
             }
             if (position.Direction == Side.Sell)
             {
-                /*
+                
                 decimal activationPrice = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] +
                     _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] * (TrailStop.ValueDecimal / 100);
-                */
+                
                 decimal orderPrice = activationPrice + _tab.Securiti.PriceStep * Slippage.ValueInt;
 
                 _tab.CloseAtServerTrailingStop(position,
                     activationPrice, orderPrice);
             }
-
+            */
 
         }
         private bool ValidateParams()
@@ -167,6 +178,9 @@ namespace OsEngine.Robots.Trend
         }
         private void _tab_CandleFinishedEvent(List<Candle> candles)
         {
+            _tab.BuyAtStopCanсel();
+            _tab.SellAtStopCanсel();
+
             if (!ValidateParams())
             {
                 return;
@@ -183,7 +197,7 @@ namespace OsEngine.Robots.Trend
             {
                 if (_tab.PositionOpenerToStopsAll.Count == 0 || _tab.PositionOpenerToStopsAll == null)
                 {
-                    OpenPosition();
+                    OpenPosition(candles);
                     // open logic
                 }
             }
@@ -194,9 +208,9 @@ namespace OsEngine.Robots.Trend
                 {
                     return;
                 }
-                decimal pr = GetTrailingStopPrice(positions[0].Direction, positions[0].EntryPrice,false);
-                    decimal stop = candles[candles.Count - 1].Close;
-                    if (positions[0].EntryPrice == 0)
+
+                decimal stop = GetTrailingStopPrice(positions[0].Direction, positions[0].EntryPrice, false);
+                if (positions[0].EntryPrice == 0)
                     {
                         return;
                     }
@@ -220,40 +234,20 @@ namespace OsEngine.Robots.Trend
                     }
                     if (canClose)
                     {
-                    _tab.CloseAtServerTrailingStop(positions[0], pr, pr);
+                    _tab.CloseAtServerTrailingStop(positions[0], stop, stop);
                     }
-
-
-                /*
-                if(positions[0].Direction == Side.Buy)
-                {
-                    decimal activationPrice = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] -
-                        _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] * (TrailStop.ValueDecimal / 100);
-
-                    decimal orderPrice = activationPrice - _tab.Securiti.PriceStep * Slippage.ValueInt;
-
-                    _tab.CloseAtServerTrailingStop(positions[0],
-                        activationPrice, orderPrice);
-                }
-                if (positions[0].Direction == Side.Sell)
-                {
-                    decimal activationPrice = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] +
-                        _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] * (TrailStop.ValueDecimal / 100);
-
-                    decimal orderPrice = activationPrice + _tab.Securiti.PriceStep * Slippage.ValueInt;
-
-                    _tab.CloseAtServerTrailingStop(positions[0],
-                        activationPrice, orderPrice);
-                }
-                */
             }
+
+        //    System.Threading.Thread.Sleep(500);
+
         }
-        private void OpenPosition()
+        private void OpenPosition(List<Candle> candles)
         {
+
             decimal _Vol;
             decimal LastStop = 0;
             decimal price = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] + Slippage.ValueInt * _tab.Securiti.PriceStep;
-
+               
             LastStop = GetTrailingStopPrice(Side.Buy, price,true);
             if (LastStop == 0 || price==0)
             {
@@ -360,13 +354,13 @@ namespace OsEngine.Robots.Trend
             {
                 if (side == Side.Buy)
                 {
-                    activationPrice = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] -
+                    activationPrice = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] +
                        _envelop.ValuesUp[_envelop.ValuesDown.Count - 1] * (TrailStop.ValueDecimal / 100);
 
                 }
                 if (side == Side.Sell)
                 {
-                    activationPrice = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] +
+                    activationPrice = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] -
                        _envelop.ValuesDown[_envelop.ValuesUp.Count - 1] * (TrailStop.ValueDecimal / 100);
                 }
             }

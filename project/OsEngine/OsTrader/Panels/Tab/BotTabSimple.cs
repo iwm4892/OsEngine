@@ -3006,7 +3006,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                         position.ProfitOrderIsActiv = false;
                         position.StopOrderIsActiv = false;
 
-                        CloseDeal(position, OrderPriceType.Limit, position.StopOrderPrice, _manualControl.SecondToClose, true);
+                        CloseDeal(position, OrderPriceType.Market, position.StopOrderPrice, _manualControl.SecondToClose, true);
                         return true;
                     }
 
@@ -3015,7 +3015,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                     {
                         position.StopOrderIsActiv = false;
                         position.ProfitOrderIsActiv = false;
-                        CloseDeal(position, OrderPriceType.Limit, position.StopOrderPrice, _manualControl.SecondToClose, true);
+                        CloseDeal(position, OrderPriceType.Market, position.StopOrderPrice, _manualControl.SecondToClose, true);
                         return true;
                     }
                 }
