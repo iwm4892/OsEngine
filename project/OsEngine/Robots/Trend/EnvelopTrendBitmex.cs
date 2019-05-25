@@ -45,19 +45,31 @@ namespace OsEngine.Robots.Trend
             isContract = CreateParameter("Торгуем контрактами", false);
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
+            TralingStopMA = new MovingAverage(name + "TralingStopMA", false) { ColorBase= System.Drawing.Color.Yellow };
+            TralingStopMA = (MovingAverage)_tab.CreateCandleIndicator(TralingStopMA, "Prime");
+            TralingStopMA.Lenght = (int)(EnvelopMovingLength.ValueInt / 5m);
+            TralingStopMA.Save();
+
             _envelop.Deviation = EnvelopDeviation.ValueDecimal;
             _envelop.MovingAverage.Lenght = EnvelopMovingLength.ValueInt;
+
+            CanTrade = false;
         }
 
         private void EnvelopTrendBitmex_ParametrsChangeByUser()
         {
             _envelop.Deviation = EnvelopDeviation.ValueDecimal;
             _envelop.MovingAverage.Lenght = EnvelopMovingLength.ValueInt;
+            _envelop.Save();
+
+            TralingStopMA.Lenght = (int)(EnvelopMovingLength.ValueInt /5);
+            TralingStopMA.Save();
+
         }
 
         private void _tab_PositionClosingSuccesEvent(Position obj)
         {
-            //_tab.Portfolio
+            CanTrade = false;
         }
 
         // public settings / настройки публичные
@@ -127,6 +139,8 @@ namespace OsEngine.Robots.Trend
         private int CandleCount;
 
         private bool CanTrade;
+
+        private MovingAverage TralingStopMA;
         // trade logic
 
         private void _tab_PositionOpeningSuccesEvent(Position position)
@@ -136,14 +150,15 @@ namespace OsEngine.Robots.Trend
 
             decimal activationPrice = GetTrailingStopPrice(position.Direction, position.EntryPrice,true);
             _tab.CloseAtServerTrailingStop(position, activationPrice, activationPrice);
+
             /*
             if (position.Direction == Side.Buy)
             {
-                
+
                 decimal activationPrice = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] -
                     _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] * (TrailStop.ValueDecimal / 100);
-                
-               
+
+
                 decimal orderPrice = activationPrice - _tab.Securiti.PriceStep * Slippage.ValueInt;
 
                 _tab.CloseAtServerTrailingStop(position,
@@ -151,10 +166,10 @@ namespace OsEngine.Robots.Trend
             }
             if (position.Direction == Side.Sell)
             {
-                
+
                 decimal activationPrice = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] +
                     _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] * (TrailStop.ValueDecimal / 100);
-                
+
                 decimal orderPrice = activationPrice + _tab.Securiti.PriceStep * Slippage.ValueInt;
 
                 _tab.CloseAtServerTrailingStop(position,
@@ -174,6 +189,15 @@ namespace OsEngine.Robots.Trend
             {
                 return false;
             }
+
+            if(_tab.CandlesAll[_tab.CandlesAll.Count-1].Low > _envelop.ValuesDown[_envelop.ValuesDown.Count - 1]
+                &&
+                _tab.CandlesAll[_tab.CandlesAll.Count - 1].High < _envelop.ValuesUp[_envelop.ValuesUp.Count - 1])
+            {
+                CanTrade = true;
+            }
+            return CanTrade;
+
             return true;
         }
         private void _tab_CandleFinishedEvent(List<Candle> candles)
@@ -181,19 +205,14 @@ namespace OsEngine.Robots.Trend
             _tab.BuyAtStopCanсel();
             _tab.SellAtStopCanсel();
 
-            if (!ValidateParams())
-            {
-                return;
-            }
-
             List<Position> positions = _tab.PositionsOpenAll;
             if(_tab.PositionsLast !=null && _tab.PositionsLast.State == PositionStateType.Opening)
             {
                 _tab.CloseAllOrderInSystem();
 
-            //    _tab.GetJournal().DeletePosition(_tab.PositionsLast);
             }
-            if(positions.Count == 0)
+
+            if (positions.Count == 0)
             {
                 if (_tab.PositionOpenerToStopsAll.Count == 0 || _tab.PositionOpenerToStopsAll == null)
                 {
@@ -204,45 +223,69 @@ namespace OsEngine.Robots.Trend
             else
             { // trail stop logic
 
+                decimal stop = GetTrailingStopPrice(positions[0].Direction, positions[0].EntryPrice, false);
+
+                _tab.CloseAtServerTrailingStop(positions[0], stop, stop);
+                /*   
                 if(positions[0].State != PositionStateType.Open)
                 {
                     return;
                 }
 
                 decimal stop = GetTrailingStopPrice(positions[0].Direction, positions[0].EntryPrice, false);
+                if (stop == 0)
+                {
+                    return;
+                }
                 if (positions[0].EntryPrice == 0)
-                    {
-                        return;
-                    }
-                    if (positions[0].Direction == Side.Buy && stop < positions[0].EntryPrice)
-                    {
-                        return;
-                    }
-                    if (positions[0].Direction == Side.Sell && stop > positions[0].EntryPrice)
-                    {
-                        return;
-                    }
-                    bool canClose = false;
-                    decimal _profit = (stop - positions[0].EntryPrice) * 100 / positions[0].EntryPrice;
-                    if (positions[0].Direction == Side.Sell)
-                    {
-                        _profit = -1 * _profit;
-                    }
-                    if (_profit >= MinProfitTraling.ValueDecimal)
-                    {
-                        canClose = true;
-                    }
-                    if (canClose)
-                    {
+                {
+                   return;
+                }
+                if (positions[0].Direction == Side.Buy &&
+                    (stop < positions[0].EntryPrice ))
+                {
+                    return;
+                }
+                if (positions[0].Direction == Side.Sell && 
+                    (stop > positions[0].EntryPrice ))
+                {
+                    return;
+                }
+                if (positions[0].Direction == Side.Buy || stop > candles[candles.Count - 1].Close)
+                {
+                    stop = candles[candles.Count - 1].Close - candles[candles.Count - 1].Close * (TrailStop.ValueDecimal / 100);
+                }
+                if (positions[0].Direction == Side.Sell || stop < candles[candles.Count - 1].Close)
+                {
+                    stop = candles[candles.Count - 1].Close + candles[candles.Count - 1].Close * (TrailStop.ValueDecimal / 100);
+                }
+                bool canClose = false;
+                decimal _profit = (stop - positions[0].EntryPrice) * 100 / positions[0].EntryPrice;
+                if (positions[0].Direction == Side.Sell)
+                {
+                    _profit = -1 * _profit;
+                }
+                if (_profit >= MinProfitTraling.ValueDecimal)
+                {
+                    canClose = true;
+                }
+                if (canClose)
+                {
                     _tab.CloseAtServerTrailingStop(positions[0], stop, stop);
-                    }
+                }
+            */
             }
 
-        //    System.Threading.Thread.Sleep(500);
+            //    System.Threading.Thread.Sleep(500);
 
         }
         private void OpenPosition(List<Candle> candles)
         {
+
+            if (!ValidateParams())
+            {
+                return;
+            }
 
             decimal _Vol;
             decimal LastStop = 0;
@@ -350,6 +393,7 @@ namespace OsEngine.Robots.Trend
         {
                 List<decimal> result = new List<decimal>();
                 decimal activationPrice=0;
+            /*
             if (isNewDeal)
             {
                 if (side == Side.Buy)
@@ -366,19 +410,28 @@ namespace OsEngine.Robots.Trend
             }
             else
             {
+                
                 if (side == Side.Buy)
                 {
-                    activationPrice = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] -
-                       _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] * (TrailStop.ValueDecimal / 100);
+                    activationPrice = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] - _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] * (TrailStop.ValueDecimal / 100);
 
                 }
                 if (side == Side.Sell)
                 {
-                    activationPrice = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] +
-                       _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] * (TrailStop.ValueDecimal / 100);
+                    activationPrice = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] + _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] * (TrailStop.ValueDecimal / 100);
                 }
+            }
+            */
+            if (side == Side.Buy)
+            {
+                activationPrice = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] - _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] * (TrailStop.ValueDecimal / 100);
 
             }
+            if (side == Side.Sell)
+            {
+                activationPrice = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] + _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] * (TrailStop.ValueDecimal / 100);
+            }
+
             if (isNewDeal)
             {
                 return activationPrice;

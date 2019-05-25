@@ -730,13 +730,15 @@ namespace OsEngine.Entity
                 }
                 if (Direction == Side.Buy)
                 {
-                    ProfitOperationPersent = (medianPriceClose - medianPriceClose * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100;
-                    ProfitOperationPunkt = medianPriceClose - EntryPrice - fee * (medianPriceClose + EntryPrice);
+                    ProfitOperationPersent = (medianPriceClose - medianPriceClose * fee) / (EntryPrice + EntryPrice * fee) * 100 - 100;
+                    //ProfitOperationPunkt = medianPriceClose - EntryPrice - fee * (medianPriceClose + EntryPrice);
+                    ProfitOperationPunkt = medianPriceClose * (1 - fee) - EntryPrice * (1 + fee); 
                 }
                 else
                 {
-                    ProfitOperationPunkt = EntryPrice - medianPriceClose - fee * (medianPriceClose + EntryPrice); ;
-                    ProfitOperationPersent = -((medianPriceClose - medianPriceClose * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100);
+                    //ProfitOperationPunkt = EntryPrice - medianPriceClose - fee * (medianPriceClose + EntryPrice); ;
+                    ProfitOperationPunkt = EntryPrice * (1 - fee) - medianPriceClose * (1 + fee) ;
+                    ProfitOperationPersent = -((medianPriceClose + medianPriceClose * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100);
                 }
 
                 ProfitOperationPersent = Math.Round(ProfitOperationPersent, 3);

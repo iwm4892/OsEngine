@@ -407,7 +407,9 @@ namespace OsEngine.Robots.VSA
                 return;
             }
             
+            
             bool CanFindPattern = false;
+            
             for (int i = 1; i <= 1; i++)
             {
                 Candle candle = candles[candles.Count - i];
@@ -426,6 +428,7 @@ namespace OsEngine.Robots.VSA
                     }
                 }
             }
+            
             if(TradeSide == Side.Buy && candles[candles.Count - 2].Close< LastSessionEndPrice)
             {
                 CanFindPattern = false;
@@ -1142,7 +1145,15 @@ namespace OsEngine.Robots.VSA
             {
                 PriceLevleLine.PaintLevleData(TabsSimple);
             }
+            /*
+            if(TrendMA.Values[TrendMA.Values.Count - 1] == 0)
+            {
+                return;
+            }
             
+            LastSessionEndPrice = TrendMA.Values[TrendMA.Values.Count - 1];
+            */
+             
             //Определяем направление торговли по прошлой сессии
             if (_TradeSessions.Values.Count > 0)
             {
@@ -1152,7 +1163,7 @@ namespace OsEngine.Robots.VSA
             {
                 return;
             }
-
+            
             //LastSessionEndPrice = TradeSessions.LastSessionEndPrice(_tab.CandlesAll, candles[candles.Count - 1].TimeStart);
             if (LastSessionEndPrice > 0)
             {
