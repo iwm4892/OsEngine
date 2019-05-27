@@ -1317,6 +1317,10 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// /// <param name="expiresBars">life time in candels count / время жизни ордера в барах</param>
         public void BuyAtStopMarket(decimal volume, decimal priceLimit, decimal priceRedLine, StopActivateType activateType, int expiresBars)
         {
+            if(_connector.ServerType == ServerType.BitMex)
+            {
+                BuyAtServerStopMarket(volume, priceLimit, priceRedLine);
+            }
             try
             {
                 PositionOpenerToStop positionOpener = new PositionOpenerToStop(CandlesFinishedOnly.Count, expiresBars);
@@ -1775,6 +1779,10 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// <param name="expiresBars">life time in candels count / через сколько свечей заявка будет снята</param>
         public void SellAtStopMarket(decimal volume, decimal priceLimit, decimal priceRedLine, StopActivateType activateType, int expiresBars)
         {
+            if (_connector.ServerType == ServerType.BitMex)
+            {
+                SellAtServerStopMarket(volume, priceLimit, priceRedLine);
+            }
             try
             {
                 PositionOpenerToStop positionOpener = new PositionOpenerToStop(CandlesFinishedOnly.Count, expiresBars);
@@ -4114,6 +4122,30 @@ namespace OsEngine.OsTrader.Panels.Tab
             }
         }
 
+        public void BuyAtServerStopMarket(decimal volume, decimal priceLimit, decimal priceRedLine)
+        {
+            try
+            {
+                LongCreate(priceLimit, volume, OrderPriceType.BuyStop, _manualControl.SecondToOpen, false);
+            }
+            catch (Exception error)
+            {
+                SetNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+
+        }
+        public void SellAtServerStopMarket(decimal volume, decimal priceLimit, decimal priceRedLine)
+        {
+            try
+            {
+                ShortCreate(priceLimit, volume, OrderPriceType.BuyStop, _manualControl.SecondToOpen, false);
+            }
+            catch (Exception error)
+            {
+                SetNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+
+        }
 
         // исходящие события. Обработчики для стратегии
         // outgoing events. Handlers for strategy

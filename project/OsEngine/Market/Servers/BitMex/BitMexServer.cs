@@ -1407,8 +1407,8 @@ namespace OsEngine.Market.Servers.BitMex
                             Dictionary<string, string> param = new Dictionary<string, string>();
                             param["symbol"] = order.SecurityNameCode;
                             param["side"] = order.Side == Side.Buy ? "Buy" : "Sell";
-                            if (order.TypeOrder != OrderPriceType.MarketStop && 
-                                order.TypeOrder != OrderPriceType.Market)
+                            if (order.TypeOrder == OrderPriceType.Limit || 
+                                order.TypeOrder == OrderPriceType.LimitStop)
                             {
                                 param["price"] = order.Price.ToString().Replace(",", ".");
                             }
@@ -1436,6 +1436,19 @@ namespace OsEngine.Market.Servers.BitMex
                                     param["stopPx"] = order.Price.ToString().Replace(",", ".");
                                     param["execInst"] = "LastPrice,Close";
                                     break;
+                                case OrderPriceType.BuyStop:
+                                    param["orderQty"] = order.Volume.ToString();
+                                    param["ordType"] = "Stop";
+                                    param["stopPx"] = order.Price.ToString().Replace(",", ".");
+                                    param["execInst"] = "LastPrice";
+                                    break;
+                                case OrderPriceType.SellStop:
+                                    param["orderQty"] = order.Volume.ToString();
+                                    param["ordType"] = "Stop";
+                                    param["stopPx"] = order.Price.ToString().Replace(",", ".");
+                                    param["execInst"] = "LastPrice";
+                                    break;
+
                             }
 
                             var res = _client.CreateQuery("POST", "/order", param, true);
@@ -1468,7 +1481,7 @@ namespace OsEngine.Market.Servers.BitMex
                         }
                     }
 
-                    if (_lastOrderCheck.AddSeconds(30) < DateTime.Now &&
+                    if (_lastOrderCheck.AddSeconds(3) < DateTime.Now &&
                         _ordersToCheck.Count != 0)
                     {
                         CheckOrders(_ordersToCheck[0].SecurityNameCode);

@@ -147,7 +147,8 @@ namespace OsEngine.Robots.Trend
         {
             _tab.BuyAtStopCanсel();
             _tab.SellAtStopCanсel();
-
+            CanTrade = false;
+            CanselOldOrders();
             decimal activationPrice = GetTrailingStopPrice(position.Direction, position.EntryPrice,true);
             _tab.CloseAtServerTrailingStop(position, activationPrice, activationPrice);
 
@@ -200,19 +201,41 @@ namespace OsEngine.Robots.Trend
 
             return true;
         }
-        private void _tab_CandleFinishedEvent(List<Candle> candles)
+        private void CanselOldOrders()
         {
-            _tab.BuyAtStopCanсel();
-            _tab.SellAtStopCanсel();
-
             List<Position> positions = _tab.PositionsOpenAll;
-            if(_tab.PositionsLast !=null && _tab.PositionsLast.State == PositionStateType.Opening)
+            bool CanCansel = false;
+            foreach (Position pos in positions)
+            {
+                if (pos.State == PositionStateType.Opening)
+                {
+                    CanCansel = true;
+                }
+            }
+            if (CanCansel)
             {
                 _tab.CloseAllOrderInSystem();
 
             }
 
-            if (positions.Count == 0)
+        }
+
+        private void _tab_CandleFinishedEvent(List<Candle> candles)
+        {
+            _tab.BuyAtStopCanсel();
+            _tab.SellAtStopCanсel();
+
+            CanselOldOrders();
+            List<Position> positions = _tab.PositionsOpenAll;
+            bool canOpen = true;
+            foreach(Position pos in positions)
+            {
+                if(pos.State== PositionStateType.Open)
+                {
+                    canOpen = false;
+                }
+            }
+            if (canOpen)
             {
                 if (_tab.PositionOpenerToStopsAll.Count == 0 || _tab.PositionOpenerToStopsAll == null)
                 {
@@ -222,10 +245,16 @@ namespace OsEngine.Robots.Trend
             }
             else
             { // trail stop logic
+                foreach (Position pos in positions)
+                {
+                    if (pos.State == PositionStateType.Open)
+                    {
+                        decimal stop = GetTrailingStopPrice(pos.Direction, pos.EntryPrice, false);
 
-                decimal stop = GetTrailingStopPrice(positions[0].Direction, positions[0].EntryPrice, false);
+                        _tab.CloseAtServerTrailingStop(pos, stop, stop);
+                    }
+                }
 
-                _tab.CloseAtServerTrailingStop(positions[0], stop, stop);
                 /*   
                 if(positions[0].State != PositionStateType.Open)
                 {
@@ -307,7 +336,7 @@ namespace OsEngine.Robots.Trend
 
 
             // нужно разбираться почему так происходит
-
+            _Vol = 10;
             if (_Vol > VollAll)
             {
                 _Vol = VollAll;
@@ -349,7 +378,7 @@ namespace OsEngine.Robots.Trend
             }
 
             _Vol = GetVol(_Vol);
-
+            _Vol = 10;
             if (_Vol > 0)
             {
                 _tab.SellAtStopMarket(_Vol,

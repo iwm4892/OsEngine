@@ -1779,6 +1779,7 @@ namespace OsEngine.Market.Servers.Tester
                             break;
                         }
                     }
+                    
                     if (order.State != OrderStateType.Done)
                     {
                         if (CheckOrdersInCandleTest(order, security.LastCandle))
@@ -1786,6 +1787,7 @@ namespace OsEngine.Market.Servers.Tester
                             i--;
                         }
                     }
+                    
                 }
                 else if(security.DataType == SecurityTesterDataType.Candle)
                 { // test with using candles / прогон на свечках

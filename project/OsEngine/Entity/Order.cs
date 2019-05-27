@@ -481,7 +481,16 @@ namespace OsEngine.Entity
         /// <summary>
         /// Рыночный стопордеор
         /// </summary>
-        MarketStop
+        MarketStop,
+
+        /// <summary>
+        /// продает по пересечению цены
+        /// </summary>
+        SellStop,
+        /// <summary>
+        /// Покупает по переечению цены
+        /// </summary>
+        BuyStop
 
     }
 
