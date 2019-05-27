@@ -190,7 +190,7 @@ namespace OsEngine.Robots.Trend
             {
                 return false;
             }
-
+            /*
             if(_tab.CandlesAll[_tab.CandlesAll.Count-1].Low > _envelop.ValuesDown[_envelop.ValuesDown.Count - 1]
                 &&
                 _tab.CandlesAll[_tab.CandlesAll.Count - 1].High < _envelop.ValuesUp[_envelop.ValuesUp.Count - 1])
@@ -198,7 +198,7 @@ namespace OsEngine.Robots.Trend
                 CanTrade = true;
             }
             return CanTrade;
-
+            */
             return true;
         }
         private void CanselOldOrders()

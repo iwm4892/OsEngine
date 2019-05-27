@@ -1878,11 +1878,13 @@ namespace OsEngine.Market.Servers.Tester
                     if (realPrice > openPrice && order.IsStopOrProfit == false)
                     {
                         // if order is not quotation and put into the market / если заявка не котировачная и выставлена в рынок
-                        realPrice = openPrice;
+                    //++ Косячит тесты  
+                    //  realPrice = openPrice;
                     }
                     else if (order.IsStopOrProfit && order.Price > maxPrice)
                     {
-                        realPrice = maxPrice;
+                        //++
+                        //realPrice = maxPrice;
                     }
 
                     int slipage = 0;
@@ -1940,11 +1942,11 @@ namespace OsEngine.Market.Servers.Tester
                     if (realPrice < openPrice && order.IsStopOrProfit == false)
                     {
                         // if order is not quotation and put into the market / если заявка не котировачная и выставлена в рынок
-                        realPrice = openPrice;
+                    //++    realPrice = openPrice;
                     }
                     else if (order.IsStopOrProfit && order.Price < minPrice)
                     {
-                        realPrice = minPrice;
+                    //++    realPrice = minPrice;
                     }
 
                     int slipage = 0;
