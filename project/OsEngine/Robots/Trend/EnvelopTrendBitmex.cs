@@ -70,6 +70,17 @@ namespace OsEngine.Robots.Trend
         private void _tab_PositionClosingSuccesEvent(Position obj)
         {
             CanTrade = false;
+
+            List<Position> positions = _tab.PositionsOpenAll;
+            bool CanCansel = false;
+            foreach (Position pos in positions)
+            {
+                if (pos.State == PositionStateType.Open)
+                {
+                    _tab.GetJournal().DeletePosition(pos);
+                }
+            }
+
         }
 
         // public settings / настройки публичные
@@ -191,9 +202,9 @@ namespace OsEngine.Robots.Trend
                 return false;
             }
             /*
-            if(_tab.CandlesAll[_tab.CandlesAll.Count-1].Low > _envelop.ValuesDown[_envelop.ValuesDown.Count - 1]
+            if(_tab.CandlesAll[_tab.CandlesAll.Count-1].Close > _envelop.ValuesDown[_envelop.ValuesDown.Count - 1]
                 &&
-                _tab.CandlesAll[_tab.CandlesAll.Count - 1].High < _envelop.ValuesUp[_envelop.ValuesUp.Count - 1])
+                _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close < _envelop.ValuesUp[_envelop.ValuesUp.Count - 1])
             {
                 CanTrade = true;
             }
