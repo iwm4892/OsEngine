@@ -336,7 +336,7 @@ namespace OsEngine.Robots.Trend
 
 
             // нужно разбираться почему так происходит
-            _Vol = 10;
+            
             if (_Vol > VollAll)
             {
                 _Vol = VollAll;
@@ -378,7 +378,7 @@ namespace OsEngine.Robots.Trend
             }
 
             _Vol = GetVol(_Vol);
-            _Vol = 10;
+           
             if (_Vol > 0)
             {
                 _tab.SellAtStopMarket(_Vol,
