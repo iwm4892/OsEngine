@@ -75,7 +75,7 @@ namespace OsEngine.Robots.Trend
             bool CanCansel = false;
             foreach (Position pos in positions)
             {
-                if (pos.State == PositionStateType.Open)
+                if (pos.State == PositionStateType.Open|| pos.State == PositionStateType.ClosingSurplus)
                 {
                     _tab.GetJournal().DeletePosition(pos);
                 }
