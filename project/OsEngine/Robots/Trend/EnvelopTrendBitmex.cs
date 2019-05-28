@@ -355,7 +355,7 @@ namespace OsEngine.Robots.Trend
 
             _Vol = GetVol(_Vol);
 
-            if (_Vol > 0)
+            if (_Vol > 0 && candles[candles.Count-1].High < _envelop.ValuesUp[_envelop.ValuesUp.Count - 2])
             {
                 _tab.BuyAtStopMarket(_Vol,
                     _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] +
@@ -390,7 +390,7 @@ namespace OsEngine.Robots.Trend
 
             _Vol = GetVol(_Vol);
            
-            if (_Vol > 0)
+            if (_Vol > 0 && candles[candles.Count - 1].Low > _envelop.ValuesDown[_envelop.ValuesDown.Count - 2])
             {
                 _tab.SellAtStopMarket(_Vol,
                      _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] -
