@@ -1317,10 +1317,12 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// /// <param name="expiresBars">life time in candels count / время жизни ордера в барах</param>
         public void BuyAtStopMarket(decimal volume, decimal priceLimit, decimal priceRedLine, StopActivateType activateType, int expiresBars)
         {
+            /*
             if(_connector.ServerType == ServerType.BitMex)
             {
                 BuyAtServerStopMarket(volume, priceLimit, priceRedLine);
             }
+            */
             try
             {
                 PositionOpenerToStop positionOpener = new PositionOpenerToStop(CandlesFinishedOnly.Count, expiresBars);
@@ -1779,10 +1781,12 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// <param name="expiresBars">life time in candels count / через сколько свечей заявка будет снята</param>
         public void SellAtStopMarket(decimal volume, decimal priceLimit, decimal priceRedLine, StopActivateType activateType, int expiresBars)
         {
+            /*
             if (_connector.ServerType == ServerType.BitMex)
             {
                 SellAtServerStopMarket(volume, priceLimit, priceRedLine);
             }
+            */
             try
             {
                 PositionOpenerToStop positionOpener = new PositionOpenerToStop(CandlesFinishedOnly.Count, expiresBars);

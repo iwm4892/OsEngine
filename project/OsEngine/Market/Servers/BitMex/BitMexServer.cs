@@ -1423,7 +1423,7 @@ namespace OsEngine.Market.Servers.BitMex
                             {
                                 case OrderPriceType.Limit: param["ordType"] = "Limit";
                                     param["orderQty"] = order.Volume.ToString();
-                                    //    param["execInst"] = "ParticipateDoNotInitiate";
+                                    param["execInst"] = "ParticipateDoNotInitiate";
                                     break;
                                 case OrderPriceType.Market: param["ordType"] = "Market";
                                     param["orderQty"] = order.Volume.ToString();
