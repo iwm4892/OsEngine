@@ -40,7 +40,7 @@ namespace OsEngine.Robots.Trend
             EnvelopMovingLength = CreateParameter("Envelop Moving Length", 10, 10, 200, 5);
             TrailStop = CreateParameter("Trail Stop", 0.1m, 0m, 5, 0.1m);
             MinProfitTraling = CreateParameter("Минимальный профит для трэйлинга", 0.2m, 0.2m, 2, 0.1m);
-            leverage = CreateParameter("Маржинальное плечо", 0.1m, 1, 10, 0.1m);
+            leverage = CreateParameter("Маржинальное плечо", 0.1m, 0.1m, 10, 0.1m);
             MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
             isContract = CreateParameter("Торгуем контрактами", false);
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
