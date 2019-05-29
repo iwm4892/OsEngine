@@ -302,7 +302,7 @@ namespace OsEngine.Entity
                             BitMexServer bitMex = (BitMexServer)_server;
                             List<Trade> allTrades = _server.GetAllTradesToSecurity(series.Security);
                             series.PreLoad(allTrades);
-                            if(series.CandlesAll ==null|| series.CandlesAll.Count == 0)
+                            if(series.CandlesAll ==null|| series.CandlesAll.Count == 0|| series.CandlesAll[0].TimeStart> DateTime.Now.AddMinutes(-1))
                             {
                                 List<Candle> candles = bitMex.GetBitMexCandleHistory(series.Security.Name,
                                     series.TimeFrameSpan);
