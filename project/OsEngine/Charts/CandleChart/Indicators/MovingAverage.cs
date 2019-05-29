@@ -99,7 +99,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// Расчет по объему свечки
         /// </summary>
-        Volume
+        Volume,
+        /// <summary>
+        /// Расчет по времени формирования свечи
+        /// </summary>
+        Time
     }
 
     /// <summary>
@@ -589,6 +593,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
             else if (TypePointsToSearch == PriceTypePoints.Volume)
             {
                 return candles[index].Volume;
+            }
+            else if (TypePointsToSearch == PriceTypePoints.Time)
+            {
+                return (decimal)candles[index].TimeStart.Subtract(candles[index - 1].TimeStart).TotalMinutes;
             }
 
             return 0;

@@ -46,6 +46,7 @@ namespace OsEngine.Robots
             result.Add("PriceLavelBot");
             result.Add("EnvelopTrendBitmex");
             result.Add("EnvelopFlatBitmex");
+            result.Add("FastDelta");
             return result;
         }
 
@@ -138,6 +139,10 @@ namespace OsEngine.Robots
             if (nameClass == "EnvelopFlatBitmex")
             {
                 bot = new EnvelopFlatBitmex(name, startProgram);
+            }
+            if (nameClass == "FastDelta")
+            {
+                bot = new FastDelta(name, startProgram);
             }
 
 

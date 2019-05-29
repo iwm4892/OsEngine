@@ -65,6 +65,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             ComboBoxPriceField.Items.Add(PriceTypePoints.Median);
             ComboBoxPriceField.Items.Add(PriceTypePoints.Typical);
             ComboBoxPriceField.Items.Add(PriceTypePoints.Volume);
+            ComboBoxPriceField.Items.Add(PriceTypePoints.Time);
 
             ComboBoxPriceField.SelectedItem = _mA.TypePointsToSearch;
 
