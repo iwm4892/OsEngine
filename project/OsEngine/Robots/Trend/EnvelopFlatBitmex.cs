@@ -40,7 +40,7 @@ namespace OsEngine.Robots.Trend
             EnvelopMovingLength = CreateParameter("Envelop Moving Length", 10, 10, 200, 5);
             TrailStop = CreateParameter("Trail Stop", 0.1m, 0m, 5, 0.1m);
             MinProfitTraling = CreateParameter("Минимальный профит для трэйлинга", 0.2m, 0.2m, 2, 0.1m);
-            leverage = CreateParameter("Маржинальное плечо", 1, 1, 10, 1);
+            leverage = CreateParameter("Маржинальное плечо", 0.1m, 0.1m, 10, 0.1m);
             MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
             isContract = CreateParameter("Торгуем контрактами", false);
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
@@ -107,7 +107,7 @@ namespace OsEngine.Robots.Trend
         /// <summary>
         /// Плечо
         /// </summary>
-        private StrategyParameterInt leverage;
+        private StrategyParameterDecimal leverage;
         /// <summary>
         /// Минимальный профит для трэйлинга
         /// </summary>
@@ -169,6 +169,7 @@ namespace OsEngine.Robots.Trend
             decimal activationPrice = GetTrailingStopPrice(position.Direction, position.EntryPrice,true);
             if (position.Direction == Side.Buy)
             {
+                
                 _tab.CloseAtProfit(position, _envelop.ValuesUp[_envelop.ValuesUp.Count - 1], _envelop.ValuesUp[_envelop.ValuesUp.Count - 1]);
             }
             else
@@ -197,7 +198,7 @@ namespace OsEngine.Robots.Trend
             {
                 return false;
             }
-            
+            /*
             if(_tab.CandlesAll[_tab.CandlesAll.Count-1].Low > _envelop.ValuesDown[_envelop.ValuesDown.Count - 1]
                 &&
                 _tab.CandlesAll[_tab.CandlesAll.Count - 1].High < _envelop.ValuesUp[_envelop.ValuesUp.Count - 1])
@@ -205,7 +206,7 @@ namespace OsEngine.Robots.Trend
                 CanTrade = true;
             }
             return CanTrade;
-            
+            */
             return true;
         }
         private void CanselOldOrders()
@@ -329,7 +330,7 @@ namespace OsEngine.Robots.Trend
             {
                 return;
             }
-            decimal VollAll = leverage.ValueInt * (_tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked) / GetPrice(price);
+            decimal VollAll = leverage.ValueDecimal * (_tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked) / GetPrice(price);
 
             decimal StopSize = Math.Abs((LastStop - price) / price);
             if (StopSize <= 0)
@@ -355,7 +356,7 @@ namespace OsEngine.Robots.Trend
             {
                 return;
             }
-            VollAll = leverage.ValueInt * (_tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked) / GetPrice(price);
+            VollAll = leverage.ValueDecimal * (_tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked) / GetPrice(price);
 
             StopSize = Math.Abs((LastStop - price) / price);
             if (StopSize <= 0)
