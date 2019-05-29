@@ -108,6 +108,9 @@ namespace OsEngine.Robots.Trend
             TimeMaSlow.Lenght = (int)(TimeMaFast.Lenght * 2);
             TimeMaSlow.Save();
 
+            TralingStopMa.Lenght = TimeFastLenth.ValueInt;
+            TralingStopMa.Save();
+
             VolMaFast.Lenght = (int)(TimeFastLenth.ValueInt);
             VolMaFast.Save();
             VolMaSlow.Lenght = (int)(VolMaFast.Lenght * 2);

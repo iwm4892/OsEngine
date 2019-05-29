@@ -170,11 +170,11 @@ namespace OsEngine.Robots.Trend
             if (position.Direction == Side.Buy)
             {
                 
-                _tab.CloseAtProfit(position, _envelop.ValuesUp[_envelop.ValuesUp.Count - 1], _envelop.ValuesUp[_envelop.ValuesUp.Count - 1]);
+                _tab.CloseAtProfit(position, _envelop.ValuesUp[_envelop.ValuesUp.Count - 1] - Slippage.ValueInt * _tab.Securiti.PriceStep, _envelop.ValuesUp[_envelop.ValuesUp.Count - 1]);
             }
             else
             {
-                _tab.CloseAtProfit(position, _envelop.ValuesDown[_envelop.ValuesDown.Count - 1], _envelop.ValuesDown[_envelop.ValuesDown.Count - 1]);
+                _tab.CloseAtProfit(position, _envelop.ValuesDown[_envelop.ValuesDown.Count - 1] + Slippage.ValueInt * _tab.Securiti.PriceStep, _envelop.ValuesDown[_envelop.ValuesDown.Count - 1]);
             }
             _tab.CloseAtServerTrailingStop(position, activationPrice, activationPrice);
         }
