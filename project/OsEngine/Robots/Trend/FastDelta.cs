@@ -43,7 +43,13 @@ namespace OsEngine.Robots.Trend
             isContract = CreateParameter("Торгуем контрактами", false);
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
-            TimeFastLenth = CreateParameter("Скользящая быстрая", 10, 10, 200, 5);
+            TimeFastLenth = CreateParameter("MA Time fast", 10, 5, 200, 5);
+            TimeSlowLenth = CreateParameter("MA Time slow", 10, 5, 200, 5);
+
+            VolFastLenth = CreateParameter("MA Vol fast", 10, 5, 200, 5);
+            VolSlowLenth = CreateParameter("MA Vol slow", 10, 5, 200, 5);
+
+            TralingMaLenth = CreateParameter("MA Traling", 10, 5, 200, 5);
 
             maLenth = CreateParameter("Период скользящей по объему", 24, 24, 48, 1);
             DeltaSizeK = CreateParameter("Коэфт для размера дельты", 6, 1, 40, 1);
@@ -55,12 +61,22 @@ namespace OsEngine.Robots.Trend
 
             TimeMaSlow = new MovingAverage(name + "TimeMaSlow", false) { ColorBase = System.Drawing.Color.Green,  TypePointsToSearch = PriceTypePoints.Time };
             TimeMaSlow = (MovingAverage)_tab.CreateCandleIndicator(TimeMaSlow, "New1");
-            TimeMaSlow.Lenght = (int)(TimeMaFast.Lenght*2);
+            TimeMaSlow.Lenght = TimeSlowLenth.ValueInt;
             TimeMaSlow.Save();
 
-            TralingStopMa = new MovingAverage(name + "TralingStopMa", false) { ColorBase = System.Drawing.Color.Yellow, TypePointsToSearch = PriceTypePoints.Close};
+            VolMaFast = new MovingAverage(name + "VolMaFast", false) { ColorBase = System.Drawing.Color.Yellow, Lenght = 10, TypePointsToSearch = PriceTypePoints.Volume, TypeCalculationAverage = MovingAverageTypeCalculation.Exponential };
+            VolMaFast = (MovingAverage)_tab.CreateCandleIndicator(VolMaFast, "New2");
+            VolMaFast.Lenght = VolFastLenth.ValueInt;
+            VolMaFast.Save();
+
+            VolMaSlow = new MovingAverage(name + "VolMaSlow", false) { ColorBase = System.Drawing.Color.Green, TypePointsToSearch = PriceTypePoints.Volume, TypeCalculationAverage = MovingAverageTypeCalculation.Exponential };
+            VolMaSlow = (MovingAverage)_tab.CreateCandleIndicator(VolMaSlow, "New2");
+            VolMaSlow.Lenght = VolSlowLenth.ValueInt;
+            VolMaSlow.Save();
+
+            TralingStopMa = new MovingAverage(name + "TralingStopMa", false) { ColorBase = System.Drawing.Color.Blue, TypePointsToSearch = PriceTypePoints.Close};
             TralingStopMa = (MovingAverage)_tab.CreateCandleIndicator(TralingStopMa, "Prime");
-            TralingStopMa.Lenght = (int)(TimeMaFast.Lenght );
+            TralingStopMa.Lenght = TralingMaLenth.ValueInt;
             TralingStopMa.Save();
 
             maVolume = new MovingAverage(name + "_maVolume", false);
@@ -70,17 +86,23 @@ namespace OsEngine.Robots.Trend
             maVolume.TypePointsToSearch = PriceTypePoints.Volume;
             maVolume.Save();
 
-            VolMaFast = new MovingAverage(name + "VolMaFast", false) { ColorBase = System.Drawing.Color.Yellow, Lenght = 10, TypePointsToSearch = PriceTypePoints.Volume, TypeCalculationAverage = MovingAverageTypeCalculation.Exponential };
-            VolMaFast = (MovingAverage)_tab.CreateCandleIndicator(VolMaFast, "New2");
-            VolMaFast.Lenght = (int)(TimeFastLenth.ValueInt);
-            VolMaFast.Save();
+            delta = new Delta(name + "delta", false);
+            delta = (Delta)_tab.CreateCandleIndicator(delta, "New3");
+            delta.Save();
 
-            VolMaSlow = new MovingAverage(name + "VolMaSlow", false) { ColorBase = System.Drawing.Color.Green, TypePointsToSearch = PriceTypePoints.Volume, TypeCalculationAverage = MovingAverageTypeCalculation.Exponential };
-            VolMaSlow = (MovingAverage)_tab.CreateCandleIndicator(VolMaSlow, "New2");
-            VolMaSlow.Lenght = (int)(VolMaFast.Lenght * 2);
-            VolMaSlow.Save();
+            rsi = new Rsi(name + "Rsi", false);
+            rsi = (Rsi)_tab.CreateCandleIndicator(rsi, "New4");
+            rsi.Lenght = 21;
+            rsi.Save();
 
 
+            /*
+            _envelop = new Envelops(name + "Envelop", false);
+            _envelop = (Envelops)_tab.CreateCandleIndicator(_envelop, "Prime");
+            _envelop.MovingAverage.Lenght = 21;
+            _envelop.Deviation = 0.3m;
+            _envelop.Save();
+            */
             CanTrade = false;
         }
 
@@ -105,16 +127,18 @@ namespace OsEngine.Robots.Trend
         {
             TimeMaFast.Lenght = TimeFastLenth.ValueInt;
             TimeMaFast.Save();
-            TimeMaSlow.Lenght = (int)(TimeMaFast.Lenght * 2);
+            TimeMaSlow.Lenght = TimeSlowLenth.ValueInt;
             TimeMaSlow.Save();
 
-            TralingStopMa.Lenght = TimeFastLenth.ValueInt;
+            TralingStopMa.Lenght = TralingMaLenth.ValueInt;
             TralingStopMa.Save();
 
-            VolMaFast.Lenght = (int)(TimeFastLenth.ValueInt);
+            VolMaFast.Lenght = VolFastLenth.ValueInt;
             VolMaFast.Save();
-            VolMaSlow.Lenght = (int)(VolMaFast.Lenght * 2);
+            VolMaSlow.Lenght = VolSlowLenth.ValueInt;
             VolMaSlow.Save();
+
+
 
         }
 
@@ -181,7 +205,28 @@ namespace OsEngine.Robots.Trend
         /// </summary>
         private StrategyParameterInt DeltaSizeK;
 
+        /// <summary>
+        /// Длина быстрой скользящей по времени
+        /// </summary>
         private StrategyParameterInt TimeFastLenth;
+        /// <summary>
+        /// Длина медленной скользящей по времени
+        /// </summary>
+        private StrategyParameterInt TimeSlowLenth;
+        /// <summary>
+        /// Длина быстрой скользящей по объему
+        /// </summary>
+        private StrategyParameterInt VolFastLenth;
+        /// <summary>
+        /// Длина медленной скользящей по объему
+        /// </summary>
+        private StrategyParameterInt VolSlowLenth;
+
+        /// <summary>
+        /// Длина скользящей Трэлингстопа
+        /// </summary>
+        private StrategyParameterInt TralingMaLenth;
+
 
         // indicators / индикаторы
 
@@ -197,6 +242,14 @@ namespace OsEngine.Robots.Trend
 
         private MovingAverage VolMaFast;
         private MovingAverage VolMaSlow;
+
+        private Rsi rsi;
+        /// <summary>
+        /// Индикатор дельты
+        /// </summary>
+        private Delta delta;
+
+     //   private Envelops _envelop;
 
         // trade logic
 
@@ -231,24 +284,52 @@ namespace OsEngine.Robots.Trend
             {
                 return false;
             }
+            
             if (_tab.CandlesAll.Count + 5 < VolMaFast.Lenght || _tab.CandlesAll.Count + 5 < VolMaSlow.Lenght)
             {
                 return false;
             }
+            
             if (VolMaFast.Values[VolMaFast.Values.Count - 1] < VolMaSlow.Values[VolMaSlow.Values.Count - 1])
             {
                 return false;
             }
+            
+            if(_tab.CandlesAll[_tab.CandlesAll.Count - 1].IsUp && _tab.CandlesAll[_tab.CandlesAll.Count - 2].IsDown)
+            {
+                return false;
+            }
+            if (_tab.CandlesAll[_tab.CandlesAll.Count - 1].IsDown && _tab.CandlesAll[_tab.CandlesAll.Count - 2].IsUp)
+            {
+                return false;
+            }
 
+            /*
+            if (_tab.CandlesAll[_tab.CandlesAll.Count - 1].IsUp && rsi.Values[rsi.Values.Count-1] > 60)
+            {
+                return false;
+            }
+            if (_tab.CandlesAll[_tab.CandlesAll.Count - 1].IsDown && rsi.Values[rsi.Values.Count - 1] < 40)
+            {
+                return false;
+            }
+            */
             /*
             if(_tab.CandlesAll[_tab.CandlesAll.Count-1].Low > _envelop.ValuesDown[_envelop.ValuesDown.Count - 1]
                 &&
                 _tab.CandlesAll[_tab.CandlesAll.Count - 1].High < _envelop.ValuesUp[_envelop.ValuesUp.Count - 1])
             {
                 CanTrade = true;
-            }
+            }if(_tab.CandlesAll[_tab.CandlesAll.Count-1]
             return CanTrade;
             */
+            /*
+            if (_tab.CandlesAll[_tab.CandlesAll.Count - 1].Volume<_tab.CandlesAll[_tab.CandlesAll.Count - 2].Volume + _tab.CandlesAll[_tab.CandlesAll.Count - 3].Volume)
+            {
+                return false;
+            }
+            */
+
             return true;
         }
         private void CanselOldOrders()
@@ -296,6 +377,7 @@ namespace OsEngine.Robots.Trend
                         decimal stop = GetTrailingStopPrice(pos.Direction, pos.EntryPrice, false);
 
                         _tab.CloseAtServerTrailingStop(pos, stop, stop);
+                        //_tab.CloseAtServerTrailingStop(pos, candles[candles.Count-1].Open, candles[candles.Count - 1].Open);
                     }
                 }
 
@@ -365,12 +447,27 @@ namespace OsEngine.Robots.Trend
                 side = Side.Sell;
 
             }
+            List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
+            indicators.Add(delta);
+            List<string> patterns = new List<string>();
+            patterns.Add("Signal_pattern"); //Сигналка
+
+            List<Pattern> signal = Pattern.GetValidatePatterns(candles, indicators, patterns);
+            if (signal.Count == 0 || !signal[0].isPattern)
+            {
+                return;
+            }
 
             decimal _Vol;
             decimal LastStop = 0;
             decimal price = candles[candles.Count - 1].Close;
                
             LastStop = GetTrailingStopPrice(side, price,true);
+            if((side==Side.Buy && LastStop > price)||
+                (side == Side.Sell && LastStop < price))
+            {
+                return;
+            }
             if (LastStop == 0 || price==0)
             {
                 return;
@@ -438,15 +535,14 @@ namespace OsEngine.Robots.Trend
         {
             List<decimal> result = new List<decimal>();
             decimal activationPrice=0;
-            if (side == Side.Buy)
-            {
-                activationPrice = TralingStopMa.Values[TralingStopMa.Values.Count - 1] - TralingStopMa.Values[TralingStopMa.Values.Count - 1] * (TrailStop.ValueDecimal / 100);
-
-            }
-            if (side == Side.Sell)
-            {
-                activationPrice = TralingStopMa.Values[TralingStopMa.Values.Count - 1] + TralingStopMa.Values[TralingStopMa.Values.Count - 1] * (TrailStop.ValueDecimal / 100);
-            }
+                if (side == Side.Buy)
+                {
+                    activationPrice = TralingStopMa.Values[TralingStopMa.Values.Count - 1] - TralingStopMa.Values[TralingStopMa.Values.Count - 1] * (TrailStop.ValueDecimal / 100);
+                }
+                if (side == Side.Sell)
+                {
+                    activationPrice = TralingStopMa.Values[TralingStopMa.Values.Count - 1] + TralingStopMa.Values[TralingStopMa.Values.Count - 1] * (TrailStop.ValueDecimal / 100);
+                }
 
             if (isNewDeal)
             {
