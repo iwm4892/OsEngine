@@ -2058,8 +2058,8 @@ namespace OsEngine.Market.Servers.BitMex
         /// исходящее сообщение для лога
         /// </summary>
         public event Action<string, LogMessageType> LogMessageEvent;
-    }
 
+    }
     /// <summary>
     /// one BitMex tick
     /// один тик BitMex
