@@ -1830,5 +1830,8 @@ namespace OsEngine.Market.Servers
         /// пользователь запросил отключение от АПИ
         /// </summary>
         public event Action UserWhantDisconnect;
+
+        public List<IServerFollower> serverFollowers;
+
     }
 }

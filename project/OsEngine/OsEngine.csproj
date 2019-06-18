@@ -423,6 +423,7 @@
       <DependentUpon>InteractivBrokersUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="Market\Servers\IServer.cs" />
+    <Compile Include="Market\Servers\IServerFollower.cs" />
     <Compile Include="Market\Servers\IServerRealization.cs" />
     <Compile Include="Market\Servers\Kraken\KrakenEntity\EnumerableExtensions.cs" />
     <Compile Include="Market\Servers\Kraken\KrakenEntity\KrakenClient.cs" />
