@@ -594,6 +594,7 @@
     <Compile Include="OsTrader\Panels\PanelsGui\BollingerOutburstUi.xaml.cs">
       <DependentUpon>BollingerOutburstUi.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OsTrader\Panels\Tab\AutoFollowing.cs" />
     <Compile Include="Robots\BotFactory.cs" />
     <Compile Include="Robots\CounterTrend\ClusterCountertrend.cs" />
     <Compile Include="Robots\High Frequency\HighFrequencyTrader.cs" />
