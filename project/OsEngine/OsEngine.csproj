@@ -604,6 +604,8 @@
     <Compile Include="Robots\BotFactory.cs" />
     <Compile Include="Robots\CounterTrend\ClusterCountertrend.cs" />
     <Compile Include="Robots\High Frequency\HighFrequencyTrader.cs" />
+    <Compile Include="Robots\Trend\FastDelta_2.cs" />
+    <Compile Include="Robots\Trend\GridBot.cs" />
     <Compile Include="Robots\Trend\FastDelta.cs" />
     <Compile Include="Robots\Trend\EnvelopFlatBitmex.cs" />
     <Compile Include="Robots\Trend\EnvelopTrendBitmex.cs" />

@@ -47,6 +47,7 @@ namespace OsEngine.Robots
             result.Add("EnvelopTrendBitmex");
             result.Add("EnvelopFlatBitmex");
             result.Add("FastDelta");
+            result.Add("FastDelta_2");
             return result;
         }
 
@@ -143,6 +144,14 @@ namespace OsEngine.Robots
             if (nameClass == "FastDelta")
             {
                 bot = new FastDelta(name, startProgram);
+            }
+            if (nameClass == "GridBot")
+            {
+                bot = new GridBot(name, startProgram);
+            }
+            if (nameClass == "FastDelta_2")
+            {
+                bot = new FastDelta_2(name, startProgram);
             }
 
 
