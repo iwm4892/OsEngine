@@ -2832,6 +2832,12 @@ namespace OsEngine.OsTrader.Panels
 
                     if (Regime != BotTradeRegime.OnlyLong && Regime != BotTradeRegime.OnlyClosePosition)
                     {
+                        List<Position> positions = _tab.PositionsOpenAll;
+                        if (positions.Count >= 2)
+                        {
+                            return;
+                        }
+
                         _tab.SellAtLimit(VolumeFix, _lastPrice - Slipage);
                     }
                 }
@@ -2845,6 +2851,11 @@ namespace OsEngine.OsTrader.Panels
 
                     if (Regime != BotTradeRegime.OnlyShort && Regime != BotTradeRegime.OnlyClosePosition)
                     {
+                        List<Position> positions = _tab.PositionsOpenAll;
+                        if (positions.Count >= 2)
+                        {
+                            return;
+                        }
                         _tab.BuyAtLimit(VolumeFix, _lastPrice + Slipage);
                     }
 
