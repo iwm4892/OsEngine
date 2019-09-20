@@ -17,9 +17,11 @@ using OsEngine.Market.Servers.Bitfinex;
 using OsEngine.Market.Servers.BitMax;
 using OsEngine.Market.Servers.BitMex;
 using OsEngine.Market.Servers.BitStamp;
+using OsEngine.Market.Servers.ExMo;
 using OsEngine.Market.Servers.Finam;
 using OsEngine.Market.Servers.InteractivBrokers;
 using OsEngine.Market.Servers.Kraken;
+using OsEngine.Market.Servers.Livecoin;
 using OsEngine.Market.Servers.Lmax;
 using OsEngine.Market.Servers.NinjaTrader;
 using OsEngine.Market.Servers.Oanda;
@@ -30,6 +32,7 @@ using OsEngine.Market.Servers.QuikLua;
 using OsEngine.Market.Servers.SmartCom;
 using OsEngine.Market.Servers.Tester;
 using OsEngine.Market.Servers.Transaq;
+using OsEngine.Market.Servers.ZB;
 using MessageBox = System.Windows.MessageBox;
 
 namespace OsEngine.Market
@@ -72,6 +75,9 @@ namespace OsEngine.Market
                 serverTypes.Add(ServerType.BitStamp);
                 serverTypes.Add(ServerType.Bitfinex);
                 serverTypes.Add(ServerType.Kraken);
+                serverTypes.Add(ServerType.Livecoin);
+                serverTypes.Add(ServerType.Exmo);
+                serverTypes.Add(ServerType.Zb);
 
                 serverTypes.Add(ServerType.InteractivBrokers);
                 serverTypes.Add(ServerType.NinjaTrader);
@@ -155,6 +161,18 @@ namespace OsEngine.Market
 
                 IServer newServer = null;
 
+                if (type == ServerType.Zb)
+                {
+                    newServer = new ZbServer();
+                }
+                if (type == ServerType.Exmo)
+                {
+                    newServer = new ExmoServer();
+                }
+                if (type == ServerType.Livecoin)
+                {
+                    newServer = new LivecoinServer();
+                }
                 if (type == ServerType.BitMax)
                 {
                     newServer = new BitMaxServer();
@@ -620,6 +638,18 @@ namespace OsEngine.Market
         None,
 
         /// <summary>
+        /// cryptocurrency exchange ZB
+        /// биржа криптовалют ZB
+        /// </summary>
+        Zb,
+
+        /// <summary>
+        /// Livecoin exchange
+        /// биржа Livecoin
+        /// </summary>
+        Livecoin,
+
+        /// <summary>
         /// BitMax exchange
         /// биржа BitMax
         /// </summary>
@@ -648,6 +678,12 @@ namespace OsEngine.Market
         /// биржа криптовалют Binance
         /// </summary>
         Binance,
+
+        /// <summary>
+        /// cryptocurrency exchange Exmo
+        /// биржа криптовалют Exmo
+        /// </summary>
+        Exmo,
 
         /// <summary>
         /// terminal Ninja Trader

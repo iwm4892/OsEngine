@@ -49,6 +49,9 @@ The layer for creating robots is similar to the Wealth-Lab script and Ninja Scri
 4) Bitfinex
 5) Kraken
 6) BitMax
+7) LiveCoin
+8) ExMo
+9) ZB
 
 *Available connections for Forex*
 
@@ -117,6 +120,9 @@ Forum http://o-s-a.net/eng/forum
 4) Bitfinex
 5) Kraken
 6) BitMax
+7) LiveCoin
+8) ExMo
+9) ZB
 
 *Доступные подключения для форекс*
 
