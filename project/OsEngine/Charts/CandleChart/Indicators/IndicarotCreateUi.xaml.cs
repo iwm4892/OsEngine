@@ -108,6 +108,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             //++++
             _gridViewIndicators.Rows.Add("Delta");
             _gridViewIndicators.Rows.Add("Claster");
+            _gridViewIndicators.Rows.Add("MarketProfile");
             //----
 
             if (_chartMaster.GetChartArea("TradeArea") == null)
