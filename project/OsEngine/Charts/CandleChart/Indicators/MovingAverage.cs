@@ -103,7 +103,11 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// Расчет по времени формирования свечи
         /// </summary>
-        Time
+        Time,
+        /// <summary>
+        /// Расчет по полному размеру свечи
+        /// </summary>
+        ShadowBody
     }
 
     /// <summary>
@@ -597,6 +601,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
             else if (TypePointsToSearch == PriceTypePoints.Time)
             {
                 return (decimal)candles[index].TimeStart.Subtract(candles[index - 1].TimeStart).TotalMinutes;
+            }
+            else if (TypePointsToSearch == PriceTypePoints.ShadowBody)
+            {
+                return (candles[index].High - candles[index].Low);
             }
 
             return 0;

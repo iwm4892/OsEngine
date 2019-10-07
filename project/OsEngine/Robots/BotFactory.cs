@@ -48,6 +48,8 @@ namespace OsEngine.Robots
             result.Add("EnvelopFlatBitmex");
             result.Add("FastDelta");
             result.Add("FastDelta_2");
+            result.Add("MovingChanelFlat");
+            result.Add("ArbitrageIndex");
             return result;
         }
 
@@ -153,7 +155,15 @@ namespace OsEngine.Robots
             {
                 bot = new FastDelta_2(name, startProgram);
             }
-
+            if (nameClass == "MovingChanelFlat")
+            {
+                bot = new MovingChanelFlat(name, startProgram);
+            }
+            if (nameClass == "ArbitrageIndex")
+            {
+                bot = new ArbitrageIndex(name, startProgram);
+            }
+            
 
             return bot;
         }
