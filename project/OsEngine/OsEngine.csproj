@@ -371,6 +371,9 @@
       <DependentUpon>ServerWebhookUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="Logging\ServerWebhook.cs" />
+    <Compile Include="Market\Connectors\ConnectorCandlesUi.xaml.cs">
+      <DependentUpon>ConnectorCandlesUi.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Market\Servers\AServer.cs" />
     <Compile Include="Market\Servers\AServerParameterUi.xaml.cs">
       <DependentUpon>AServerParameterUi.xaml</DependentUpon>
@@ -434,6 +437,12 @@
     <Compile Include="Market\Servers\FixProtocolEntities\FixEntity.cs" />
     <Compile Include="Market\Servers\FixProtocolEntities\FixMessage.cs" />
     <Compile Include="Market\Servers\FixProtocolEntities\StandartHeaderSettings.cs" />
+    <Compile Include="Market\Servers\GateIo\EntityCreators\GateMarketDepthCreator.cs" />
+    <Compile Include="Market\Servers\GateIo\EntityCreators\GateOrderCreator.cs" />
+    <Compile Include="Market\Servers\GateIo\EntityCreators\GatePortfolioCreator.cs" />
+    <Compile Include="Market\Servers\GateIo\EntityCreators\GateSecurityCreator.cs" />
+    <Compile Include="Market\Servers\GateIo\EntityCreators\GateTradesCreator.cs" />
+    <Compile Include="Market\Servers\GateIo\GateIoServer.cs" />
     <Compile Include="Market\Servers\InteractivBrokers\IbClient.cs" />
     <Compile Include="Market\Servers\InteractivBrokers\IbContractStorageUi.xaml.cs">
       <DependentUpon>IbContractStorageUi.xaml</DependentUpon>
@@ -490,9 +499,6 @@
     </Compile>
     <Compile Include="Market\Servers\Quik\QuikDde.cs" />
     <Compile Include="Market\Connectors\ConnectorCandles.cs" />
-    <Compile Include="Market\Connectors\ConnectorCandlesUi.xaml.cs">
-      <DependentUpon>ConnectorCandlesUi.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Market\Servers\Quik\Trans2Quik.cs" />
     <Compile Include="Market\Connectors\OrderExecutionEmulator.cs" />
     <Compile Include="Market\ServerMaster.cs" />
@@ -555,7 +561,9 @@
     <Compile Include="Market\Servers\ZB\EntityCreators\ZbSecurityCreator.cs" />
     <Compile Include="Market\Servers\ZB\EntityCreators\ZbTradesCreator.cs" />
     <Compile Include="Market\Servers\ZB\ZBServer.cs" />
+    <Compile Include="Market\Services\BaseMarketDepthUpdater.cs" />
     <Compile Include="Market\Services\CandlesCreator.cs" />
+    <Compile Include="Market\Services\RestChannel.cs" />
     <Compile Include="Market\Services\WsSource.cs" />
     <Compile Include="OsMiner\OsMinerMaster.cs" />
     <Compile Include="OsMiner\OsMinerSet.cs" />
@@ -982,6 +990,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Market\Connectors\ConnectorCandlesUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Market\Servers\AServerParameterUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1007,10 +1019,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Market\Servers\Optimizer\OptimizerDataStorageUi.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Market\Connectors\ConnectorCandlesUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

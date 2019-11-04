@@ -154,7 +154,10 @@ namespace OsEngine.Entity
                     return false;
                 }
 
-                if (OpenOrders.Find(order => order.State == OrderStateType.Activ || order.State == OrderStateType.Pending || order.State == OrderStateType.None) != null)
+                if (OpenOrders.Find(order => order.State == OrderStateType.Activ 
+                                             || order.State == OrderStateType.Pending 
+                                             || order.State == OrderStateType.None
+                                             || order.State == OrderStateType.Patrial) != null)
                 {
                     return true;
                 }
@@ -176,8 +179,11 @@ namespace OsEngine.Entity
                     return false;
                 }
 
-                if (CloseOrders.Find(order => (order.State == OrderStateType.Activ || order.State == OrderStateType.Pending)&&
-                    !order.IsStopOrProfit) != null)
+                if (CloseOrders.Find(order => order.State == OrderStateType.Activ 
+                                              || order.State == OrderStateType.Pending
+                                              || order.State == OrderStateType.Patrial
+                                              || !order.IsStopOrProfit) != null
+                    )
                 {
                     return true;
                 }
@@ -908,7 +914,6 @@ namespace OsEngine.Entity
             {
                 if (_openOrders != null)
                 {
-                    return _openOrders[_openOrders.Count - 1].TimeCallBack;
                     return _openOrders[_openOrders.Count - 1].GetLastTradeTime();
                 }
                 return DateTime.MinValue;

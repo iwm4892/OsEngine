@@ -99,6 +99,16 @@ namespace OsEngine.Market.Servers
             get { return _serverRealization; }
         }
 
+        private double _waitTimeAfterFirstStart = 60;
+
+        /// <summary>
+        /// время ожиадания после старта сервера, по прошествии которого можно выставлять ордера
+        /// </summary>
+        protected double WaitTimeAfterFirstStart
+        {
+            set { _waitTimeAfterFirstStart = value; }
+        }
+
         private IServerRealization _serverRealization;
 
         /// <summary>
@@ -946,15 +956,31 @@ namespace OsEngine.Market.Servers
 
                     if (curPortfolio == null)
                     {
-                        _portfolios.Add(portf[i]);
-                        curPortfolio = portf[i];
+                        bool isInArray = false;
+
+                        for (int i2 = 0; i2 < _portfolios.Count; i2++)
+                        {
+                            if (_portfolios[i2].Number[0] > portf[i].Number[0])
+                            {
+                                _portfolios.Insert(i2, portf[i]);
+                                curPortfolio = portf[i];
+                                isInArray = true;
+                                break;
+                            }
+                        }
+
+                        if (isInArray == false)
+                        {
+                            _portfolios.Add(portf[i]);
+                            curPortfolio = portf[i];
+                        }
                     }
 
                     curPortfolio.Profit = portf[i].Profit;
                     curPortfolio.ValueBegin = portf[i].ValueBegin;
                     curPortfolio.ValueCurrent = portf[i].ValueCurrent;
                     curPortfolio.ValueBlocked = portf[i].ValueBlocked;
-                    
+
                 }
 
                 _portfolioToSend.Enqueue(_portfolios);
@@ -1016,7 +1042,22 @@ namespace OsEngine.Market.Servers
 
                 if (_securities.Find(s => s.NameId == securities[i].NameId) == null)
                 {
-                    _securities.Add(securities[i]);
+                    bool isInArray = false;
+
+                    for (int i2 = 0; i2 < _securities.Count; i2++)
+                    {
+                        if (_securities[i2].Name[0] > securities[i].Name[0])
+                        {
+                            _securities.Insert(i2, securities[i]);
+                            isInArray = true;
+                            break;
+                        }
+                    }
+
+                    if (isInArray == false)
+                    {
+                        _securities.Add(securities[i]);
+                    }
                 }
             }
 
@@ -1646,7 +1687,7 @@ namespace OsEngine.Market.Servers
         {
             while (true)
             {
-                if (LastStartServerTime.AddSeconds(30) > DateTime.Now)
+                if (LastStartServerTime.AddSeconds(_waitTimeAfterFirstStart) > DateTime.Now)
                 {
                     Thread.Sleep(1000);
                     continue;
@@ -1729,7 +1770,7 @@ namespace OsEngine.Market.Servers
             {
                 UserSetOrderOnExecute(order);
             }
-            if (LastStartServerTime.AddMinutes(1) > DateTime.Now)
+            if (LastStartServerTime.AddSeconds(_waitTimeAfterFirstStart) > DateTime.Now)
             {
                 order.State = OrderStateType.Fail;
                 _ordersToSend.Enqueue(order);
