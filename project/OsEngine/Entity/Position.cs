@@ -420,7 +420,8 @@ namespace OsEngine.Entity
 
                 for (int i = 0; _openOrders != null && i < _openOrders.Count; i++)
                 {
-                    if (_openOrders[i].State == OrderStateType.Activ)
+                    if (_openOrders[i].State == OrderStateType.Activ ||
+                        _openOrders[i].State == OrderStateType.Patrial)
                     {
                         volumeWait += _openOrders[i].Volume - _openOrders[i].VolumeExecute;
                     }
@@ -998,6 +999,8 @@ namespace OsEngine.Entity
             }
         }
 
+        public decimal Comission;
+
         /// <summary>
         /// the amount of profit relative to the portfolio in absolute terms
         /// количество прибыли относительно портфеля в абсолютном выражении
@@ -1020,9 +1023,22 @@ namespace OsEngine.Entity
                     return 0;
                 }
 
-                return (ProfitOperationPunkt / PriceStep) * PriceStepCost * MaxVolume * 1; //  Lots;
+                decimal comisAbsolute = 0;
+
+                if (Comission != 0)
+                {
+                    comisAbsolute = MaxVolume * EntryPrice * (Comission / 100) +
+                                    MaxVolume * ClosePrice * (Comission / 100);
+                }
+
+                decimal profit =
+                    (ProfitOperationPunkt / PriceStep) * PriceStepCost * MaxVolume - comisAbsolute;
+
+
+                return profit; //  Lots;
             }
         }
+
 
         /// <summary>
         /// the number of lots in one transaction
@@ -1139,7 +1155,12 @@ namespace OsEngine.Entity
         /// brute force during closing.
         /// перебор во время закрытия.
         /// </summary>
-        ClosingSurplus
+        ClosingSurplus,
+
+        /// <summary>
+        /// удалена
+        /// </summary>
+        Deleted
     }
 
     /// <summary>
