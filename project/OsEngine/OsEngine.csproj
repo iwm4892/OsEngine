@@ -446,6 +446,17 @@
     <Compile Include="Market\Servers\Hitbtc\HitbtcClient.cs" />
     <Compile Include="Market\Servers\Hitbtc\HitbtcEntity.cs" />
     <Compile Include="Market\Servers\Hitbtc\HitbtcServer.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiDMClient.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiDMServer.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\Account.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\GZipHelper.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBCandle.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBContractBalanse.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBContractInfo.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBError.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBResponse.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBWsResponse.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HuobiRestApi.cs" />
     <Compile Include="Market\Servers\InteractivBrokers\IbClient.cs" />
     <Compile Include="Market\Servers\InteractivBrokers\IbContractStorageUi.xaml.cs">
       <DependentUpon>IbContractStorageUi.xaml</DependentUpon>

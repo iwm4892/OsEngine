@@ -36,6 +36,8 @@ using OsEngine.Market.Servers.Transaq;
 using OsEngine.Market.Servers.ZB;
 using OsEngine.Market.Servers.Hitbtc;
 using OsEngine.Market.Servers.Tinkoff;
+using OsEngine.Market.Servers.HuobiDM;
+
 using MessageBox = System.Windows.MessageBox;
 
 namespace OsEngine.Market
@@ -86,6 +88,7 @@ namespace OsEngine.Market
                 serverTypes.Add(ServerType.Exmo);
                 serverTypes.Add(ServerType.Zb);
                 serverTypes.Add(ServerType.Hitbtc);
+                serverTypes.Add(ServerType.HuobiDM);
 
                 serverTypes.Add(ServerType.InteractivBrokers);
                 serverTypes.Add(ServerType.NinjaTrader);
@@ -264,6 +267,10 @@ namespace OsEngine.Market
                 else if (type == ServerType.Finam)
                 {
                     newServer = new FinamServer();
+                }
+                else if (type == ServerType.HuobiDM)
+                {
+                    newServer = new HuobiDMServer();
                 }
 
                 if (newServer == null)
@@ -810,6 +817,10 @@ namespace OsEngine.Market
         /// AstsBridge, he is also the gateway or TEAP
         /// AstsBridge, он же ШЛЮЗ, он же TEAP 
         /// </summary>
-        AstsBridge
+        AstsBridge,
+        /// <summary>
+        /// HuobiDM
+        /// </summary>
+        HuobiDM
     }
 }
