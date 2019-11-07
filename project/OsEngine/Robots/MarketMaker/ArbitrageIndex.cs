@@ -3,6 +3,7 @@
  * Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
 */
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using OsEngine.Charts.CandleChart.Indicators;
@@ -27,14 +28,25 @@ namespace OsEngine.Robots.MarketMaker
             _tab2 = TabsSimple[1];
             _tabIndex.SpreadChangeEvent += _tabIndex_SpreadChangeEvent;
 
+            _tab1.PositionOpeningSuccesEvent += _PositionOpeningSuccesEvent;
+            _tab2.PositionOpeningSuccesEvent += _PositionOpeningSuccesEvent;
+
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On", "OnlyLong", "OnlyShort", "OnlyClosePosition" });
-            Volume = CreateParameter("Volume", 3m, 1, 50, 1);
+            
+            Volume1 = CreateParameter("Volume1", 3m, 1, 50, 1);
+            Volume2 = CreateParameter("Volume2", 3m, 1, 50, 1);
 
             minSpread = CreateParameter("minSpread", 0.4m, 0.1m, 3, 0.05m);
             minProfit = CreateParameter("minProfit", 0.3m, 0.1m, 3, 0.05m);
 
             Slippage = CreateParameter("Slipage", 0, 0, 20, 1);
             ParametrsChangeByUser += ArbitrageIndex_ParametrsChangeByUser;
+        }
+
+        private void _PositionOpeningSuccesEvent(Position obj)
+        {
+            obj.Comission = 0.075m;
+            //throw new System.NotImplementedException();
         }
 
         private void _tabIndex_SpreadChangeEvent(List<Candle> candles)
@@ -53,21 +65,22 @@ namespace OsEngine.Robots.MarketMaker
 
             decimal pr1 = _tab1.CandlesAll[_tab1.CandlesAll.Count - 1].Close;
             decimal pr2 = _tab2.CandlesAll[_tab2.CandlesAll.Count - 1].Close;
-
+            decimal profit = 0.000000000m;
             if (positions1.Count == 0 && positions2.Count == 0)
             {
-                if (candles[candles.Count - 1].Close > minSpread.ValueDecimal)
+                if (candles[candles.Count - 1].Close > minSpread.ValueDecimal || candles[candles.Count - 1].Close < -minSpread.ValueDecimal)
                 {
-                    _tab2.BuyAtMarket((_tab2.Portfolio.ValueCurrent - _tab2.Portfolio.ValueBlocked) / _tab2.CandlesAll[_tab2.CandlesAll.Count - 1].Close);
-                    _tab1.SellAtMarket((_tab1.Portfolio.ValueCurrent - _tab1.Portfolio.ValueBlocked) / _tab1.CandlesAll[_tab1.CandlesAll.Count - 1].Close);
+                    if (pr1 > pr2)
+                    {
+                        _tab1.SellAtMarket(Volume1.ValueDecimal);
+                        _tab2.BuyAtMarket(Volume2.ValueDecimal);
+                    }
+                    else
+                    {
+                        _tab1.BuyAtMarket(Volume1.ValueDecimal);
+                        _tab2.SellAtMarket(Volume2.ValueDecimal);
+                    }
                 }
-
-                if (candles[candles.Count - 1].Close < -minSpread.ValueDecimal)
-                {
-                    _tab1.BuyAtMarket((_tab1.Portfolio.ValueCurrent - _tab1.Portfolio.ValueBlocked) / _tab1.CandlesAll[_tab1.CandlesAll.Count - 1].Close);
-                    _tab2.SellAtMarket((_tab2.Portfolio.ValueCurrent - _tab2.Portfolio.ValueBlocked) / _tab2.CandlesAll[_tab2.CandlesAll.Count - 1].Close);
-                }
-
             }
             else
             {
@@ -78,18 +91,14 @@ namespace OsEngine.Robots.MarketMaker
                     {
                         return;
                     }
-                    if ((pr1 - positions1[0].EntryPrice) / positions1[0].EntryPrice + (positions2[0].EntryPrice - pr2) / positions2[0].EntryPrice > minProfit.ValueDecimal/100)
+                    pr1 = _tab1.PriceBestBid;
+                    pr2 = _tab2.PriceBestAsk;
+                    profit = (pr1 - positions1[0].EntryPrice) / positions1[0].EntryPrice + (positions2[0].EntryPrice - pr2) / positions2[0].EntryPrice;
+                    if (profit > minProfit.ValueDecimal/100)
                     {
                         _tab1.CloseAllAtMarket();
                         _tab2.CloseAllAtMarket();
                     }
-                    /*
-                    if (lastMa - LastAtr * Multipler.ValueDecimal > candles[candles.Count - 1].Close)
-                    {
-                        _tab2.CloseAllAtMarket();
-                        _tab1.CloseAllAtMarket();
-                    }
-                    */
 
                 }
                 if (positions1[0].Direction == Side.Sell)
@@ -99,26 +108,16 @@ namespace OsEngine.Robots.MarketMaker
                     {
                         return;
                     }
-                    if ((positions1[0].EntryPrice - pr1) / positions1[0].EntryPrice + (pr2 - positions2[0].EntryPrice) / positions2[0].EntryPrice > minProfit.ValueDecimal/100)
+                    pr1 = _tab1.PriceBestAsk;
+                    pr2 = _tab2.PriceBestBid;
+                    profit = (positions1[0].EntryPrice - pr1) / positions1[0].EntryPrice + (pr2 - positions2[0].EntryPrice) / positions2[0].EntryPrice;
+                    if ( profit > minProfit.ValueDecimal/100)
                     {
                         _tab1.CloseAllAtMarket();
                         _tab2.CloseAllAtMarket();
                     }
-
-                    /*
-                    if (positions[0].State != PositionStateType.Open)
-                    {
-                        return;
-                    }
-
-                    if (lastMa + LastAtr * Multipler.ValueDecimal < candles[candles.Count - 1].Close)
-                    {
-                        _tab2.CloseAllAtMarket();
-                        _tab1.CloseAllAtMarket();
-                    }
-                    */
-
                 }
+                Console.WriteLine("profit: " + profit);
             }
 
         }
@@ -179,7 +178,8 @@ namespace OsEngine.Robots.MarketMaker
         /// volume
         /// объём исполняемый в одной сделке
         /// </summary>
-        public StrategyParameterDecimal Volume;
+        public StrategyParameterDecimal Volume1;
+        public StrategyParameterDecimal Volume2;
 
         public StrategyParameterDecimal minSpread;
 

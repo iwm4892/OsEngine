@@ -13,8 +13,8 @@ using RestSharp;
 //using WebSocket4Net;
 using OsEngine.Market.Servers.Entity;
 using OsEngine.Market.Servers.HuobiDM.HuobiEntity;
-using System.Security.Authentication;
 using WebSocketSharp;
+using System.Linq;
 
 namespace OsEngine.Market.Servers.HuobiDM
 {
@@ -28,6 +28,7 @@ namespace OsEngine.Market.Servers.HuobiDM
         }
         public string ApiKey;
         public string SecretKey;
+        public int DaysToLoad;
 
         private string _baseUrl = "https://api.hbdm.com";
         
@@ -206,6 +207,284 @@ namespace OsEngine.Market.Servers.HuobiDM
         private WebSocket _wsClient;
 
         private object _lock = new object();
+
+        /// <summary>
+        /// take candles
+        /// взять свечи
+        /// </summary>
+        /// <returns></returns>
+        public List<Candle> GetCandles(string nameSec, TimeSpan tf)
+        {
+            string needTf = "";
+
+            switch ((int)tf.TotalMinutes)
+            {
+                case 1:
+                    needTf = "1min";
+                    break;
+                case 2:
+                    needTf = "2min";
+                    break;
+                case 3:
+                    needTf = "3min";
+                    break;
+                case 5:
+                    needTf = "5min";
+                    break;
+                case 10:
+                    needTf = "10min";
+                    break;
+                case 15:
+                    needTf = "15min";
+                    break;
+                case 20:
+                    needTf = "20min";
+                    break;
+                case 30:
+                    needTf = "30min";
+                    break;
+                case 45:
+                    needTf = "45min";
+                    break;
+                case 60:
+                    needTf = "1hour";
+                    break;
+                case 120:
+                    needTf = "2hour";
+                    break;
+                case 240:
+                    needTf = "4hour";
+                    break;
+                case 1440:
+                    needTf = "1day";
+                    break;
+            }
+
+            if ((new[] { "1min", "5min", "15min", "30min", "1hour", "4hour", "1day" }).Contains(needTf))
+            {
+                string param = $"&symbol={nameSec.ToUpper()}&period={needTf}&size=2000";
+                var res = HbRestApi.GetCandleDataToSecurity(nameSec.ToUpper(), param);
+
+                var candles = _deserializeCandles(res,tf);
+                return candles;
+
+            }
+            else
+            {
+                if (needTf == "2min")
+                {
+                    string param = $"&symbol={nameSec.ToUpper()}&period=1min&size=2000";
+                    var res = HbRestApi.GetCandleDataToSecurity(nameSec.ToUpper(), param);
+                    var candles = _deserializeCandles(res,tf);
+                    var newCandles = BuildCandles(candles, 2, 1);
+                    return newCandles;
+                }
+                else if (needTf == "10min")
+                {
+                    string param = $"&symbol={nameSec.ToUpper()}&period=5min&size=2000";
+                    var res = HbRestApi.GetCandleDataToSecurity(nameSec.ToUpper(), param);
+                    var candles = _deserializeCandles(res, tf);
+                    var newCandles = BuildCandles(candles, 10, 5);
+                    return newCandles;
+                }
+                else if (needTf == "20min")
+                {
+                    string param = $"&symbol={nameSec.ToUpper()}&period=5min&size=2000";
+                    var res = HbRestApi.GetCandleDataToSecurity(nameSec.ToUpper(), param);
+                    var candles = _deserializeCandles(res, tf);
+                    var newCandles = BuildCandles(candles, 20, 5);
+                    return newCandles;
+                }
+                else if (needTf == "45min")
+                {
+                    string param = $"&symbol={nameSec.ToUpper()}&period=15min&size=2000";
+                    var res = HbRestApi.GetCandleDataToSecurity(nameSec.ToUpper(), param);
+                    var candles = _deserializeCandles(res, tf);
+                    var newCandles = BuildCandles(candles, 45, 15);
+                    return newCandles;
+                }
+                else if (needTf == "2hour")
+                {
+                    string param = $"&symbol={nameSec.ToUpper()}&period=1hour&size=2000";
+                    var res = HbRestApi.GetCandleDataToSecurity(nameSec.ToUpper(), param);
+                    var candles = _deserializeCandles(res, tf);
+                    var newCandles = BuildCandles(candles, 45, 15);
+                    return newCandles;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// converts candles of one timeframe to a larger
+        /// преобразует свечи одного таймфрейма в больший
+        /// </summary>
+        /// <param name="oldCandles"></param>
+        /// <param name="needTf"></param>
+        /// <param name="oldTf"></param>
+        /// <returns></returns>
+        private List<Candle> BuildCandles(List<Candle> oldCandles, int needTf, int oldTf)
+        {
+            List<Candle> newCandles = new List<Candle>();
+
+            int index = oldCandles.FindIndex(can => can.TimeStart.Minute % needTf == 0);
+
+            int count = needTf / oldTf;
+
+            int counter = 0;
+
+            Candle newCandle = new Candle();
+
+            for (int i = index; i < oldCandles.Count; i++)
+            {
+                counter++;
+
+                if (counter == 1)
+                {
+                    newCandle = new Candle();
+                    newCandle.Open = oldCandles[i].Open;
+                    newCandle.TimeStart = oldCandles[i].TimeStart;
+                    newCandle.Low = Decimal.MaxValue;
+                }
+
+                newCandle.High = oldCandles[i].High > newCandle.High
+                    ? oldCandles[i].High
+                    : newCandle.High;
+
+                newCandle.Low = oldCandles[i].Low < newCandle.Low
+                    ? oldCandles[i].Low
+                    : newCandle.Low;
+
+                newCandle.Volume += oldCandles[i].Volume;
+
+                if (counter == count)
+                {
+                    newCandle.Close = oldCandles[i].Close;
+                    newCandle.State = CandleState.Finished;
+                    newCandles.Add(newCandle);
+                    counter = 0;
+                }
+
+                if (i == oldCandles.Count - 1 && counter != count)
+                {
+                    newCandle.Close = oldCandles[i].Close;
+                    newCandle.State = CandleState.None;
+                    newCandles.Add(newCandle);
+                }
+            }
+
+            return newCandles;
+        }
+
+        private readonly object _candleLocker = new object();
+        /// <summary>
+        /// convert JSON to candles
+        /// преобразует JSON в свечи
+        /// </summary>
+        /// <param name="jsonCandles"></param>
+        /// <returns></returns>
+        private List<Candle> _deserializeCandles(List<HBCandle> candles, TimeSpan tf)
+        {
+            try
+            {
+                lock (_candleLocker)
+                {
+                    candles.Reverse();
+                    //var now = DateTime.Now;
+                    var DateStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+                    while (DateStart< DateTime.Now.AddMinutes(-tf.TotalMinutes))
+                    {
+                        DateStart = DateStart.AddMinutes(tf.TotalMinutes);
+                    }
+                    var _candles = new List<Candle>();
+                    foreach(var _candle in candles)
+                    {
+                        var candle = new Candle();
+                        candle.High = _candle.high;
+                        candle.Low = _candle.low;
+                        candle.Open = _candle.open;
+                        candle.Close = _candle.close;
+                        candle.Volume = _candle.vol;
+                        candle.TimeStart = DateStart;
+                        _candles.Add(candle);
+                        DateStart = DateStart.AddMinutes(-tf.TotalMinutes);
+                        if(DateStart < DateTime.Now.AddDays(-DaysToLoad))
+                        {
+                            break;
+                        }
+                    }
+                    _candles.Reverse();
+                    return _candles;
+                }
+            }
+            catch (Exception error)
+            {
+                SendLogMessage(error.ToString(), LogMessageType.Error);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// execute order
+        /// исполнить ордер
+        /// </summary>
+        /// <param name="order"></param>
+        public void ExecuteOrder(Order order)
+        {
+            lock (_lockOrder)
+            {
+                try
+                {
+                    if (IsConnected == false)
+                    {
+                        return;
+                    }
+                    /*
+                    Dictionary<string, string> param = new Dictionary<string, string>();
+
+                    param.Add("symbol=", order.SecurityNameCode.ToUpper());
+                    param.Add("&side=", order.Side == Side.Buy ? "BUY" : "SELL");
+                    param.Add("&type=", "LIMIT");
+                    param.Add("&timeInForce=", "GTC");
+                    param.Add("&newClientOrderId=", order.NumberUser.ToString());
+                    //++++++++ вычисляем количество из размера лота
+                    Decimal quant;
+
+                    quant = order.Volume;
+                    
+                    param.Add("&quantity=",
+                        quant.ToString("0.000000")//CultureInfo.InvariantCulture)
+                            .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, ".").Replace(",", "."));
+                    param.Add("&price=",
+                        order.Price.ToString(CultureInfo.InvariantCulture)
+                            .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));
+
+                    var res = CreateQuery(Method.POST, "api/v3/order", param, true);
+
+                    if (res != null && res.Contains("clientOrderId"))
+                    {
+                        SendLogMessage(res, LogMessageType.Trade);
+                    }
+                    else
+                    {
+                        order.State = OrderStateType.Fail;
+                        if (MyOrderEvent != null)
+                        {
+                            MyOrderEvent(order);
+                        }
+                
+                    }
+                    */
+                }
+                catch (Exception ex)
+                {
+                    SendLogMessage(ex.ToString(), LogMessageType.Error);
+                }
+            }
+        }
+
+        private object _lockOrder = new object();
+
         /// <summary>
         /// there was a request to clear the object
         /// произошёл запрос на очистку объекта

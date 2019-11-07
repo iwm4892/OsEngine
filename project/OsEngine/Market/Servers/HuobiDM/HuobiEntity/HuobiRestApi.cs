@@ -370,10 +370,12 @@ namespace OsEngine.Market.Servers.HuobiDM.HuobiEntity
 
         }
 
-        public List<HBCandle> GetCandleDataToSecurity(string security)
+        public List<HBCandle> GetCandleDataToSecurity(string security,string param)
         {
             try
             {
+                var result = SendRequest<List<HBCandle>>(GET_CONTRACT_KLINE, param);
+                return result;
 
             }
             catch (Exception exception)

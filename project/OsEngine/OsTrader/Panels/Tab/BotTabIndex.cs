@@ -275,7 +275,10 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// </summary>
         private void BotTabIndex_NewCandlesChangeEvent(List<Candle> candles)
         {
-            for (int i = 0; i < Tabs.Count; i++)
+            try
+            {
+
+                for (int i = 0; i < Tabs.Count; i++)
             {
                 List<Candle> myCandles = Tabs[i].Candles(true);
                 if (myCandles == null || myCandles.Count < 10)
@@ -326,6 +329,12 @@ namespace OsEngine.OsTrader.Panels.Tab
                     }
                 }
             }
+            }
+            catch (Exception error)
+            {
+                SendNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+
         }
 
         /// <summary>

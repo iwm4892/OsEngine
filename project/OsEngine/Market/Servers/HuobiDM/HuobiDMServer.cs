@@ -88,7 +88,7 @@ namespace OsEngine.Market.Servers.HuobiDM
             if (_client == null)
             {
                 _client = new HuobiDMClient(((ServerParameterString)ServerParameters[0]).Value, ((ServerParameterPassword)ServerParameters[1]).Value);
-                
+                _client.DaysToLoad = ((ServerParameterInt)ServerParameters[3]).Value;
                 _client.Connected += _client_Connected;
                 _client.Disconnected += _client_Disconnected;
                 _client.UpdatePairs += _client_UpdatePairs;
@@ -339,7 +339,7 @@ namespace OsEngine.Market.Servers.HuobiDM
         private List<Security> _securities;
         public List<Candle> GetCandleDataToSecurity(Security security, TimeFrameBuilder timeFrameBuilder, DateTime startTime, DateTime endTime, DateTime actualTime)
         {
-            return new List<Candle>();
+            return null;
             //throw new NotImplementedException();
         }
 
@@ -370,7 +370,7 @@ namespace OsEngine.Market.Servers.HuobiDM
 
         public void SendOrder(Order order)
         {
-            throw new NotImplementedException();
+            _client.ExecuteOrder(order);
         }
 
         public void Subscrible(Security security)
@@ -380,7 +380,7 @@ namespace OsEngine.Market.Servers.HuobiDM
 
         internal List<Candle> GetCandleHistory(string nameSec, TimeSpan tf)
         {
-            return new List<Candle>();
+            return _client.GetCandles(nameSec, tf);
             //throw new NotImplementedException();
         }
         // log messages

@@ -549,6 +549,7 @@ namespace OsEngine.Entity
                         }
                         else if (serverType == ServerType.HuobiDM)
                         {
+                            
                             HuobiDMServer HuobiDM = (HuobiDMServer)_server;
                             if (series.CandleCreateMethodType != CandleCreateMethodType.Simple ||
                                 series.TimeFrameSpan.TotalMinutes < 1)
@@ -566,6 +567,7 @@ namespace OsEngine.Entity
                                 }
                             }
                             series.UpdateAllCandles();
+                            
                             series.IsStarted = true;
                         }
                     }
