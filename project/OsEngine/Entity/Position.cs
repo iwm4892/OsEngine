@@ -646,13 +646,13 @@ namespace OsEngine.Entity
 
                     if (Direction == Side.Buy)
                     {
-                        ProfitOperationPersent = (medianPriceClose - medianPriceClose * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100;
-                        ProfitOperationPunkt = medianPriceClose - EntryPrice - (medianPriceClose * fee + EntryPrice * fee);
+                        ProfitOperationPersent = medianPriceClose / EntryPrice * 100 - 100;
+                        ProfitOperationPunkt = medianPriceClose - EntryPrice;
                     }
                     else
                     {
-                        ProfitOperationPunkt = EntryPrice - medianPriceClose - (medianPriceClose * fee + EntryPrice * fee);
-                        ProfitOperationPersent = -((medianPriceClose - medianPriceClose * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100);
+                        ProfitOperationPunkt = EntryPrice - medianPriceClose;
+                        ProfitOperationPersent = -(medianPriceClose / EntryPrice * 100 - 100);
                     }
                     ProfitOperationPersent = Math.Round(ProfitOperationPersent, 5);
                 }
@@ -737,15 +737,13 @@ namespace OsEngine.Entity
                 }
                 if (Direction == Side.Buy)
                 {
-                    ProfitOperationPersent = (medianPriceClose - medianPriceClose * fee) / (EntryPrice + EntryPrice * fee) * 100 - 100;
-                    //ProfitOperationPunkt = medianPriceClose - EntryPrice - fee * (medianPriceClose + EntryPrice);
-                    ProfitOperationPunkt = medianPriceClose * (1 - fee) - EntryPrice * (1 + fee); 
+                    ProfitOperationPersent = medianPriceClose / EntryPrice * 100 - 100;
+                    ProfitOperationPunkt = medianPriceClose - EntryPrice; 
                 }
                 else
                 {
-                    //ProfitOperationPunkt = EntryPrice - medianPriceClose - fee * (medianPriceClose + EntryPrice); ;
-                    ProfitOperationPunkt = EntryPrice * (1 - fee) - medianPriceClose * (1 + fee) ;
-                    ProfitOperationPersent = -((medianPriceClose + medianPriceClose * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100);
+                    ProfitOperationPunkt = EntryPrice - medianPriceClose;
+                    ProfitOperationPersent = -(medianPriceClose / EntryPrice * 100 - 100);
                 }
 
                 ProfitOperationPersent = Math.Round(ProfitOperationPersent, 3);
@@ -767,13 +765,13 @@ namespace OsEngine.Entity
 
                 if (Direction == Side.Buy)
                 {
-                    ProfitOperationPersent = (ask - ask * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100;
-                    ProfitOperationPunkt = ask - EntryPrice - (ask * fee + EntryPrice * fee);
+                    ProfitOperationPersent = ask / EntryPrice * 100 - 100;
+                    ProfitOperationPunkt = ask - EntryPrice;
                 }
                 else
                 {
-                    ProfitOperationPersent = -((bid - bid * fee) / (EntryPrice - EntryPrice * fee) * 100 - 100);
-                    ProfitOperationPunkt = EntryPrice - bid - (bid * fee + EntryPrice * fee);
+                    ProfitOperationPersent = -(bid / EntryPrice * 100 - 100);
+                    ProfitOperationPunkt = EntryPrice - bid;
                 }
             }
         }

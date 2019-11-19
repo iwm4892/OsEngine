@@ -160,7 +160,7 @@ namespace OsEngine.Market.Servers.HuobiDM.HuobiEntity
                 //            var result = client.Execute<HBResponse<T>>(request);
                 //            return result.Data;
                 var response = client.Execute(request).Content;
-                if (response.Contains("error"))
+                if (response.Contains("\"status\":\"error\""))
                 {
                     var error = JsonConvert.DeserializeAnonymousType(response, new HBError());
                     throw new Exception(error.err_msg);
@@ -192,7 +192,7 @@ namespace OsEngine.Market.Servers.HuobiDM.HuobiEntity
                     item.Value = item.Value.ToString();
                 }
                 var response = client.Execute(request).Content;
-                if (response.Contains("error"))
+                if (response.Contains("\"status\":\"error\""))
                 {
                     var error = JsonConvert.DeserializeAnonymousType(response, new HBError());
                     throw new Exception(error.err_msg);
@@ -210,7 +210,7 @@ namespace OsEngine.Market.Servers.HuobiDM.HuobiEntity
         /// Получить постоянную часть параметров
         /// </summary>
         /// <returns></returns>
-        private string GetCommonParameters()
+        public string GetCommonParameters()
         {
             return $"AccessKeyId={ACCESS_KEY}&SignatureMethod={HUOBI_SIGNATURE_METHOD}&SignatureVersion={HUOBI_SIGNATURE_VERSION}&Timestamp={DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss")}";
         }
@@ -219,7 +219,7 @@ namespace OsEngine.Market.Servers.HuobiDM.HuobiEntity
         /// </summary>
         /// <param name="parameters">Параметры</param>
         /// <returns></returns>
-        private string UriEncodeParameterValue(string parameters)
+        public string UriEncodeParameterValue(string parameters)
         {
             var sb = new StringBuilder();
             var paraArray = parameters.Split('&');
@@ -280,7 +280,7 @@ namespace OsEngine.Market.Servers.HuobiDM.HuobiEntity
         /// <param name="resourcePath">Адрес метода</param>
         /// <param name="parameters">Параметры</param>
         /// <returns></returns>
-        private string GetSignatureStr(Method method, string host, string resourcePath, string parameters)
+        public string GetSignatureStr(Method method, string host, string resourcePath, string parameters)
         {
             var sign = string.Empty;
             StringBuilder sb = new StringBuilder();
@@ -303,7 +303,6 @@ namespace OsEngine.Market.Servers.HuobiDM.HuobiEntity
 
             sign = CalculateSignature256(sign, SECRET_KEY);
             return UrlEncode(sign);
-            return sign;
         }
         #endregion
         public List<HBContractInfo> GetContractInfo()
@@ -383,9 +382,50 @@ namespace OsEngine.Market.Servers.HuobiDM.HuobiEntity
                 SendLogMessage(exception.ToString(), LogMessageType.Error);
                 return new List<HBCandle>();
             }
-
-            return new List<HBCandle>();
         }
-    }
+        public Dictionary<string, string> ExecuteOrder(Dictionary<string, string> param)
+        {
+            try
+            {
+                var result = SendRequest<Dictionary<string, string>, Dictionary<string, string>>(POST_PLACE_ORDER, param);
+                return result;
+
+            }
+            catch (Exception exception)
+            {
+                SendLogMessage(exception.ToString(), LogMessageType.Error);
+                return null;
+            }
+
+        }
+        public List<HBOrder> GetOrdersState(Dictionary<string, string> param)
+        {
+            try
+            {
+                var result = SendRequest<List<HBOrder>, Dictionary<string, string>>(POST_ORDER_INFO, param);
+                return result;
+
+            }
+            catch (Exception exception)
+            {
+                SendLogMessage(exception.ToString(), LogMessageType.Error);
+                return null;
+            }
+
+        }
+        public void CanselOrder(Dictionary<string, string> param)
+        {
+            try
+            {
+                var result = SendRequest<HBNullData, Dictionary<string, string>>(POST_CANCEL_ORDER, param);
+            }
+            catch (Exception exception)
+            {
+                SendLogMessage(exception.ToString(), LogMessageType.Error);
+            }
+
+        }
 
     }
+
+}

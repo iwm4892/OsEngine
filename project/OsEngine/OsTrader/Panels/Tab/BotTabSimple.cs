@@ -1101,7 +1101,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 TimeSpan timeLife = _manualControl.SecondToOpen;
 
                 if (_connector.ServerType == ServerType.InteractivBrokers || _connector.ServerType == ServerType.Lmax
-                    || _connector.ServerType == ServerType.BitMex)
+                    || _connector.ServerType == ServerType.BitMex || _connector.ServerType == ServerType.HuobiDM)
                 {
                     return LongCreate(price, volume, type, timeLife, false);
                 }
@@ -1569,7 +1569,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 TimeSpan timeLife = _manualControl.SecondToOpen;
 
                 if (_connector.ServerType == ServerType.InteractivBrokers || _connector.ServerType == ServerType.Lmax
-                    || _connector.ServerType == ServerType.BitMex)
+                    || _connector.ServerType == ServerType.BitMex || _connector.ServerType == ServerType.HuobiDM)
                 {
                     return ShortCreate(price, volume, type, timeLife, false);
                 }
@@ -2063,11 +2063,11 @@ namespace OsEngine.OsTrader.Panels.Tab
                     return;
                 }
 
-                if (_connector.ServerType == ServerType.InteractivBrokers || _connector.ServerType == ServerType.Lmax)
+                if (_connector.ServerType == ServerType.InteractivBrokers || _connector.ServerType == ServerType.Lmax || _connector.ServerType == ServerType.HuobiDM)
                 {
                     if (position.OpenVolume <= volume)
                     {
-                        CloseDeal(position, OrderPriceType.Market, price, _manualControl.SecondToClose, false);
+                        CloseDeal(position, OrderPriceType.Market, price, _manualControl.SecondToClose, true);
                     }
                     else if (position.OpenVolume > volume)
                     {

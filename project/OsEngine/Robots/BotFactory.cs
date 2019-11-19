@@ -50,6 +50,7 @@ namespace OsEngine.Robots
             result.Add("FastDelta_2");
             result.Add("MovingChanelFlat");
             result.Add("ArbitrageIndex");
+            result.Add("ArbitrageFutures");
             return result;
         }
 
@@ -162,6 +163,10 @@ namespace OsEngine.Robots
             if (nameClass == "ArbitrageIndex")
             {
                 bot = new ArbitrageIndex(name, startProgram);
+            }
+            if (nameClass == "ArbitrageFutures")
+            {
+                bot = new ArbitrageFutures(name, startProgram);
             }
             
 

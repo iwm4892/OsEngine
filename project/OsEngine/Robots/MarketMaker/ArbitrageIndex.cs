@@ -31,6 +31,11 @@ namespace OsEngine.Robots.MarketMaker
             _tab1.PositionOpeningSuccesEvent += _PositionOpeningSuccesEvent;
             _tab2.PositionOpeningSuccesEvent += _PositionOpeningSuccesEvent;
 
+            Analiser = new MarketDepthSpreadAnaliser();
+            Analiser.addTab(_tab1);
+            Analiser.addTab(_tab2);
+            Analiser.SpreadChangeEvent += Analiser_SpreadChangeEvent;
+
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On", "OnlyLong", "OnlyShort", "OnlyClosePosition" });
             
             Volume1 = CreateParameter("Volume1", 3m, 1, 50, 1);
@@ -41,6 +46,11 @@ namespace OsEngine.Robots.MarketMaker
 
             Slippage = CreateParameter("Slipage", 0, 0, 20, 1);
             ParametrsChangeByUser += ArbitrageIndex_ParametrsChangeByUser;
+        }
+
+        private void Analiser_SpreadChangeEvent(decimal obj)
+        {
+            Console.WriteLine("Spread: " + obj);
         }
 
         private void _PositionOpeningSuccesEvent(Position obj)
@@ -185,6 +195,7 @@ namespace OsEngine.Robots.MarketMaker
 
         public StrategyParameterDecimal minProfit;
 
+        private MarketDepthSpreadAnaliser Analiser;
         // logic логика
 
 

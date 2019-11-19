@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 
 namespace OsEngine.Market.Servers.HuobiDM.HuobiEntity
 {
@@ -56,6 +52,16 @@ namespace OsEngine.Market.Servers.HuobiDM.HuobiEntity
         /// Adjustment Factor
         /// </summary>
         public decimal adjust_factor;
+
+    }
+    class HBAuth
+    {
+        public HBAuthData data;
+    }
+    class HBAuthData
+    {
+        [JsonProperty(PropertyName = "user-id")]
+        public long UserId { get; set; }
 
     }
 }

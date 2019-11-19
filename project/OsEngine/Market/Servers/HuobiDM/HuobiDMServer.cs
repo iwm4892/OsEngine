@@ -19,6 +19,7 @@ namespace OsEngine.Market.Servers.HuobiDM
 
             CreateParameterString(OsLocalization.Market.ServerParamPublicKey, "");
             CreateParameterPassword(OsLocalization.Market.ServerParamSecretKey, "");
+            CreateParameterInt(OsLocalization.Market.ServerParamLeverage, 1);
         }
         /// <summary>
         /// instrument history query
@@ -80,7 +81,7 @@ namespace OsEngine.Market.Servers.HuobiDM
 
         public void CanselOrder(Order order)
         {
-            throw new NotImplementedException();
+            _client.CanselOrder(order);
         }
 
         public void Connect()
@@ -88,17 +89,18 @@ namespace OsEngine.Market.Servers.HuobiDM
             if (_client == null)
             {
                 _client = new HuobiDMClient(((ServerParameterString)ServerParameters[0]).Value, ((ServerParameterPassword)ServerParameters[1]).Value);
-                _client.DaysToLoad = ((ServerParameterInt)ServerParameters[3]).Value;
+                _client.DaysToLoad = ((ServerParameterInt)ServerParameters[4]).Value;
+                _client.Leverege = ((ServerParameterInt)ServerParameters[2]).Value;
                 _client.Connected += _client_Connected;
                 _client.Disconnected += _client_Disconnected;
                 _client.UpdatePairs += _client_UpdatePairs;
                 _client.NewPortfolio += _client_NewPortfolio;
                 _client.NewTradesEvent += _client_NewTradesEvent;
                 _client.UpdateMarketDepth += _client_UpdateMarketDepth;
-                /*_client.UpdatePortfolio += _client_UpdatePortfolio;
-                _client.MyTradeEvent += _client_MyTradeEvent;
                 _client.MyOrderEvent += _client_MyOrderEvent;
-                */
+                _client.MyTradeEvent += _client_MyTradeEvent;
+                _client.UpdatePortfolio += _client_UpdatePortfolio;
+                
                 _client.LogMessageEvent += SendLogMessage;
             }
 
@@ -116,6 +118,9 @@ namespace OsEngine.Market.Servers.HuobiDM
                 _client.LogMessageEvent -= SendLogMessage;
                 _client.NewPortfolio -= _client_NewPortfolio;
                 _client.NewTradesEvent -= _client_NewTradesEvent;
+                _client.MyOrderEvent -= _client_MyOrderEvent;
+                _client.MyTradeEvent -= _client_MyTradeEvent;
+                _client.UpdatePortfolio -= _client_UpdatePortfolio;
             }
 
             _client = null;
@@ -147,9 +152,7 @@ namespace OsEngine.Market.Servers.HuobiDM
             foreach (var sec in pairs)
             {
                 Security security = new Security();
-                if (sec.contract_type == "this_week") security.Name = sec.symbol + "_CW";
-                if (sec.contract_type == "next_week") security.Name = sec.symbol + "_NW";
-                if (sec.contract_type == "quarter") security.Name = sec.symbol + "_CQ";
+                security.Name = _client.GetSecuritiName(sec.symbol, sec.contract_type);
                 //security.Name = sec.contract_code;
                 security.NameFull = security.Name;//sec.contract_code;
                 security.NameClass = sec.symbol;
@@ -200,8 +203,9 @@ namespace OsEngine.Market.Servers.HuobiDM
                 foreach (var onePortf in portfs)
                 {
                     Portfolio newPortf = new Portfolio();
-                    newPortf.Number = onePortf.symbol;
+                    newPortf.Number = onePortf.symbol;//_client.user_id;
                     newPortf.ValueCurrent = onePortf.margin_balance;
+                    newPortf.ValueBegin = newPortf.ValueCurrent;
                     newPortf.ValueBlocked = onePortf.margin_frozen;
 
                     _portfolios.Add(newPortf);
@@ -217,6 +221,44 @@ namespace OsEngine.Market.Servers.HuobiDM
                 SendLogMessage(error.ToString(), LogMessageType.Error);
             }
         }
+        void _client_UpdatePortfolio(List<HBContractBalanse> portfs)
+        {
+            try
+            {
+                if (portfs == null)
+                {
+                    return;
+                }
+
+                if (_portfolios == null)
+                {
+                    return;
+                }
+                foreach (var onePortf in portfs)
+                {
+                    
+                    Portfolio neeedPortf = _portfolios.Find(p => p.Number == onePortf.symbol);
+
+                    if (neeedPortf == null)
+                    {
+                        continue;
+                    }
+
+                    neeedPortf.ValueCurrent = onePortf.margin_balance;
+                    neeedPortf.ValueBlocked = onePortf.margin_frozen;
+                }
+
+                if (PortfolioEvent != null)
+                {
+                    PortfolioEvent(_portfolios);
+                }
+            }
+            catch (Exception error)
+            {
+                SendLogMessage(error.ToString(), LogMessageType.Error);
+            }
+        }
+
         /// <summary>
         /// all depths
         /// все стаканы
@@ -335,23 +377,37 @@ namespace OsEngine.Market.Servers.HuobiDM
             }
         }
 
+        void _client_MyOrderEvent(Order order)
+        {
+            if (MyOrderEvent != null)
+            {
+                MyOrderEvent(order);
+            }
+        }
+
+        void _client_MyTradeEvent(MyTrade myTrade)
+        {
+            if (MyTradeEvent != null)
+            {
+                MyTradeEvent(myTrade);
+            }
+        }
+
 
         private List<Security> _securities;
         public List<Candle> GetCandleDataToSecurity(Security security, TimeFrameBuilder timeFrameBuilder, DateTime startTime, DateTime endTime, DateTime actualTime)
         {
             return null;
-            //throw new NotImplementedException();
         }
 
         public void GetOrdersState(List<Order> orders)
         {
-            throw new NotImplementedException();
+            _client.GetOrdersState(orders);
         }
 
         public void GetPortfolios()
         {
             _client.GetBalance();
-            //throw new NotImplementedException();
         }
 
         public void GetSecurities()

@@ -339,6 +339,8 @@ namespace OsEngine.Entity
                         {
 
                             BitMexServer bitMex = (BitMexServer)_server;
+                            //Если нужна загрузка тиковой истории на график то этот код
+                            /*
                             List<Trade> allTrades = _server.GetAllTradesToSecurity(series.Security);
                             series.PreLoad(allTrades);
                             if(series.CandlesAll ==null|| series.CandlesAll.Count == 0|| series.CandlesAll[0].TimeStart> DateTime.Now.AddMinutes(-1))
@@ -350,7 +352,8 @@ namespace OsEngine.Entity
                                     series.CandlesAll = candles;
                                 }
                             }
-                            /*
+                            */
+                            
                             if (series.CandleCreateMethodType != CandleCreateMethodType.Simple || 
                                 series.TimeFrameSpan.TotalMinutes < 1)
                             {
@@ -366,7 +369,7 @@ namespace OsEngine.Entity
                                     series.CandlesAll = candles;
                                 }
                             }
-                            */
+                            
                             series.UpdateAllCandles();
                             series.IsStarted = true;
                         }

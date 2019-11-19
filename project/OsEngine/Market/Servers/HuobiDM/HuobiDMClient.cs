@@ -16,6 +16,7 @@ using OsEngine.Market.Servers.HuobiDM.HuobiEntity;
 using WebSocketSharp;
 using System.Linq;
 
+
 namespace OsEngine.Market.Servers.HuobiDM
 {
     class HuobiDMClient
@@ -26,10 +27,17 @@ namespace OsEngine.Market.Servers.HuobiDM
             SecretKey = secKey;
             _rateGate = new RateGate(1, TimeSpan.FromMilliseconds(500));
         }
+
         public string ApiKey;
         public string SecretKey;
+        /// <summary>
+        /// Прогружать дней
+        /// </summary>
         public int DaysToLoad;
-
+        /// <summary>
+        /// Плечо
+        /// </summary>
+        public int Leverege;
         private string _baseUrl = "https://api.hbdm.com";
         
         RateGate _rateGate;
@@ -82,6 +90,79 @@ namespace OsEngine.Market.Servers.HuobiDM
             converter.IsBackground = true;
             converter.Start();
 
+            Thread converterUserData = new Thread(ConverterUserData);
+            converterUserData.CurrentCulture = new CultureInfo("ru-RU");
+            converterUserData.IsBackground = true;
+            converterUserData.Start();
+
+
+            CreateUserDataStream();
+
+
+        }
+        /// <summary>
+        /// create user data thread
+        /// создать поток пользовательских данных
+        /// </summary>
+        /// <returns></returns>
+        private bool CreateUserDataStream()
+        {
+            try
+            {
+                string urlStr = "wss://api.hbdm.com/notification";//"wss://www.hbdm.com/ws";
+
+                _wsClient = new WebSocket(urlStr); 
+
+                _wsClient.OnOpen += UserDataConnect;
+
+                _wsClient.OnClose += Disconnect;
+
+                _wsClient.OnError += WsError;
+
+                _wsClient.OnMessage += UserDataMessageHandler;
+
+                _wsClient.ConnectAsync();
+
+                _wsStreams.Add("userDataStream", _wsClient);
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                SendLogMessage(exception.Message, LogMessageType.Connect);
+                return false;
+            }
+
+        }
+        /// <summary>
+        /// queue of new messages from the exchange server
+        /// очередь новых сообщений, пришедших с сервера биржи
+        /// </summary>
+        private ConcurrentQueue<string> _newUserDataMessage = new ConcurrentQueue<string>();
+        /// <summary>
+        /// user data handler
+        /// обработчик пользовательских данных
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void UserDataMessageHandler(object sender, MessageEventArgs e)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            var msg = GZipHelper.GZipDecompressString(e.RawData);
+            var steam = (WebSocket)sender;
+            if (msg.IndexOf("ping") != -1)
+            {
+                var reponseData = msg.Replace("ping", "pong");
+                steam.Send(reponseData);
+            }
+            else
+            {
+                _newUserDataMessage.Enqueue(msg);
+            }
+
         }
         /// <summary>
         /// bring the program to the start. Clear all objects involved in connecting to the server
@@ -94,8 +175,14 @@ namespace OsEngine.Market.Servers.HuobiDM
                 ws.Value.OnOpen -= Connect;
                 ws.Value.OnClose -= Disconnect;
                 ws.Value.OnError -= WsError;
-                ws.Value.OnMessage -= GetRes;
-
+                if(ws.Key== "userDataStream")
+                {
+                    ws.Value.OnMessage -= UserDataMessageHandler;
+                }
+                else
+                {
+                    ws.Value.OnMessage -= GetRes;
+                }
                 ws.Value.Close();
             
             }
@@ -152,14 +239,10 @@ namespace OsEngine.Market.Servers.HuobiDM
                 try
                 {
                     var res = HbRestApi.GetContractInfo();
-
-
-
                     if (UpdatePairs != null)
                     {
                         UpdatePairs(res);
                     }
-
                     return res;
                 }
                 catch (Exception ex)
@@ -168,7 +251,6 @@ namespace OsEngine.Market.Servers.HuobiDM
                     {
                         LogMessageEvent(ex.ToString(), LogMessageType.Error);
                     }
-
                     return null;
                 }
             }
@@ -423,7 +505,28 @@ namespace OsEngine.Market.Servers.HuobiDM
                 return null;
             }
         }
-
+        public string GetSecuritiName(string Securiti, string contract_type)
+        {
+            switch (contract_type)
+            {
+                case "this_week": return Securiti.ToUpper()+"_CW"; 
+                case "next_week": return Securiti.ToUpper() + "_NW"; 
+                case "quarter": return Securiti.ToUpper() + "_CQ"; 
+                default : return "";
+            }
+        }
+        private string GetContractType(string Securiti)
+        {
+            var Simbol = Securiti.ToUpper().Split('_');
+            string contract_type = "";
+            switch (Simbol[1])
+            {
+                case "CW": contract_type = "this_week"; break;
+                case "NW": contract_type = "next_week"; break;
+                case "CQ": contract_type = "quarter"; break;
+            }
+            return contract_type;
+        }
         /// <summary>
         /// execute order
         /// исполнить ордер
@@ -439,31 +542,46 @@ namespace OsEngine.Market.Servers.HuobiDM
                     {
                         return;
                     }
-                    /*
+                    var Simbol = order.SecurityNameCode.ToUpper().Split('_');
+                    string contract_type = "";
                     Dictionary<string, string> param = new Dictionary<string, string>();
-
-                    param.Add("symbol=", order.SecurityNameCode.ToUpper());
-                    param.Add("&side=", order.Side == Side.Buy ? "BUY" : "SELL");
-                    param.Add("&type=", "LIMIT");
-                    param.Add("&timeInForce=", "GTC");
-                    param.Add("&newClientOrderId=", order.NumberUser.ToString());
-                    //++++++++ вычисляем количество из размера лота
-                    Decimal quant;
-
-                    quant = order.Volume;
-                    
-                    param.Add("&quantity=",
-                        quant.ToString("0.000000")//CultureInfo.InvariantCulture)
-                            .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, ".").Replace(",", "."));
-                    param.Add("&price=",
-                        order.Price.ToString(CultureInfo.InvariantCulture)
-                            .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));
-
-                    var res = CreateQuery(Method.POST, "api/v3/order", param, true);
-
-                    if (res != null && res.Contains("clientOrderId"))
+                    param["symbol"] = Simbol[0];
+                    contract_type = GetContractType(order.SecurityNameCode);
+                    param["contract_type"] = contract_type;
+                    param["client_order_id"] = order.NumberUser.ToString();
+                    param["price"]      = order.Price.ToString(CultureInfo.InvariantCulture).Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, ".");
+                    param["volume"]     = order.Volume.ToString();
+                    param["direction"]  = order.Side== Side.Buy ? "buy":"sell";
+                    param["offset"]     = order.IsStopOrProfit ? "close" : "open";
+                    param["lever_rate"] = Leverege.ToString();
+                    switch (order.TypeOrder)
                     {
-                        SendLogMessage(res, LogMessageType.Trade);
+                        case OrderPriceType.Limit:
+                            param["order_price_type"] = "limit"; break;
+                        case OrderPriceType.Market:
+                            param["order_price_type"] = "opponent"; break;
+                        /*
+                        case OrderPriceType.LimitStop:
+                            param["order_price_type"] = "Limit"; break;
+                        case OrderPriceType.MarketStop:
+                            param["order_price_type"] = "Limit"; break;
+                        case OrderPriceType.BuyStop:
+                            param["order_price_type"] = "Limit"; break;
+                        case OrderPriceType.SellStop:
+                            param["order_price_type"] = "Limit"; break;
+                        */
+                      
+                     }
+                    var res = HbRestApi.ExecuteOrder(param);
+
+                    if (res != null && res.Count!=0)
+                    {
+                        SendLogMessage(res.ToString(), LogMessageType.Trade);
+                        if (res.ContainsKey("order_id"))
+                        {
+                            order.NumberMarket = res["order_id"].ToString();
+                            order.State = OrderStateType.Activ;
+                        }
                     }
                     else
                     {
@@ -472,15 +590,151 @@ namespace OsEngine.Market.Servers.HuobiDM
                         {
                             MyOrderEvent(order);
                         }
-                
+
                     }
-                    */
                 }
                 catch (Exception ex)
                 {
                     SendLogMessage(ex.ToString(), LogMessageType.Error);
                 }
             }
+        }
+        
+        /// <summary>
+        /// cancel order
+        /// отменить ордер
+        /// </summary>
+        public void CanselOrder(Order order)
+        {
+            lock (_lockOrder)
+            {
+                try
+                {
+                    Dictionary<string, string> param = new Dictionary<string, string>();
+                    param["symbol"] = order.SecurityNameCode.Split('_')[0];
+                    param["client_order_id"] = order.NumberUser.ToString();
+                    param["order_id"] = order.NumberMarket;
+                    HbRestApi.CanselOrder(param);
+                }
+                catch (Exception ex)
+                {
+                    SendLogMessage(ex.ToString(), LogMessageType.Error);
+
+                }
+            }
+        }
+        /// <summary>
+        /// chack order state
+        /// проверить ордера на состояние
+        /// </summary>
+        public bool GetOrdersState(List<Order> oldOpenOrders)
+        {
+            Dictionary<string, string> param = new Dictionary<string, string>();
+            param["symbol"] = "";
+            param["client_order_id"] = "";
+            for (int i = 0; i < oldOpenOrders.Count; i++)
+            {
+                var sec = oldOpenOrders[i].SecurityNameCode.ToUpper().Split('_')[0];
+                if (param["symbol"].IndexOf(sec) == -1)
+                {
+                    param["symbol"] += "," + sec;
+                }
+                if (param["client_order_id"].IndexOf(oldOpenOrders[i].NumberUser.ToString()) == -1)
+                {
+                    param["client_order_id"] += "," + oldOpenOrders[i].NumberUser.ToString();
+                }
+                
+            }
+            var allOrders = HbRestApi.GetOrdersState(param);
+            for (int i = 0; i < oldOpenOrders.Count; i++)
+            {
+                HBOrder myOrder = allOrders.Find(ord => ord.order_id == oldOpenOrders[i].NumberMarket);
+
+                if (myOrder == null)
+                {
+                    continue;
+                }
+            
+            }
+                /*
+                string endPoint = "/api/v3/allOrders";
+
+                List<HistoryOrderReport> allOrders = new List<HistoryOrderReport>();
+
+                for (int i = 0; i < namesSec.Count; i++)
+                {
+                    var param = new Dictionary<string, string>();
+                    param.Add("symbol=", namesSec[i].ToUpper());
+                    //param.Add("&recvWindow=" , "100");
+                    //param.Add("&limit=", GetNonce());
+                    param.Add("&limit=", "500");
+                    //"symbol={symbol.ToUpper()}&recvWindow={recvWindow}"
+
+                    var res = CreateQuery(Method.GET, endPoint, param, true);
+
+                    HistoryOrderReport[] orders = JsonConvert.DeserializeObject<HistoryOrderReport[]>(res);
+
+                    if (orders != null && orders.Length != 0)
+                    {
+                        allOrders.AddRange(orders);
+                    }
+                }
+
+                for (int i = 0; i < oldOpenOrders.Count; i++)
+                {
+                    HistoryOrderReport myOrder = allOrders.Find(ord => ord.orderId == oldOpenOrders[i].NumberMarket);
+
+                    if (myOrder == null)
+                    {
+                        continue;
+                    }
+
+                    if (myOrder.status == "NEW")
+                    { // order is active. Do nothing / ордер активен. Ничего не делаем
+                        continue;
+                    }
+
+                    else if (myOrder.status == "FILLED" ||
+                        myOrder.status == "PARTIALLY_FILLED")
+                    { // order executed / ордер исполнен
+
+                        MyTrade trade = new MyTrade();
+                        trade.NumberOrderParent = oldOpenOrders[i].NumberMarket;
+                        trade.NumberTrade = NumberGen.GetNumberOrder(StartProgram.IsOsTrader).ToString();
+                        trade.SecurityNameCode = oldOpenOrders[i].SecurityNameCode;
+                        trade.Time = new DateTime(1970, 1, 1).AddMilliseconds(Convert.ToDouble(myOrder.updateTime));
+                        trade.Side = oldOpenOrders[i].Side;
+
+                        if (MyTradeEvent != null)
+                        {
+                            MyTradeEvent(trade);
+                        }
+                    }
+                    else
+                    {
+                        Order newOrder = new Order();
+                        newOrder.NumberMarket = oldOpenOrders[i].NumberMarket;
+                        newOrder.NumberUser = oldOpenOrders[i].NumberUser;
+                        newOrder.SecurityNameCode = oldOpenOrders[i].SecurityNameCode;
+                        newOrder.State = OrderStateType.Cancel;
+
+                        newOrder.Volume = oldOpenOrders[i].Volume;
+                        newOrder.VolumeExecute = oldOpenOrders[i].VolumeExecute;
+                        newOrder.Price = oldOpenOrders[i].Price;
+                        newOrder.TypeOrder = oldOpenOrders[i].TypeOrder;
+                        newOrder.TimeCallBack = new DateTime(1970, 1, 1).AddMilliseconds(Convert.ToDouble(myOrder.updateTime));
+                        newOrder.TimeCancel = newOrder.TimeCallBack;
+                        newOrder.ServerType = ServerType.Binance;
+                        newOrder.PortfolioNumber = oldOpenOrders[i].PortfolioNumber;
+
+                        if (MyOrderEvent != null)
+                        {
+                            MyOrderEvent(newOrder);
+                        }
+                    }
+                }
+                */
+                return true;
         }
 
         private object _lockOrder = new object();
@@ -553,6 +807,157 @@ namespace OsEngine.Market.Servers.HuobiDM
             }
         }
 
+        public string user_id;
+
+        /// <summary>
+        /// takes messages from the general queue, converts them to C # classes and sends them to up
+        /// берет сообщения из общей очереди, конвертирует их в классы C# и отправляет на верх
+        /// </summary>
+        public void ConverterUserData()
+        {
+            while (true)
+            {
+                try
+                {
+                    if (!_newUserDataMessage.IsEmpty)
+                    {
+                        string mes;
+
+                        if (_newUserDataMessage.TryDequeue(out mes))
+                        {
+                            if (mes.Contains("\"op\":\"auth\""))
+                            {
+                                var auth = JsonConvert.DeserializeAnonymousType(mes, new HBAuth());
+                                if(auth.data != null)
+                                {
+                                    user_id = auth.data.UserId.ToString();
+                                }
+                                continue;
+                            }
+                            if (mes.Contains("\"op\":\"sub\""))
+                            {
+                                continue;
+                            }
+                            if (mes.Contains("err-msg"))
+                            {
+                                SendLogMessage(mes, LogMessageType.Error);
+                            }
+                            else if (mes.Contains("orders.")) 
+                            {
+                                var order = JsonConvert.DeserializeAnonymousType(mes, new HBOrder());
+
+                                string orderNumUser = order.client_order_id;
+
+                                if (string.IsNullOrEmpty(orderNumUser) ||
+                                    orderNumUser == "null")
+                                {
+                                    orderNumUser = order.order_id;
+                                }
+
+                                try
+                                {
+                                    Convert.ToInt32(orderNumUser);
+                                }
+                                catch (Exception)
+                                {
+                                    continue;
+                                }
+
+                                if (order.status == 3)
+                                {
+                                    Order newOrder = new Order();
+                                    newOrder.SecurityNameCode = GetSecuritiName(order.symbol, order.contract_type);
+                                    newOrder.TimeCallBack = new DateTime(1970, 1, 1).AddMilliseconds(Convert.ToDouble(order.created_at)).ToLocalTime();
+                                    newOrder.NumberUser = Convert.ToInt32(orderNumUser);
+
+                                    newOrder.NumberMarket = order.order_id.ToString();
+                                    newOrder.Side = order.direction == "buy" ? Side.Buy : Side.Sell;
+                                    newOrder.State = OrderStateType.Activ;
+                                    newOrder.Volume = order.volume;
+                                    newOrder.Price = order.price;
+                                    newOrder.ServerType = ServerType.HuobiDM;
+                                    newOrder.PortfolioNumber = newOrder.SecurityNameCode;
+
+                                    if (MyOrderEvent != null)
+                                    {
+                                        MyOrderEvent(newOrder);
+                                    }
+                                }
+                                else if (order.status == 7)
+                                {
+                                    Order newOrder = new Order();
+                                    newOrder.SecurityNameCode = GetSecuritiName(order.symbol, order.contract_type);
+                                    newOrder.TimeCallBack = new DateTime(1970, 1, 1).AddMilliseconds(Convert.ToDouble(order.created_at)).ToLocalTime();
+                                    newOrder.TimeCancel = newOrder.TimeCallBack;
+                                    newOrder.NumberUser = Convert.ToInt32(orderNumUser);
+                                    newOrder.NumberMarket = order.order_id.ToString();
+                                    newOrder.Side = order.direction == "buy" ? Side.Buy : Side.Sell;
+                                    newOrder.State = OrderStateType.Cancel;
+                                    newOrder.Volume = order.volume;
+                                    newOrder.Price = order.price;
+                                    newOrder.ServerType = ServerType.HuobiDM;
+                                    newOrder.PortfolioNumber = newOrder.SecurityNameCode;
+
+                                    if (MyOrderEvent != null)
+                                    {
+                                        MyOrderEvent(newOrder);
+                                    }
+                                }
+                                else if (order.status == 4 || order.status == 6)
+                                {
+                                    foreach (HBOrderTrade _trade in order.trade)
+                                    {
+                                        MyTrade trade = new MyTrade();
+                                        trade.Time = new DateTime(1970, 1, 1).AddMilliseconds(Convert.ToDouble(_trade.created_at)).ToLocalTime();
+                                        trade.NumberOrderParent = order.order_id.ToString();
+                                        trade.NumberTrade = _trade.trade_id.ToString();
+                                        trade.Volume = _trade.trade_volume;
+                                        trade.Price = _trade.trade_price;
+                                        trade.SecurityNameCode = GetSecuritiName(order.symbol, order.contract_type);
+                                        trade.Side = order.direction == "buy" ? Side.Buy : Side.Sell;
+
+                                        if (MyTradeEvent != null)
+                                        {
+                                            MyTradeEvent(trade);
+                                        }
+
+                                    }
+                                }
+
+
+                            }
+                            else if (mes.Contains("accounts."))
+                            {
+                                var portfolios = JsonConvert.DeserializeAnonymousType(mes, new HBWsResponse <List<HBContractBalanse>>());
+
+                                if (UpdatePortfolio != null)
+                                {
+                                    UpdatePortfolio(portfolios.data);
+                                }
+                                continue;
+                            }
+
+                        }
+                    }
+                    else
+                    {
+
+                        if (_isDisposed)
+                        {
+                            return;
+                        }
+                        Thread.Sleep(1);
+                    }
+                }
+
+                catch (Exception exception)
+                {
+                    SendLogMessage(exception.ToString(), LogMessageType.Error);
+                }
+
+            }
+        }
+
         /// <summary>
         /// queue of new messages from the exchange server
         /// очередь новых сообщений, пришедших с сервера биржи
@@ -589,6 +994,33 @@ namespace OsEngine.Market.Servers.HuobiDM
                 _newMessage.Enqueue(msg);
             }
         }
+        private void UserDataConnect(object sender, EventArgs e)
+        {
+            IsConnected = true;
+
+            var ws = (WebSocket)sender;
+
+            Dictionary<string, string> param = new Dictionary<string, string>();
+            ApiSignature _sign = new ApiSignature();
+            try
+            {
+                _sign.createSignature(ApiKey, SecretKey, "GET", "api.hbdm.com", "/notification", param);
+            }
+            catch (Exception exception)
+            {
+                SendLogMessage(exception.Message, LogMessageType.Connect);
+            }
+            param.Add(ApiSignature.op, ApiSignature.opValue);
+            param.Add("type", "api");
+            param.Add("cid", "userdata");
+            string msg = JsonConvert.SerializeObject(param);
+            ws.Send(msg);
+            msg = $"{{\"op\": \"sub\",\"topic\": \"orders.*\",\"cid\": \"userdata\"}}";
+            ws.Send(msg);
+            msg = $"{{\"op\": \"sub\",\"topic\": \"accounts.*\",\"cid\": \"userdata\"}}";
+            ws.Send(msg);
+        }
+
         /// <summary>
         /// ws-connection is opened
         /// соединение по ws открыто
@@ -607,7 +1039,7 @@ namespace OsEngine.Market.Servers.HuobiDM
                 {
                     var msg = $"{{\"sub\":\"market.{item.Key.ToUpper()}.trade.detail\",\"id\":\"{item.Key.ToUpper()}\"}}";
                     item.Value.Send(msg);
-                   // Console.WriteLine(msg);
+                    // Console.WriteLine(msg);
                     msg = $"{{\"sub\":\"market.{item.Key.ToUpper()}.depth.step0\",\"id\":\"{item.Key.ToUpper()}\"}}";
                     item.Value.Send(msg);
                 }
@@ -671,12 +1103,14 @@ namespace OsEngine.Market.Servers.HuobiDM
         /// новые бумаги в системе
         /// </summary>
         public event Action<List<HBContractInfo>> UpdatePairs;
-        /*
+        
         /// <summary>
         /// portfolios updated
         /// обновились портфели
         /// </summary>
-        public event Action<OutboundAccountInfo> UpdatePortfolio;
+        public event Action<List<HBContractBalanse>> UpdatePortfolio;
+
+        /*
 
 
         /// <summary>

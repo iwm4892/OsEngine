@@ -334,6 +334,7 @@
     <Compile Include="Entity\Extensions.cs" />
     <Compile Include="Entity\HorizontalVolume.cs" />
     <Compile Include="Entity\MarketDepthPainter.cs" />
+    <Compile Include="Entity\MarketDepthSpreadAnaliser.cs" />
     <Compile Include="Entity\ProxyHolder.cs" />
     <Compile Include="Entity\ProxyHolderAddUi.xaml.cs">
       <DependentUpon>ProxyHolderAddUi.xaml</DependentUpon>
@@ -449,11 +450,9 @@
     <Compile Include="Market\Servers\HuobiDM\HuobiDMClient.cs" />
     <Compile Include="Market\Servers\HuobiDM\HuobiDMServer.cs" />
     <Compile Include="Market\Servers\HuobiDM\HuobiEntity\Account.cs" />
+    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\ApiSignature.cs" />
     <Compile Include="Market\Servers\HuobiDM\HuobiEntity\GZipHelper.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBCandle.cs" />
     <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBContractBalanse.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBContractInfo.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBError.cs" />
     <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBResponse.cs" />
     <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBWsResponse.cs" />
     <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HuobiRestApi.cs" />
@@ -656,6 +655,7 @@
     <Compile Include="Robots\CounterTrend\ClusterCountertrend.cs" />
     <Compile Include="Robots\CounterTrend\MovingChanelFlat.cs" />
     <Compile Include="Robots\High Frequency\HighFrequencyTrader.cs" />
+    <Compile Include="Robots\MarketMaker\ArbitrageFutures.cs" />
     <Compile Include="Robots\MarketMaker\ArbitrageIndex.cs" />
     <Compile Include="Robots\Trend\FastDelta_2.cs" />
     <Compile Include="Robots\Trend\GridBot.cs" />
