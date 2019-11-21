@@ -68,7 +68,7 @@ namespace OsEngine.Robots.MarketMaker
             {
                 foreach (var tab in TabsSimple)
                 {
-                    if(tab.PositionsLast.State == PositionStateType.Open)
+                    if(tab.PositionsOpenAll !=null && tab.PositionsOpenAll.Count > 0)
                     {
                         tab.CloseAllAtMarket();
                     }
@@ -92,7 +92,7 @@ namespace OsEngine.Robots.MarketMaker
             {
                 foreach (var tab in TabsSimple)
                 {
-                    if (tab.PositionsLast == null || tab.PositionsLast.State == PositionStateType.Done || tab.PositionsLast.State == PositionStateType.OpeningFail)
+                    if (tab.PositionsOpenAll == null || tab.PositionsOpenAll.Count == 0)
                     {
                         if (obj.Direction == Side.Buy)
                         {
@@ -132,33 +132,55 @@ namespace OsEngine.Robots.MarketMaker
             var countClose = 0;
             foreach(var tab in TabsSimple)
             {
-                if(tab.PositionsLast == null || 
-                    tab.PositionsLast.State == PositionStateType.Done || 
-                    tab.PositionsLast.State == PositionStateType.Deleted || 
-                    tab.PositionsLast.State == PositionStateType.OpeningFail)
+
+                if(tab.PositionsOpenAll==null || tab.PositionsOpenAll.Count==0)
                 {
                     countOpen++;
                 }
-                if (tab.PositionsLast != null && tab.PositionsLast.State == PositionStateType.Open )
+                if (tab.PositionsOpenAll != null || tab.PositionsOpenAll.Count > 0)
                 {
                     countClose++;
                 }
             }
-            if (countOpen == 2) canOpen = true;
-            if (countClose == 2) canClose = true;
-
+            if (countOpen == 2)
+            {
+                canOpen = true;
+            }
+            else
+            {
+                canOpen = false;
+            }
+            if (countClose == 2)
+            {
+                canClose = true;
+            }
+            else
+            {
+                canClose = false;                
+            }
+            if(Status == PositionStateType.None)
+            {
+                if (countClose == 2)
+                {
+                    Status = PositionStateType.Open;
+                }
+                if (countOpen == 2)
+                {
+                    Status = PositionStateType.Done;
+                }
+            }
             if (canOpen && Status != PositionStateType.Opening)
             {
                 if (obj > minSpread.ValueDecimal || obj < - minSpread.ValueDecimal)
                 {
                     OpenPositions();
+                    Status = PositionStateType.Opening;
                 }
-                Status = PositionStateType.Opening;
             }
             if (canClose && Status == PositionStateType.Open)
             {
                 ClosePositions();
-                Status = PositionStateType.Closing;
+                
             }
         }
         private void OpenPositions()
@@ -214,8 +236,8 @@ namespace OsEngine.Robots.MarketMaker
             }
             decimal profit = 0;
 
-            profit = (_tabs.BuyTable.PriceBestBid - _tabs.BuyTable.PositionsLast.EntryPrice) / _tabs.BuyTable.PositionsLast.EntryPrice
-                + (_tabs.SellTable.PositionsLast.EntryPrice - _tabs.SellTable.PriceBestAsk) / _tabs.SellTable.PositionsLast.EntryPrice;
+            profit = (_tabs.BuyTable.PriceBestBid - _tabs.BuyTable.PositionsOpenAll[0].EntryPrice) / _tabs.BuyTable.PositionsOpenAll[0].EntryPrice
+                + (_tabs.SellTable.PositionsOpenAll[0].EntryPrice - _tabs.SellTable.PriceBestAsk) / _tabs.SellTable.PositionsOpenAll[0].EntryPrice;
 
             if (profit > minProfit.ValueDecimal / 100)
             {
@@ -234,62 +256,8 @@ namespace OsEngine.Robots.MarketMaker
                     _tab1.CloseAllAtMarket();
                     _tab2.CloseAllAtMarket();
                 }
+                Status = PositionStateType.Closing;
             }
-            /*
-            List<Position> positions1 = _tab1.PositionsOpenAll;
-            List<Position> positions2 = _tab2.PositionsOpenAll;
-            decimal pr1;
-            decimal pr2;
-            if (positions1[0].Direction == Side.Buy)
-            {
-                pr1 = _tab1.PriceBestBid;
-                pr2 = _tab2.PriceBestAsk;
-                profit = (pr1 - positions1[0].EntryPrice) / positions1[0].EntryPrice + (positions2[0].EntryPrice - pr2) / positions2[0].EntryPrice;
-                if (profit > minProfit.ValueDecimal / 100)
-                {
-                    if (BitmexFix.ValueBool)
-                    {
-                        foreach (var tab in TabsSimple)
-                        {
-                            if (tab.Connector.ServerType == ServerType.BitMex)
-                            {
-                                tab.CloseAllAtMarket();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        _tab1.CloseAllAtMarket();
-                        _tab2.CloseAllAtMarket();
-                    }
-                }
-
-            }
-            if (positions1[0].Direction == Side.Sell)
-            {
-                pr1 = _tab1.PriceBestAsk;
-                pr2 = _tab2.PriceBestBid;
-                profit = (positions1[0].EntryPrice - pr1) / positions1[0].EntryPrice + (pr2 - positions2[0].EntryPrice) / positions2[0].EntryPrice;
-                if (profit > minProfit.ValueDecimal / 100)
-                {
-                    if (BitmexFix.ValueBool)
-                    {
-                        foreach (var tab in TabsSimple)
-                        {
-                            if (tab.Connector.ServerType == ServerType.BitMex)
-                            {
-                                tab.CloseAllAtMarket();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        _tab1.CloseAllAtMarket();
-                        _tab2.CloseAllAtMarket();
-                    }
-                }
-            }
-            */
             Console.WriteLine("profit: " + Math.Round(profit * 100, 2));
 
         }

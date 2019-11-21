@@ -1277,6 +1277,8 @@ namespace OsEngine.Market.Servers.BitMex
                 {
                     for (int i = 0; i < order.data.Count; i++)
                     {
+                        if(order.data[i].execType== "New") continue;
+
                         MyTrade trade = new MyTrade();
                         trade.NumberTrade = order.data[i].execID;
                         trade.NumberOrderParent = order.data[i].orderID;
@@ -1724,11 +1726,12 @@ namespace OsEngine.Market.Servers.BitMex
             {
                 try
                 {
-                    if (_lastStartServerTime.AddSeconds(15) > DateTime.Now)
+                    /*
+                    if (_lastStartServerTime.AddSeconds(1) > DateTime.Now)
                     {
                         return;
                     }
-
+                    */
                     for (int i = 0; i < myOrder.data.Count; i++)
                     {
                         if (string.IsNullOrEmpty(myOrder.data[i].clOrdID))

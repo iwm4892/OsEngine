@@ -339,23 +339,37 @@ namespace OsEngine.Market.Servers.BitMex
 
                         if (_newMessage.TryDequeue(out mes))
                         {
-
-
+                            if (!mes.StartsWith(marketDepthStr) && !mes.StartsWith(tradesStr))
+                            {
+                             //   Console.WriteLine(mes);
+                            }
                             if (mes.StartsWith(myTradesStr))
                             {
                                 var myOrder = JsonConvert.DeserializeAnonymousType(mes, new BitMexMyOrders());
-
+                                if (MyTradeEvent != null && myOrder.data.Count != 0) {
+                                    bool istrade = false;
+                                    foreach (var tr in myOrder.data)
+                                    {
+                                        if (tr.execType == "Trade")
+                                        {
+                                            istrade = true;
+                                        }
+                                    }
+                                    if (istrade) MyTradeEvent(myOrder);
+                                }
+                                /*
                                 if (MyTradeEvent != null && myOrder.data.Count != 0 && myOrder.data[0].execType == "Trade")
                                 {
                                     MyTradeEvent(myOrder);
                                 }
+                                */
                                 continue;
                             }
 
                             if (mes.StartsWith(ordersStr))
                             {
                                 var order = JsonConvert.DeserializeAnonymousType(mes, new BitMexOrder());
-
+                               // Console.WriteLine(mes);
                                 if (MyOrderEvent != null)
                                 {
                                     MyOrderEvent(order);

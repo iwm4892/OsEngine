@@ -2063,7 +2063,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                     return;
                 }
 
-                if (_connector.ServerType == ServerType.InteractivBrokers || _connector.ServerType == ServerType.Lmax || _connector.ServerType == ServerType.HuobiDM)
+                if (_connector.ServerType == ServerType.InteractivBrokers || _connector.ServerType == ServerType.Lmax || _connector.ServerType == ServerType.HuobiDM || _connector.ServerType == ServerType.BitMex)
                 {
                     if (position.OpenVolume <= volume)
                     {
