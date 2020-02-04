@@ -137,7 +137,13 @@ namespace OsEngine.Market
 
                     for (int i = 0; i < portfolios.Count; i++)
                     {
-                        Portfolio portf = _portfolios.Find(portfolio => portfolio.Number == portfolios[i].Number);
+                        if (portfolios[i] == null)
+                        {
+                            continue;
+                        }
+
+                        Portfolio portf = _portfolios.Find(
+                            portfolio => portfolio != null && portfolio.Number == portfolios[i].Number);
 
                         if (portf != null)
                         {
@@ -291,6 +297,13 @@ namespace OsEngine.Market
         {
             try
             {
+                if (portfolio.ValueBegin == 0
+                    && portfolio.ValueCurrent == 0 
+                    && portfolio.ValueBlocked == 0)
+                {
+                    return;
+                }
+
                 DataGridViewRow secondRow = new DataGridViewRow();
                 secondRow.Cells.Add(new DataGridViewTextBoxCell());
                 secondRow.Cells[0].Value = portfolio.Number;
@@ -324,6 +337,12 @@ namespace OsEngine.Market
                 {
                     for (int i = 0; i < positionsOnBoard.Count; i++)
                     {
+                        if (positionsOnBoard[i].ValueBegin == 0 &&
+                            positionsOnBoard[i].ValueCurrent == 0 &&
+                            positionsOnBoard[i].ValueBlocked == 0)
+                        {
+                            continue;
+                        }
                         DataGridViewRow nRow = new DataGridViewRow();
                         nRow.Cells.Add(new DataGridViewTextBoxCell());
                         nRow.Cells.Add(new DataGridViewTextBoxCell());

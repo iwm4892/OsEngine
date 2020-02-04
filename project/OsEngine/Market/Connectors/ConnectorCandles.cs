@@ -277,6 +277,16 @@ namespace OsEngine.Market.Connectors
         public TimeFrameBuilder TimeFrameBuilder;
 
         /// <summary>
+        /// тип комиссии для позиций
+        /// </summary>
+        public ComissionType ComissionType;
+
+        /// <summary>
+        /// размер комиссии
+        /// </summary>
+        public decimal ComissionValue;
+
+        /// <summary>
         /// method of creating candles: from ticks or from depths 
         /// способ создания свечей: из тиков или из стаканов
         /// </summary>
@@ -549,10 +559,44 @@ namespace OsEngine.Market.Connectors
             }
         }
 
-// data subscription
-// подписка на данные 
+        /// <summary>
+        /// connector is ready to send Orders / 
+        /// готов ли коннектор к выставленю заявок
+        /// </summary>
+        public bool IsReadyToTrade
+        {
+            get 
+            {
+                if(_myServer == null)
+                {
+                    return false;
+                }
+
+                if(_myServer.ServerStatus != ServerConnectStatus.Connect)
+                {
+                    return false;
+                }
+
+                if(StartProgram != StartProgram.IsOsTrader)
+                { // в тестере и оптимизаторе дальше не проверяем
+                    return true;
+                }
+
+                if (_myServer.LastStartServerTime.AddSeconds(60) > DateTime.Now)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        // data subscription
+        // подписка на данные 
 
         private DateTime _lastReconnectTime;
+
+        private object _reconnectLocker = new object();
 
         /// <summary>
         /// reconnect candle downloading
@@ -562,11 +606,14 @@ namespace OsEngine.Market.Connectors
         {
             try
             {
-                if (_lastReconnectTime.AddSeconds(1) > DateTime.Now)
+                lock (_reconnectLocker)
                 {
-                    return;
+                    if (_lastReconnectTime.AddSeconds(1) > DateTime.Now)
+                    {
+                        return;
+                    }
+                    _lastReconnectTime = DateTime.Now;
                 }
-                _lastReconnectTime = DateTime.Now;
 
                 if (_mySeries != null)
                 {

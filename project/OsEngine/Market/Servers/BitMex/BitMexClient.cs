@@ -346,19 +346,13 @@ namespace OsEngine.Market.Servers.BitMex
                             if (mes.StartsWith(myTradesStr))
                             {
                                 var myOrder = JsonConvert.DeserializeAnonymousType(mes, new BitMexMyOrders());
-                                if (MyTradeEvent != null && myOrder.data.Count != 0) {
-                                    bool istrade = false;
-                                    foreach (var tr in myOrder.data)
-                                    {
-                                        if (tr.execType == "Trade")
-                                        {
-                                            istrade = true;
-                                        }
-                                    }
-                                    if (istrade) MyTradeEvent(myOrder);
-                                }
-                                /*
-                                if (MyTradeEvent != null && myOrder.data.Count != 0 && myOrder.data[0].execType == "Trade")
+
+                                if (MyTradeEvent != null && 
+                                    myOrder.data.Count != 0
+                                    && 
+                                    (myOrder.data[0].execType == "Trade"
+                                    || myOrder.data[0].execType == "New"
+                                    || myOrder.data[0].execType == "Filled"))
                                 {
                                     MyTradeEvent(myOrder);
                                 }

@@ -70,9 +70,12 @@ namespace OsEngine.OsTrader.Panels.Tab
                 _journal.UserSelectActionEvent += _journal_UserSelectActionEvent;
                 _journal.LogMessageEvent += SetNewLogMessage;
 
+                _connector.ComissionType = _journal.ComissionType;
+                _connector.ComissionValue = _journal.ComissionValue;
+
+               _chartMaster = new ChartCandleMaster(TabName, StartProgram);
                 _journal.PositionNetVolumeChangeEvent += UpdateServerStop;
 
-                _chartMaster = new ChartCandleMaster(TabName, StartProgram);
                 _chartMaster.LogMessageEvent += SetNewLogMessage;
                 _chartMaster.SetNewSecurity(_connector.NamePaper, _connector.TimeFrameBuilder, _connector.PortfolioName, _connector.ServerType);
                 _chartMaster.SetPosition(_journal.AllPosition);
@@ -241,6 +244,15 @@ namespace OsEngine.OsTrader.Panels.Tab
         public bool IsConnected
         {
             get { return _connector.IsConnected; }
+        }
+
+        /// <summary>
+        /// connector is ready to send Orders / 
+        /// готов ли коннектор к выставленю заявок
+        /// </summary>
+        public bool IsReadyToTrade
+        {
+            get { return _connector.IsReadyToTrade; }
         }
 
         /// <summary>
@@ -479,6 +491,24 @@ namespace OsEngine.OsTrader.Panels.Tab
             set { _portfolio = value; }
         }
         private Portfolio _portfolio;
+
+        /// <summary>
+        /// тип комиссии для позиций
+        /// </summary>
+        public ComissionType ComissionType
+        {
+            get { return _journal.ComissionType; }
+            set { _journal.ComissionType = value; }
+        }
+
+        /// <summary>
+        /// размер комиссии
+        /// </summary>
+        public decimal ComissionValue
+        {
+            get { return _journal.ComissionValue; }
+            set { _journal.ComissionValue = value; }
+        }
 
         /// <summary>
         /// All positions are owned by bot. Open, closed and with errors / 
@@ -726,6 +756,9 @@ namespace OsEngine.OsTrader.Panels.Tab
         public void ShowConnectorDialog()
         {
             _connector.ShowDialog();
+
+            _journal.ComissionType = _connector.ComissionType;
+            _journal.ComissionValue = _connector.ComissionValue;
         }
 
         /// <summary>
