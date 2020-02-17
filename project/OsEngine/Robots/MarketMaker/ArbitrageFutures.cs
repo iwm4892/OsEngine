@@ -87,7 +87,7 @@ namespace OsEngine.Robots.MarketMaker
         }
         private void _PositionOpeningSuccesEvent(Position obj)
         {
-            obj.Comission = 0.075m;
+            obj.ComissionValue = 0.075m;
             if (BitmexFix.ValueBool)
             {
                 foreach (var tab in TabsSimple)

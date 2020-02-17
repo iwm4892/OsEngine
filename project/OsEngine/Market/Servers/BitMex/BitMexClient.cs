@@ -356,7 +356,7 @@ namespace OsEngine.Market.Servers.BitMex
                                 {
                                     MyTradeEvent(myOrder);
                                 }
-                                */
+                                
                                 continue;
                             }
 
