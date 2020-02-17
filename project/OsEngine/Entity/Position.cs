@@ -46,7 +46,7 @@ namespace OsEngine.Entity
                 _openOrders = new List<Order>();
             }
             _openOrders.Add(openOrder);
-
+            
             State = PositionStateType.Opening;
         }
 
@@ -58,10 +58,6 @@ namespace OsEngine.Entity
         {
             get
             {
-                if (_closeOrders == null)
-                {
-                    _closeOrders = new List<Order>();
-                }
                 return _closeOrders;
             }
         }
@@ -93,7 +89,7 @@ namespace OsEngine.Entity
                 }
 
                 for (int i = 0; _closeOrders != null && i < _closeOrders.Count; i++)
-                {
+                {   
                     List<MyTrade> newTrades = _closeOrders[i].MyTrades;
                     if (newTrades != null &&
                         newTrades.Count != 0)
@@ -121,23 +117,8 @@ namespace OsEngine.Entity
                 _closeOrders = new List<Order>();
             }
             _closeOrders.Add(closeOrder);
-            if (!closeOrder.IsStopOrProfit)
-            {
-                State = PositionStateType.Closing;
-            }
-        }
-        /// <summary>
-        /// load a new order to a position
-        /// загрузить в позицию новый стоп ордер
-        /// </summary>
-        /// <param name="closeOrder"></param>
-        public void AddNewStopOrder(Order closeOrder)
-        {
-            if (CloseOrders == null)
-            {
-                _closeOrders = new List<Order>();
-            }
-            _closeOrders.Add(closeOrder);
+
+            State = PositionStateType.Closing;
         }
 
         /// <summary>
@@ -181,8 +162,7 @@ namespace OsEngine.Entity
 
                 if (CloseOrders.Find(order => order.State == OrderStateType.Activ 
                                               || order.State == OrderStateType.Pending
-                                              || order.State == OrderStateType.Patrial
-                                              || !order.IsStopOrProfit) != null
+                                              || order.State == OrderStateType.Patrial) != null
                     )
                 {
                     return true;
@@ -201,43 +181,8 @@ namespace OsEngine.Entity
         /// order price stop order
         /// цена заявки стоп приказа
         /// </summary>
-        public decimal StopOrderPrice
-        {
-            set
-            {
-                _stopOrderPrice = value;
-            }
-            get
-            {
-                lock (locker)
-                {
-                    decimal st = 0;
-                    Order ord = CloseOrders.FindLast(o=>(o.State == OrderStateType.Activ || o.State == OrderStateType.None) && o.IsStopOrProfit && o.Volume == OpenVolume);
-                    if(ord != null)
-                    {
-                        if (ProfitOrderPrice != 0)
-                        {
-                            if (ord.Price != ProfitOrderPrice)
-                            {
-                                st = ord.Price;
-                            }
-                        }
-                        else
-                        {
-                            st = ord.Price;
-                        }
+        public decimal StopOrderPrice;
 
-                    }
-                    if(st==0 && _stopOrderPrice != 0)
-                    {
-                        return _stopOrderPrice;
-                    }
-                    return st;
-                }
-            }
-        }
-        private decimal _stopOrderPrice;
- 
         /// <summary>
         /// stop - the price, the price after which the order will be entered into the system
         /// стоп - цена, цена после достижения которой в систему будет выставлени приказ
@@ -282,7 +227,7 @@ namespace OsEngine.Entity
                 _state = value;
                 if (value == PositionStateType.ClosingFail)
                 {
-
+                    
                 }
             }
         }
@@ -369,7 +314,7 @@ namespace OsEngine.Entity
         /// number of contracts open per trade
         /// количество контрактов открытых в сделке
         /// </summary>
-        public decimal OpenVolume
+        public decimal OpenVolume 
         {
             get
             {
@@ -377,7 +322,7 @@ namespace OsEngine.Entity
                 {
                     decimal volume = 0;
 
-                    for (int i = 0; _openOrders != null && i < _openOrders.Count; i++)
+                    for (int i = 0;_openOrders != null && i < _openOrders.Count; i++)
                     {
                         volume += _openOrders[i].VolumeExecute;
                     }
@@ -461,7 +406,7 @@ namespace OsEngine.Entity
                     return 0;
                 }
 
-                return price / volume;
+                return price/volume;
             }
         }
 
@@ -487,7 +432,7 @@ namespace OsEngine.Entity
                     if (volumeEx != 0)
                     {
                         volume += _closeOrders[i].VolumeExecute;
-                        price += _closeOrders[i].VolumeExecute * _closeOrders[i].PriceReal;
+                        price += _closeOrders[i].VolumeExecute*_closeOrders[i].PriceReal;
                     }
 
                 }
@@ -496,7 +441,7 @@ namespace OsEngine.Entity
                     return 0;
                 }
 
-                return price / volume;
+                return price/volume;
             }
         }
 
@@ -513,7 +458,7 @@ namespace OsEngine.Entity
                 {
                     if (_openOrders[i].NumberUser == newOrder.NumberUser)
                     {
-                        if ((State == PositionStateType.Done || State == PositionStateType.OpeningFail)
+                        if ((State == PositionStateType.Done || State == PositionStateType.OpeningFail) 
                             &&
                             ((_openOrders[i].State == OrderStateType.Fail && newOrder.State == OrderStateType.Fail) ||
                             (_openOrders[i].State == OrderStateType.Cancel && newOrder.State == OrderStateType.Cancel)))
@@ -535,7 +480,7 @@ namespace OsEngine.Entity
                 {
                     openOrder.TimeCallBack = newOrder.TimeCallBack;
                 }
-
+                
                 openOrder.TimeCancel = newOrder.TimeCancel;
                 openOrder.VolumeExecute = newOrder.VolumeExecute;
 
@@ -544,7 +489,7 @@ namespace OsEngine.Entity
                 {
                     State = PositionStateType.Open;
                 }
-                else if (newOrder.State == OrderStateType.Fail && newOrder.VolumeExecute == 0 &&
+                else if (newOrder.State == OrderStateType.Fail && newOrder.VolumeExecute == 0 && 
                     OpenVolume == 0)
                 {
                     State = PositionStateType.OpeningFail;
@@ -558,7 +503,7 @@ namespace OsEngine.Entity
                 {
                     State = PositionStateType.Open;
                 }
-                else if (newOrder.State == OrderStateType.Done && OpenVolume == 0
+                else if (newOrder.State == OrderStateType.Done && OpenVolume == 0 
                     && CloseOrders != null && CloseOrders.Count > 0)
                 {
                     State = PositionStateType.Done;
@@ -573,7 +518,7 @@ namespace OsEngine.Entity
                 {
                     if (CloseOrders[i].NumberUser == newOrder.NumberUser)
                     {
-                        if (CloseOrders[i].State == OrderStateType.Fail && newOrder.State == OrderStateType.Fail ||
+                        if (CloseOrders[i].State == OrderStateType.Fail &&newOrder.State == OrderStateType.Fail ||
                             CloseOrders[i].State == OrderStateType.Cancel && newOrder.State == OrderStateType.Cancel)
                         {
                             return;
@@ -618,46 +563,24 @@ namespace OsEngine.Entity
                 {
                     State = PositionStateType.ClosingSurplus;
                 }
-
-                if (State == PositionStateType.Done && CloseOrders != null && EntryPrice != 0)
+                
+                if (State == PositionStateType.Done && CloseOrders != null && EntryPrice != 0 && ClosePrice != 0)
                 {
-                    //AlertMessageManager.ThrowAlert(null, "Done пересчёт", "");
-                    decimal medianPriceClose = 0;
-                    decimal countValue = 0;
-
-                    for (int i = 0; i < CloseOrders.Count; i++)
-                    {
-                        if (CloseOrders[i].VolumeExecute != 0)
-                        {
-                            medianPriceClose += CloseOrders[i].PriceReal * CloseOrders[i].VolumeExecute;
-                            countValue += CloseOrders[i].VolumeExecute;
-                        }
-                    }
-
-                    if (countValue != 0)
-                    {
-                        medianPriceClose = medianPriceClose / countValue;
-                    }
-
-                    if (medianPriceClose == 0)
-                    {
-                        return;
-                    }
+                    decimal closePrice = ClosePrice;
+                    decimal openPrice = EntryPrice;
 
                     if (Direction == Side.Buy)
                     {
-                        ProfitOperationPersent = medianPriceClose / EntryPrice * 100 - 100;
-                        ProfitOperationPunkt = medianPriceClose - EntryPrice;
+                        ProfitOperationPersent = closePrice / EntryPrice * 100 - 100;
+                        ProfitOperationPunkt = closePrice - EntryPrice;
                     }
                     else
                     {
-                        ProfitOperationPunkt = EntryPrice - medianPriceClose;
-                        ProfitOperationPersent = -(medianPriceClose / EntryPrice * 100 - 100);
+                        ProfitOperationPunkt = EntryPrice - closePrice;
+                        ProfitOperationPersent = -(closePrice / EntryPrice * 100 - 100);
                     }
-                    ProfitOperationPersent = Math.Round(ProfitOperationPersent, 5);
                 }
             }
-
         }
 
         /// <summary>
@@ -672,7 +595,7 @@ namespace OsEngine.Entity
 
                 for (int i = 0; i < _openOrders.Count; i++)
                 {
-                    if (_openOrders[i].NumberMarket == trade.NumberOrderParent ||
+                    if (_openOrders[i].NumberMarket == trade.NumberOrderParent||
                         _openOrders[i].NumberUser.ToString() == trade.NumberOrderParent)
                     {
                         trade.NumberPosition = Number.ToString();
@@ -707,46 +630,25 @@ namespace OsEngine.Entity
                         else if (OpenVolume < 0)
                         {
                             State = PositionStateType.ClosingSurplus;
-                        }
+                        }      
                     }
                 }
             }
 
-            if (State == PositionStateType.Done && CloseOrders != null && EntryPrice != 0)
+
+            if (State == PositionStateType.Done && CloseOrders != null && EntryPrice != 0  && ClosePrice != 0)
             {
-                decimal medianPriceClose = 0;
-                decimal countValue = 0;
 
-                for (int i = 0; i < CloseOrders.Count; i++)
-                {
-                    if (CloseOrders[i].VolumeExecute != 0)
-                    {
-                        medianPriceClose += CloseOrders[i].PriceReal * CloseOrders[i].VolumeExecute;
-                        countValue += CloseOrders[i].VolumeExecute;
-                    }
-                }
-
-                if (countValue != 0)
-                {
-                    medianPriceClose = medianPriceClose / countValue;
-                }
-
-                if (medianPriceClose == 0)
-                {
-                    return;
-                }
                 if (Direction == Side.Buy)
                 {
-                    ProfitOperationPersent = medianPriceClose / EntryPrice * 100 - 100;
-                    ProfitOperationPunkt = medianPriceClose - EntryPrice; 
+                    ProfitOperationPersent = ClosePrice / EntryPrice * 100 - 100;
+                    ProfitOperationPunkt = ClosePrice - EntryPrice;
                 }
                 else
                 {
-                    ProfitOperationPunkt = EntryPrice - medianPriceClose;
-                    ProfitOperationPersent = -(medianPriceClose / EntryPrice * 100 - 100);
+                    ProfitOperationPunkt = EntryPrice - ClosePrice;
+                    ProfitOperationPersent = -(ClosePrice / EntryPrice * 100 - 100);
                 }
-
-                ProfitOperationPersent = Math.Round(ProfitOperationPersent, 3);
             }
         }
 
@@ -759,6 +661,11 @@ namespace OsEngine.Entity
             if (State == PositionStateType.Open)
             {
                 if (EntryPrice == 0)
+                {
+                    return;
+                }
+
+                if (ClosePrice != 0)
                 {
                     return;
                 }
@@ -788,7 +695,7 @@ namespace OsEngine.Entity
 
             result.Append(State + "#");
 
-            result.Append(NameBot + "#");
+            result.Append( NameBot + "#");
 
             result.Append(ProfitOperationPersent.ToString(new CultureInfo("ru-RU")) + "#");
 
@@ -800,7 +707,7 @@ namespace OsEngine.Entity
             }
             else
             {
-                for (int i = 0; i < OpenOrders.Count; i++)
+                for(int i = 0;i < OpenOrders.Count;i++)
                 {
                     result.Append(OpenOrders[i].GetStringForSave() + "^");
                 }
@@ -935,7 +842,7 @@ namespace OsEngine.Entity
             {
                 if (CloseOrders != null && CloseOrders.Count != 0)
                 {
-                    for (int i = CloseOrders.Count - 1; i > -1 && i < CloseOrders.Count; i--)
+                    for (int i = CloseOrders.Count-1; i > -1 && i < CloseOrders.Count; i--)
                     {
                         DateTime time = CloseOrders[i].GetLastTradeTime();
                         if (time != DateTime.MinValue)
@@ -999,7 +906,7 @@ namespace OsEngine.Entity
                     return 0;
                 }
 
-                return ProfitPortfolioPunkt / PortfolioValueOnOpenPosition * 100;
+                return ProfitPortfolioPunkt / PortfolioValueOnOpenPosition*100;
             }
         }
 
@@ -1097,18 +1004,6 @@ namespace OsEngine.Entity
         /// </summary>
         public decimal PortfolioValueOnOpenPosition;
 
-        private object locker = new Object();
-        /// <summary>
-        /// Размер комиссии
-        /// </summary>
-        public decimal fee
-        {
-            get
-            {
-                return (decimal)0.00075;
-            }
-
-        }
     }
 
     /// <summary>

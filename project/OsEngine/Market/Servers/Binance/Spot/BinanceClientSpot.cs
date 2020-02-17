@@ -235,9 +235,9 @@ namespace OsEngine.Market.Servers.Binance.Spot
                 {
                     _timeStart = DateTime.Now;
 
-                    CreateQuery(BinanceExchangeType.SpotExchange, Method.PUT,
+                   /* CreateQuery(BinanceExchangeType.SpotExchange, Method.PUT,
                         "api/v1/userDataStream", new Dictionary<string, string>()
-                            { { "listenKey=", _listenKey } }, false);
+                            { { "listenKey=", _listenKey } }, false);*/
 
                     CreateQuery(BinanceExchangeType.SpotExchange, Method.PUT,
                         "sapi/v1/userDataStream", new Dictionary<string, string>()
@@ -805,7 +805,7 @@ namespace OsEngine.Market.Servers.Binance.Spot
                     {
                         baseUrl = "https://api.binance.com";
                     }
-                    else if (startUri == BinanceExchangeType.FuturesExchange)
+                    else if (startUri == BinanceExchangeType.MarginExchange)
                     {
                         baseUrl = "https://api.binance.com";
                     }
@@ -904,6 +904,7 @@ namespace OsEngine.Market.Servers.Binance.Spot
                     param.Add("&type=", "LIMIT");
                     param.Add("&timeInForce=", "GTC");
                     param.Add("&newClientOrderId=", order.NumberUser.ToString());
+                    param.Add("&sideEffectType=", "MARGIN_BUY");
                     param.Add("&quantity=",
                         order.Volume.ToString(CultureInfo.InvariantCulture)
                             .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));

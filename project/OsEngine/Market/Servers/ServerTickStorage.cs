@@ -253,20 +253,27 @@ namespace OsEngine.Market.Servers
 
                     try
                     {
-                        DateTime timeStart = DateTime.Now.AddDays(-DaysToLoad - 2);
+                        DateTime timeStart = DateTime.Now.AddDays(-DaysToLoad - 1);
 
                         if (timeStart.Month == 1 && timeStart.Day < 10)
                         {
                             timeStart = timeStart.AddDays(-10);
                         }
 
+                        List<string> tradesInStr = new List<string>();
+
                         while (!reader.EndOfStream)
+                        {
+                            tradesInStr.Add(reader.ReadLine());
+                        }
+
+                        for (int i2 = 0; i2 < tradesInStr.Count; i2++)
                         {
                             Trade newTrade = new Trade();
 
                             try
                             {
-                                newTrade.SetTradeFromString(reader.ReadLine());
+                                newTrade.SetTradeFromString(tradesInStr[i2]);
                             }
                             catch
                             {
@@ -277,6 +284,7 @@ namespace OsEngine.Market.Servers
 
                             if (newTrade.Time.Date < timeStart.Date)
                             {
+                                i2 += 100;
                                 continue;
                             }
 
