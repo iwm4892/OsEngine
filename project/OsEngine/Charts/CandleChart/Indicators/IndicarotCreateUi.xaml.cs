@@ -111,6 +111,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             _gridViewIndicators.Rows.Add("Claster");
             _gridViewIndicators.Rows.Add("MarketProfile");
             _gridViewIndicators.Rows.Add("MovingChanel");
+            _gridViewIndicators.Rows.Add("Fractail_lenth");
             //----
 
             if (_chartMaster.GetChartArea("TradeArea") == null)

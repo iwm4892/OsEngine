@@ -192,6 +192,7 @@
     <Compile Include="Charts\CandleChart\Indicators\CCIUi.xaml.cs">
       <DependentUpon>CCIUi.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Charts\CandleChart\Indicators\Fractail_lenth.cs" />
     <Compile Include="Charts\CandleChart\Indicators\MovingChanel.cs" />
     <Compile Include="Charts\CandleChart\Indicators\MarketProfile.cs" />
     <Compile Include="Charts\CandleChart\Indicators\Cmo.cs" />
@@ -670,6 +671,8 @@
     <Compile Include="Robots\High Frequency\HighFrequencyTrader.cs" />
     <Compile Include="Robots\MarketMaker\ArbitrageFutures.cs" />
     <Compile Include="Robots\MarketMaker\ArbitrageIndex.cs" />
+    <Compile Include="Robots\Trend\FractialMA_work .cs" />
+    <Compile Include="Robots\Trend\PriceChanel_work.cs" />
     <Compile Include="Robots\Trend\FastDelta_2.cs" />
     <Compile Include="Robots\Trend\GridBot.cs" />
     <Compile Include="Robots\Trend\FastDelta.cs" />

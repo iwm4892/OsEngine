@@ -51,6 +51,7 @@ namespace OsEngine.Robots
             result.Add("MovingChanelFlat");
             result.Add("ArbitrageIndex");
             result.Add("ArbitrageFutures");
+            result.Add("PriceChanel_work");
             return result;
         }
 
@@ -168,8 +169,10 @@ namespace OsEngine.Robots
             {
                 bot = new ArbitrageFutures(name, startProgram);
             }
-            
-
+            if (nameClass == "PriceChanel_work")
+            {
+                bot = new PriceChanel_work(name, startProgram);
+            }
             return bot;
         }
     }

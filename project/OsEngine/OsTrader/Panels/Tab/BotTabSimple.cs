@@ -3025,6 +3025,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
+                /*
                 if (_lastCheckStopTime != DateTime.MinValue && _lastCheckStopTime.AddSeconds(5) < DateTime.Now)
                 {
                     bool isstop = false;
@@ -3048,6 +3049,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                     }
                     
                 }
+                */
 
                 if (!position.StopOrderIsActiv && !position.ProfitOrderIsActiv)
                 {
@@ -3961,6 +3963,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
+                /*
                 Order newOrder = _dealCreator.CreateCloseOrderForDeal(position, priceLimit, OrderPriceType.LimitStop, _manualControl.SecondToClose, StartProgram);
                 newOrder.Price = RoundPrice(newOrder.Price, Securiti, newOrder.Side);
                 newOrder.priceRedLine = RoundPrice(priceRedLine, Securiti, newOrder.Side);
@@ -3969,6 +3972,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 position.AddNewStopOrder(newOrder);
 
                 _connector.OrderExecute(newOrder);
+                */
             }
             catch (Exception error)
             {
@@ -3987,6 +3991,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
+                /*
                 Order newOrder = _dealCreator.CreateCloseOrderForDeal(position, priceLimit, OrderPriceType.MarketStop, _manualControl.SecondToClose, StartProgram);
                 newOrder.Price = RoundPrice(newOrder.Price, Securiti, newOrder.Side);
                 newOrder.priceRedLine = RoundPrice(priceLimit, Securiti, newOrder.Side);
@@ -3996,6 +4001,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 position.AddNewStopOrder(newOrder);
 
                 _connector.OrderExecute(newOrder);
+                */
             }
             catch (Exception error)
             {
@@ -4117,6 +4123,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
+                /*
                 foreach (var ord in obj.CloseOrders)
                 {
                     if (ord.State == OrderStateType.Activ &&
@@ -4132,6 +4139,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                         }
                     }
                 }
+                */
             }
             catch (Exception error)
             {
