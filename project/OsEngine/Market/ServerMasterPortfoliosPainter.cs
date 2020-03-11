@@ -309,13 +309,13 @@ namespace OsEngine.Market
                 secondRow.Cells[0].Value = portfolio.Number;
 
                 secondRow.Cells.Add(new DataGridViewTextBoxCell());
-                secondRow.Cells[1].Value = portfolio.ValueBegin;
+                secondRow.Cells[1].Value = portfolio.ValueBegin.ToString().ToDecimal();
 
                 secondRow.Cells.Add(new DataGridViewTextBoxCell());
-                secondRow.Cells[2].Value = portfolio.ValueCurrent;
+                secondRow.Cells[2].Value = portfolio.ValueCurrent.ToString().ToDecimal();
 
                 secondRow.Cells.Add(new DataGridViewTextBoxCell());
-                secondRow.Cells[3].Value = portfolio.ValueBlocked;
+                secondRow.Cells[3].Value = portfolio.ValueBlocked.ToString().ToDecimal();
 
                 _gridPosition.Rows.Add(secondRow);
 
@@ -353,13 +353,13 @@ namespace OsEngine.Market
                         nRow.Cells[4].Value = positionsOnBoard[i].SecurityNameCode;
 
                         nRow.Cells.Add(new DataGridViewTextBoxCell());
-                        nRow.Cells[5].Value = positionsOnBoard[i].ValueBegin;
+                        nRow.Cells[5].Value = positionsOnBoard[i].ValueBegin.ToString().ToDecimal();
 
                         nRow.Cells.Add(new DataGridViewTextBoxCell());
-                        nRow.Cells[6].Value = positionsOnBoard[i].ValueCurrent;
+                        nRow.Cells[6].Value = positionsOnBoard[i].ValueCurrent.ToString().ToDecimal();
 
                         nRow.Cells.Add(new DataGridViewTextBoxCell());
-                        nRow.Cells[7].Value = positionsOnBoard[i].ValueBlocked;
+                        nRow.Cells[7].Value = positionsOnBoard[i].ValueBlocked.ToString().ToDecimal();
 
                         _gridPosition.Rows.Add(nRow);
                     }
@@ -584,13 +584,13 @@ namespace OsEngine.Market
                     nRow.Cells[6].Value = _orders[i].State;
 
                     nRow.Cells.Add(new DataGridViewTextBoxCell());
-                    nRow.Cells[7].Value = _orders[i].Price;
+                    nRow.Cells[7].Value = _orders[i].Price.ToStringWithNoEndZero();
 
                     nRow.Cells.Add(new DataGridViewTextBoxCell());
-                    nRow.Cells[8].Value = _orders[i].PriceReal;
+                    nRow.Cells[8].Value = _orders[i].PriceReal.ToStringWithNoEndZero();
 
                     nRow.Cells.Add(new DataGridViewTextBoxCell());
-                    nRow.Cells[9].Value = _orders[i].Volume;
+                    nRow.Cells[9].Value = _orders[i].Volume.ToStringWithNoEndZero();
 
                     nRow.Cells.Add(new DataGridViewTextBoxCell());
                     nRow.Cells[10].Value = _orders[i].TypeOrder;
