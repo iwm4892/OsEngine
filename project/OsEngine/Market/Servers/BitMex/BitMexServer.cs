@@ -1495,15 +1495,22 @@ namespace OsEngine.Market.Servers.BitMex
                             Dictionary<string, string> param = new Dictionary<string, string>();
 
                             param["symbol"] = order.SecurityNameCode;
-                            param["price"] = order.Price.ToString().Replace(",", ".");
+                         //   param["price"] = order.Price.ToString().Replace(",", ".");
                             param["side"] = order.Side == Side.Buy ? "Buy" : "Sell";
                             //param["orderIDs"] = order.NumberUser.ToString();
                             param["orderQty"] = order.Volume.ToString().Replace(",", ".");
                             param["clOrdID"] = order.NumberUser.ToString();
                             param["origClOrdID"] = order.NumberUser.ToString();
 
-                            param["ordType"] = order.TypeOrder == OrderPriceType.Limit ? "Limit" : "Market";
-
+                            switch (order.TypeOrder) {
+                                case OrderPriceType.Limit :
+                                    param["ordType"] = "Limit";
+                                    param["price"] = order.Price.ToString().Replace(",", ".");
+                                    break;
+                                case OrderPriceType.Market:
+                                    param["ordType"] = "Market";
+                                    break;
+                            }
                             var res = _client.CreateQuery("POST", "/order", param, true);
 
                             if (res == "")

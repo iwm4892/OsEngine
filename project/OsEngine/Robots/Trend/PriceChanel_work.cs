@@ -44,6 +44,7 @@ namespace OsEngine.Robots.Trend
             _tab.PositionOpeningFailEvent += Strateg_PositionOpeningFailEvent;
             _tab.PositionClosingSuccesEvent += Strateg_PositionClosingSuccesEvent;
             this.ParametrsChangeByUser += PriceChanel_work_ParametrsChangeByUser;
+            _tab.BestBidAskChangeEvent += _tab_BestBidAskChangeEvent;
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On", "OnlyClosePosition", "OnlyShort", "OnlyLong" });
             leverage = CreateParameter("Маржинальное плечо", 0.1m, 0.1m, 10, 0.1m);
@@ -53,12 +54,17 @@ namespace OsEngine.Robots.Trend
             Fractaillenth = CreateParameter("Длина фрактала", 51, 5, 200, 1);
 
             Slipage = CreateParameter("Slipage", 0m, 0m, 20, 0.1m);
-            VolumeFix1 = CreateParameter("VolumeFix1", 0m, 0.01m, 20, 0.01m);
-            VolumeFix2 = CreateParameter("VolumeFix2", 0m, 0.01m, 20, 0.01m);
 
             LengthAtr = CreateParameter("LengthAtr", 14, 14, 200, 1);
-            LengthUp = CreateParameter("LengthUp", 3, 14, 200, 1);
-            LengthDown = CreateParameter("LengthDown", 3, 14, 200, 1);
+            LengthUp = CreateParameter("LengthUp", 14, 14, 200, 1);
+            LengthDown = CreateParameter("LengthDown", 14, 14, 200, 1);
+
+            LengthPC = CreateParameter("Длина скользящей для PriceChannel", 14, 14, 200, 1);
+            
+            LengthAtr.ValueInt = LengthPC.ValueInt;
+            LengthUp.ValueInt = LengthPC.ValueInt;
+            LengthDown.ValueInt = LengthPC.ValueInt;
+
             //Slipage = 10;
             //VolumeFix1 = 1;
             //VolumeFix2 = 1;
@@ -81,8 +87,7 @@ namespace OsEngine.Robots.Trend
 
             Fractail = new Fractail_lenth(name + "Fractail", false) { Lenght = 5 };
             Fractail = (Fractail_lenth)_tab.CreateCandleIndicator(Fractail, "Prime");
-            Fractail.Lenght = 51;
-            SlowMA.Save();
+            Fractail.Save();
 
             Thread closerThread = new Thread(CloseFailPosition);
             closerThread.IsBackground = true;
@@ -90,11 +95,23 @@ namespace OsEngine.Robots.Trend
 
         }
 
+        private void _tab_BestBidAskChangeEvent(decimal arg1, decimal arg2)
+        {
+            if (Regime.ValueString == "Off")
+            {
+                return;
+            }
+            decimal bal = GetBalance();
+        }
+
         private void PriceChanel_work_ParametrsChangeByUser()
         {
             Fractail.Lenght = Fractaillenth.ValueInt;
             Fractail.Save();
 
+            LengthAtr.ValueInt = LengthPC.ValueInt;
+            LengthUp.ValueInt = LengthPC.ValueInt;
+            LengthDown.ValueInt = LengthPC.ValueInt;
         }
 
         private void CloseFailPosition()
@@ -112,7 +129,8 @@ namespace OsEngine.Robots.Trend
                 if (_tab.PositionsLast != null
                     && _tab.PositionsLast.State == PositionStateType.Closing
                     && _tab.PositionsLast.CloseOrders != null
-                    && _tab.PositionsLast.CloseOrders[_tab.PositionsLast.CloseOrders.Count - 1].State == OrderStateType.Fail)
+                    && (_tab.PositionsLast.CloseOrders[_tab.PositionsLast.CloseOrders.Count - 1].State == OrderStateType.Fail
+                    || _tab.PositionsLast.CloseOrders[_tab.PositionsLast.CloseOrders.Count - 1].State == OrderStateType.Cancel))
                 //&& string.IsNullOrWhiteSpace(_tab.PositionsLast.OpenOrders[0].NumberMarket))
                 {
                     _tab.CloseAtMarket(_tab.PositionsLast, _tab.PositionsLast.OpenVolume);
@@ -172,6 +190,11 @@ namespace OsEngine.Robots.Trend
         /// период PriceChannel Down
         /// </summary>
         public StrategyParameterInt LengthDown;
+        /// <summary>
+        /// PriceChannel up line length
+        /// период PriceChannel общий
+        /// </summary>
+        public StrategyParameterInt LengthPC;
 
         /// <summary>
         /// PriceChannel
@@ -191,17 +214,6 @@ namespace OsEngine.Robots.Trend
         /// </summary>
         public StrategyParameterDecimal Slipage;
 
-        /// <summary>
-        /// volume first
-        /// фиксированный объем для входа в первую позицию
-        /// </summary>
-        public StrategyParameterDecimal VolumeFix1;
-
-        /// <summary>
-        /// volume next
-        /// фиксированный объем для входа во вторую позицию
-        /// </summary>
-        public StrategyParameterDecimal VolumeFix2;
 
         /// <summary>
         /// atr coef
@@ -344,8 +356,8 @@ namespace OsEngine.Robots.Trend
                 if (Regime.ValueString != "OnlyLong")
                 {
                     if (FastMA.Values[FastMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 1]
- //                       && FastMA.Values[FastMA.Values.Count - 1] < FastMA.Values[FastMA.Values.Count - 3]
- //                       && SlowMA.Values[SlowMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 3]
+//                       && FastMA.Values[FastMA.Values.Count - 1] < FastMA.Values[FastMA.Values.Count - 3]
+//                       && SlowMA.Values[SlowMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 3]
 
                         )
                     {
@@ -379,7 +391,7 @@ namespace OsEngine.Robots.Trend
                     if (openPositions[i].ProfitPortfolioPersent > 0.03m)
                     {
                         decimal delta = openPositions[i].EntryPrice + 2 * openPositions[i].EntryPrice * 0.0005m; 
-                     //   _tab.CloseAtTrailingStop(openPositions[i],delta, delta - Slipage.ValueDecimal);
+                    //    _tab.CloseAtTrailingStop(openPositions[i],delta, delta - Slipage.ValueDecimal);
                     }
                     decimal priceClose = _lastPcDown;
                     decimal newfr = GetLastFractail(Fractail.ValuesDown);
@@ -524,12 +536,19 @@ namespace OsEngine.Robots.Trend
             {
                 return _tab.Portfolio.ValueCurrent;
             }
-            List<PositionOnBoard> bal = _tab.Portfolio.GetPositionOnBoard();
-            if (bal.Count>0)
+            if(_tab.Connector.MyServer.ServerType == ServerType.BinanceFutures)
             {
-                return bal.FindLast(x => x.SecurityNameCode == "USDT").ValueCurrent;
+                List<PositionOnBoard> bal = _tab.Portfolio.GetPositionOnBoard();
+                if (bal != null && bal.Count > 0)
+                {
+                    PositionOnBoard b = bal.FindLast(x => x.SecurityNameCode == "USDT");
+                    if (b != null)
+                    {
+                        return b.ValueCurrent;
+                    }
+                }
             }
-            else
+            if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
             {
                 return _tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked;
             }
