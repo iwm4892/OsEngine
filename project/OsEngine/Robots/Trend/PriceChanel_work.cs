@@ -89,6 +89,11 @@ namespace OsEngine.Robots.Trend
             Fractail = (Fractail_lenth)_tab.CreateCandleIndicator(Fractail, "Prime");
             Fractail.Save();
 
+            TrendMA = new MovingAverage(name + "TrendMA", false) { ColorBase = System.Drawing.Color.AntiqueWhite, Lenght = 300, TypePointsToSearch = PriceTypePoints.Close, TypeCalculationAverage = MovingAverageTypeCalculation.Simple };
+            TrendMA = (MovingAverage)_tab.CreateCandleIndicator(TrendMA, "Prime");
+            TrendMA.Lenght = 300;
+            TrendMA.Save();
+
             Thread closerThread = new Thread(CloseFailPosition);
             closerThread.IsBackground = true;
             closerThread.Start();
@@ -246,6 +251,9 @@ namespace OsEngine.Robots.Trend
 
         private MovingAverage FastMA;
         private MovingAverage SlowMA;
+        
+        private MovingAverage TrendMA;
+
         private Fractail_lenth Fractail;
         /// <summary>
         /// Плечо
@@ -302,6 +310,25 @@ namespace OsEngine.Robots.Trend
             {
                 return;
             }
+            /*
+            if(TrendMA.Values == null ||TrendMA.Values.Count < TrendMA.Lenght)
+            {
+                return;
+            }
+            
+            if (Regime.ValueString != "Off" && Regime.ValueString != "OnlyClosePosition")
+            {
+               if(candles[candles.Count-1].Close > TrendMA.Values[TrendMA.Values.Count-1])
+                {
+                    Regime.ValueString = "OnlyLong";
+                }
+                if (candles[candles.Count - 1].Close < TrendMA.Values[TrendMA.Values.Count - 1])
+                {
+                    Regime.ValueString = "OnlyShort";
+                }
+
+            }
+            */
 
             List<Position> openPositions = _tab.PositionsOpenAll;
 
@@ -341,8 +368,12 @@ namespace OsEngine.Robots.Trend
                 if (Regime.ValueString != "OnlyShort")
                 {
                     if (FastMA.Values[FastMA.Values.Count - 1] > SlowMA.Values[SlowMA.Values.Count - 1]
-//                        && FastMA.Values[FastMA.Values.Count - 1]> FastMA.Values[FastMA.Values.Count - 3]
-//                        && SlowMA.Values[SlowMA.Values.Count - 1]> SlowMA.Values[SlowMA.Values.Count - 3]
+                        /*
+                        && candles[candles.Count-1].Volume > candles[candles.Count - 2].Volume
+                        && candles[candles.Count - 2].Volume > candles[candles.Count - 3].Volume
+                        */
+                        //                        && FastMA.Values[FastMA.Values.Count - 1]> FastMA.Values[FastMA.Values.Count - 3]
+                        //                        && SlowMA.Values[SlowMA.Values.Count - 1]> SlowMA.Values[SlowMA.Values.Count - 3]
                         )
                     {
                         decimal priceEnter = _lastPcUp + (_lastAtr * KofAtr);
@@ -356,8 +387,12 @@ namespace OsEngine.Robots.Trend
                 if (Regime.ValueString != "OnlyLong")
                 {
                     if (FastMA.Values[FastMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 1]
-//                       && FastMA.Values[FastMA.Values.Count - 1] < FastMA.Values[FastMA.Values.Count - 3]
-//                       && SlowMA.Values[SlowMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 3]
+                        /*
+                        && candles[candles.Count - 1].Volume > candles[candles.Count - 2].Volume
+                        && candles[candles.Count - 2].Volume > candles[candles.Count - 3].Volume
+                        */
+                        //                       && FastMA.Values[FastMA.Values.Count - 1] < FastMA.Values[FastMA.Values.Count - 3]
+                        //                       && SlowMA.Values[SlowMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 3]
 
                         )
                     {
