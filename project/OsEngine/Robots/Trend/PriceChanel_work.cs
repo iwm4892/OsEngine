@@ -47,7 +47,7 @@ namespace OsEngine.Robots.Trend
             _tab.BestBidAskChangeEvent += _tab_BestBidAskChangeEvent;
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On", "OnlyClosePosition", "OnlyShort", "OnlyLong" });
-            leverage = CreateParameter("Маржинальное плечо", 0.1m, 0.1m, 10, 0.1m);
+            leverage = CreateParameter("Маржинальное плечо", 1m, 1m, 10, 0.1m);
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
             isContract = CreateParameter("Торгуем контрактами", false);
             MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
