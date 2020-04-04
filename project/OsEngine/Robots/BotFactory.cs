@@ -68,6 +68,16 @@ namespace OsEngine.Robots
             result.Add("PriceChannelVolatility");
             result.Add("RsiTrade");
             result.Add("RviTrade");
+            //+++
+            result.Add("PriceLavelBot");
+            result.Add("EnvelopTrendBitmex");
+            result.Add("EnvelopFlatBitmex");
+            result.Add("FastDelta");
+            result.Add("FastDelta_2");
+            result.Add("MovingChanelFlat");
+            result.Add("ArbitrageIndex");
+            result.Add("ArbitrageFutures");
+            result.Add("PriceChanel_work");
 
             List<string> resultTrue = new List<string>();
 
@@ -90,17 +100,6 @@ namespace OsEngine.Robots
                     resultTrue.Add(result[i]);
                 }
             }
-
-            //+++
-            result.Add("PriceLavelBot");
-            result.Add("EnvelopTrendBitmex");
-            result.Add("EnvelopFlatBitmex");
-            result.Add("FastDelta");
-            result.Add("FastDelta_2");
-            result.Add("MovingChanelFlat");
-            result.Add("ArbitrageIndex");
-            result.Add("ArbitrageFutures");
-            result.Add("PriceChanel_work");
 
             return resultTrue;
         }
@@ -255,8 +254,44 @@ namespace OsEngine.Robots
             {
                 bot = new PairTraderSpreadSma(name, startProgram);
             }
-
-
+            //+++
+            if (nameClass == "PriceChanel_work")
+            {
+                bot = new PriceChanel_work(name, startProgram);
+            }
+            if (nameClass == "PriceLavelBot")
+            {
+                bot = new PriceLavelBot(name, startProgram);
+            }
+            if (nameClass == "EnvelopTrendBitmex")
+            {
+                bot = new EnvelopTrendBitmex(name, startProgram);
+            }
+            if (nameClass == "EnvelopFlatBitmex")
+            {
+                bot = new EnvelopFlatBitmex(name, startProgram);
+            }
+            if (nameClass == "FastDelta")
+            {
+                bot = new FastDelta(name, startProgram);
+            }
+            if (nameClass == "FastDelta_2")
+            {
+                bot = new FastDelta_2(name, startProgram);
+            }
+            if (nameClass == "MovingChanelFlat")
+            {
+                bot = new MovingChanelFlat(name, startProgram);
+            }
+            if (nameClass == "ArbitrageIndex")
+            {
+                bot = new ArbitrageIndex(name, startProgram);
+            }
+            if (nameClass == "ArbitrageFutures")
+            {
+                bot = new ArbitrageFutures(name, startProgram);
+            }
+            //-----
             return bot;
         }
 
