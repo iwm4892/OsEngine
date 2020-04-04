@@ -351,13 +351,13 @@ namespace OsEngine.Robots.Trend
 
                 if (openPositions[i].Direction == Side.Buy)
                 {
-                    _tab.SellAtStopCanсel();
+                    _tab.SellAtStopCancel();
                 //    _tab.CloseAtStop(openPositions[i], _tab.CandlesAll[_tab.CandlesAll.Count-1].Low, _tab.CandlesAll[_tab.CandlesAll.Count - 1].Low - Slipage.ValueDecimal);
                 //    _tab.CloseAtProfit(openPositions[i], openPositions[i].EntryPrice+_lastAtr*0.5m, openPositions[i].EntryPrice + _lastAtr * 0.5m - Slipage.ValueDecimal);
                 }
                 else
                 {
-                    _tab.BuyAtStopCanсel();
+                    _tab.BuyAtStopCancel();
                 //   _tab.CloseAtStop(openPositions[i], _tab.CandlesAll[_tab.CandlesAll.Count - 1].High, _tab.CandlesAll[_tab.CandlesAll.Count - 1].High + Slipage.ValueDecimal);
                 //    _tab.CloseAtProfit(openPositions[i], openPositions[i].EntryPrice - _lastAtr * 0.5m, openPositions[i].EntryPrice + _lastAtr * 0.5m + Slipage.ValueDecimal);
                 }

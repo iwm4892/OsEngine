@@ -6,7 +6,7 @@ using System;
 using System.Globalization;
 using System.Collections.Generic;
 using OsEngine.Charts.CandleChart.Indicators;
-
+using OsEngine.Indicators;
 
 namespace OsEngine.Entity
 {
@@ -72,7 +72,7 @@ namespace OsEngine.Entity
 
         public bool isPattern;// { get { return isPattern; } }
 
-        public void Fill(List<Candle> candles, List<IIndicatorCandle> indicators)
+        public void Fill(List<Candle> candles, List<IIndicator> indicators)
         {
             this.Candles = new List<Candle>();
             Candles = candles;
@@ -110,14 +110,14 @@ namespace OsEngine.Entity
             }
             return result;
         }
-        static Pattern GetPattern(string name, List<Candle> _candles, List<IIndicatorCandle> _indicators)
+        static Pattern GetPattern(string name, List<Candle> _candles, List<IIndicator> _indicators)
         {
             
             string BaseClassName = "OsEngine.Entity." + name;
             Type type = Type.GetType(BaseClassName);
             return (Pattern)Activator.CreateInstance(type, new object[] { _candles, _indicators });
         }
-        public static List<Pattern> GetValidatePatterns(List<Candle> candles, List<IIndicatorCandle> indicators)
+        public static List<Pattern> GetValidatePatterns(List<Candle> candles, List<IIndicator> indicators)
         {
             List<string> patterns = new List<string>();
             patterns.Add("B_pattern");
@@ -128,7 +128,7 @@ namespace OsEngine.Entity
 
             return GetValidatePatterns(candles,indicators,patterns);
         }
-        public static List<Pattern> GetValidatePatterns(List<Candle> candles, List<IIndicatorCandle> indicators, List<string> patterns)
+        public static List<Pattern> GetValidatePatterns(List<Candle> candles, List<IIndicator> indicators, List<string> patterns)
         {
             List<Pattern> result = new List<Pattern>();
 
@@ -187,7 +187,7 @@ namespace OsEngine.Entity
     }
     public class Trap_pattern : Pattern
     {
-        public Trap_pattern(List<Candle> candles, List<IIndicatorCandle> indicators)
+        public Trap_pattern(List<Candle> candles, List<IIndicator> indicators)
         {
             CandlesCount = 1;
             Fill(candles, indicators);
@@ -224,7 +224,7 @@ namespace OsEngine.Entity
 
     public class B_pattern : Pattern
     {
-        public B_pattern(List<Candle> candles, List<IIndicatorCandle> indicators)
+        public B_pattern(List<Candle> candles, List<IIndicator> indicators)
         {
             CandlesCount = 2;
             Fill(candles, indicators);
@@ -249,7 +249,7 @@ namespace OsEngine.Entity
     }
     public class P_pattern : Pattern
     {
-        public P_pattern(List<Candle> candles, List<IIndicatorCandle> indicators)
+        public P_pattern(List<Candle> candles, List<IIndicator> indicators)
         {
             CandlesCount = 2;
             Fill(candles, indicators);
@@ -274,7 +274,7 @@ namespace OsEngine.Entity
 
     public class Signal_pattern  : Pattern
     {
-        public Signal_pattern(List<Candle> candles, List<IIndicatorCandle> indicators)
+        public Signal_pattern(List<Candle> candles, List<IIndicator> indicators)
         {
             CandlesCount = 2;
             Fill(candles, indicators);
@@ -319,7 +319,7 @@ namespace OsEngine.Entity
 
     public class Metla_pattern : Pattern
     {
-        public Metla_pattern(List<Candle> candles, List<IIndicatorCandle> indicators)
+        public Metla_pattern(List<Candle> candles, List<IIndicator> indicators)
         {
             CandlesCount = 2;
             Fill(candles, indicators);

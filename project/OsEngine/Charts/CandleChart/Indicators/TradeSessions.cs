@@ -8,13 +8,14 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using OsEngine.Entity;
+using OsEngine.Indicators;
 
 namespace OsEngine.Charts.CandleChart.Indicators
 {
     /// <summary>
     ///  Индикатор торговой сессии
     /// </summary>
-    public class TradeSessions:IIndicatorCandle
+    public class TradeSessions:IIndicator
     {
         /// <summary>
         /// 
@@ -108,7 +109,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             SessionsAll.Add(_ts);
 
             color = Color.Blue;
-            TypeIndicator = IndicatorOneCandleChartType.Line;
+            TypeIndicator = IndicatorChartPaintType.Line;
             PaintOn = true;
 
 
@@ -238,7 +239,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// все значения индикатора
         /// </summary>
-        List<List<decimal>> IIndicatorCandle.ValuesToChart
+        List<List<decimal>> IIndicator.ValuesToChart
         {
             get
             {
@@ -251,7 +252,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// цвета для индикатора
         /// </summary>
-        List<Color> IIndicatorCandle.Colors
+        List<Color> IIndicator.Colors
         {
             get
             {
@@ -271,7 +272,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// тип индикатора
         /// </summary>
-        public IndicatorOneCandleChartType TypeIndicator
+        public IndicatorChartPaintType TypeIndicator
         { get; set; }
 
         /// <summary>
@@ -401,7 +402,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// нужно перерисовать индикатор
         /// </summary>
-        public event Action<IIndicatorCandle> NeadToReloadEvent;
+        public event Action<IIndicator> NeadToReloadEvent;
         /// <summary>
         /// Проверить можно ли сейчас торговать
         /// </summary>

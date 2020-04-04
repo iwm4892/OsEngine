@@ -2952,11 +2952,13 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
-                if (position.CloseOrders != null && position.CloseOrders.Count > 0 &&
-                    position.CloseOrders[position.CloseOrders.Count - 1].State == OrderStateType.Activ)
+                lock (_lockerManualReload)
                 {
-                    return;
-                }
+                    if (position.CloseOrders != null &&
+                        position.CloseOrders[position.CloseOrders.Count - 1].State == OrderStateType.Activ)
+                    {
+                        return;
+                    }
 
                     Order openOrder = position.OpenOrders[position.OpenOrders.Count - 1];
 

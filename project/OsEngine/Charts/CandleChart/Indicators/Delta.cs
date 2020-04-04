@@ -7,24 +7,24 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using OsEngine.Entity;
+using OsEngine.Indicators;
 
 namespace OsEngine.Charts.CandleChart.Indicators
 {
     /// <summary>
     ///  Delta. Объём свечек. Индикатор
     /// </summary>
-    public class Delta:IIndicatorCandle
-    {
-
+    public class Delta : IIndicator
+    { 
         /// <summary>
         /// конструктор с параметрами. Индикатор будет сохраняться
         /// </summary>
         /// <param name="uniqName">уникальное имя</param>
         /// <param name="canDelete">можно ли пользователю удалить индикатор с графика вручную</param>
-        public Delta(string uniqName,bool canDelete)
+    public Delta(string uniqName,bool canDelete)
         {
             Name = uniqName;
-            TypeIndicator = IndicatorOneCandleChartType.Column;
+            TypeIndicator = IndicatorChartPaintType.Column;
             ColorBase = Color.DeepSkyBlue;
             ColorUp = Color.DodgerBlue;
             ColorDown = Color.DarkRed;
@@ -42,7 +42,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public Delta(bool canDelete)
         {
             Name = Guid.NewGuid().ToString();
-            TypeIndicator = IndicatorOneCandleChartType.Column;
+            TypeIndicator = IndicatorChartPaintType.Column;
             ColorBase = Color.DeepSkyBlue;
             
             ColorUp = Color.DodgerBlue;
@@ -55,7 +55,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// все значения индикатора
         /// </summary>
-        List<List<decimal>> IIndicatorCandle.ValuesToChart
+        List<List<decimal>> IIndicator.ValuesToChart
         {
             get
             {
@@ -68,7 +68,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// цвета для индикатора
         /// </summary>
-        List<Color> IIndicatorCandle.Colors
+        List<Color> IIndicator.Colors
         {
             get
             {
@@ -92,7 +92,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// тип индикатора
         /// </summary>
-        public IndicatorOneCandleChartType TypeIndicator
+        public IndicatorChartPaintType TypeIndicator
         { get; set; }
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// нужно перерисовать индикатор
         /// </summary>
-        public event Action<IIndicatorCandle> NeadToReloadEvent;
+        public event Action<IIndicator> NeadToReloadEvent;
 
 // вычисления
 

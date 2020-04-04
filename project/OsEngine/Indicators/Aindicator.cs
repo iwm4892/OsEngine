@@ -425,6 +425,7 @@ namespace OsEngine.Indicators
         public string Name { get; set; }
 
         public bool PaintOn { get; set; }
+        public abstract List<Color> ColorSeries { get; }
 
         #endregion
 

@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using OsEngine.Entity;
 using OsEngine.Indicators;
 using OsEngine.Language;
+using System;
 
 namespace OsEngine.Charts.CandleChart.Indicators
 {
@@ -914,7 +915,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 }
 
                 Object[] arg = { _chartMaster.Name + ChartName, true };
-                IndicatorCandle = (IIndicatorCandle)ClassWork.GetInstance(ClassWork.GetFullNameIndicator(Indicator_name), arg);
+                IndicatorCandle = (IIndicator)ClassWork.GetInstance(ClassWork.GetFullNameIndicator(Indicator_name), arg);
                 _chartMaster.CreateIndicator(IndicatorCandle, areaName);
             }
             //---

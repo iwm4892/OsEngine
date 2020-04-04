@@ -166,8 +166,8 @@ namespace OsEngine.Robots.Trend
 
         private void _tab_PositionOpeningSuccesEvent(Position position)
         {
-            _tab.BuyAtStopCanсel();
-            _tab.SellAtStopCanсel();
+            _tab.BuyAtStopCancel();
+            _tab.SellAtStopCancel();
             CanTrade = false;
             CanselOldOrders();
             decimal activationPrice = GetTrailingStopPrice(position.Direction, position.EntryPrice,true);
@@ -254,8 +254,8 @@ namespace OsEngine.Robots.Trend
 
         private void _tab_CandleFinishedEvent(List<Candle> candles)
         {
-            _tab.BuyAtStopCanсel();
-            _tab.SellAtStopCanсel();
+            _tab.BuyAtStopCancel();
+            _tab.SellAtStopCancel();
 
             CanselOldOrders();
             List<Position> positions = _tab.PositionsOpenAll;

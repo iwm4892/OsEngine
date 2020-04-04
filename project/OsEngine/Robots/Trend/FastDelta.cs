@@ -11,6 +11,7 @@ using OsEngine.Entity;
 using OsEngine.Market;
 using OsEngine.OsTrader.Panels;
 using OsEngine.OsTrader.Panels.Tab;
+using OsEngine.Indicators;
 
 namespace OsEngine.Robots.Trend
 {
@@ -399,7 +400,7 @@ namespace OsEngine.Robots.Trend
                 side = Side.Sell;
 
             }
-            List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
+            List<IIndicator> indicators = new List<IIndicator>();
             indicators.Add(delta);
             List<string> patterns = new List<string>();
             patterns.Add("Signal_pattern"); //Сигналка

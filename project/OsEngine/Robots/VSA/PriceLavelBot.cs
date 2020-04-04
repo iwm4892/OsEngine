@@ -8,6 +8,7 @@ using OsEngine.OsTrader.Panels.Tab;
 using MessageBox = System.Windows.MessageBox;
 using OsEngine.OsTrader.Panels;
 using System.Threading;
+using OsEngine.Indicators;
 
 namespace OsEngine.Robots.VSA
 {
@@ -392,7 +393,7 @@ namespace OsEngine.Robots.VSA
         /// <param name="indicators">Индикаторы</param>
         /// <param name="candles">Свечи</param>
         /// <param name="patterns">Список паттернов</param>
-        private void OpenByPattrn(List<IIndicatorCandle> indicators, List<Candle> candles, List<string> patterns)
+        private void OpenByPattrn(List<IIndicator> indicators, List<Candle> candles, List<string> patterns)
         {
             if (!ValidateParams())
             {
@@ -530,7 +531,7 @@ namespace OsEngine.Robots.VSA
             }
             //CloseByPattern(candles);
 
-            List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
+            List<IIndicator> indicators = new List<IIndicator>();
             indicators.Add(delta_delta);
             indicators.Add(Volume_delta);
             // открытие позиций по патерну
@@ -546,7 +547,7 @@ namespace OsEngine.Robots.VSA
             {
                 return;
             }
-            List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
+            List<IIndicator> indicators = new List<IIndicator>();
             indicators.Add(delta_pattern);
             indicators.Add(Volume_pattern);
             // открытие позиций по патерну
@@ -830,7 +831,7 @@ namespace OsEngine.Robots.VSA
             List<Position> positions = _tab.PositionsOpenAll;
             if (_tab.PositionsLast != null && _tab.PositionsLast.State == PositionStateType.Open)
             {
-                List<IIndicatorCandle> indicators = new List<IIndicatorCandle>();
+                List<IIndicator> indicators = new List<IIndicator>();
                 indicators.Add(delta_delta);
                 indicators.Add(Volume_delta);
                 List<string> patterns = new List<string>();
