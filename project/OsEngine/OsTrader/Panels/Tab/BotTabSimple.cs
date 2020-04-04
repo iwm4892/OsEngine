@@ -16,6 +16,7 @@ using OsEngine.Charts.CandleChart;
 using OsEngine.Charts.CandleChart.Elements;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Entity;
+using OsEngine.Indicators;
 using OsEngine.Language;
 using OsEngine.Logging;
 using OsEngine.Market;
@@ -195,8 +196,8 @@ namespace OsEngine.OsTrader.Panels.Tab
             try
             {
                 ClearAceberg();
-                BuyAtStopCanсel();
-                SellAtStopCanсel();
+                BuyAtStopCancel();
+                SellAtStopCancel();
                 _journal.Clear();
                 _chartMaster.Clear();
             }
@@ -294,7 +295,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// <param name="indicator">indicator / индикатор</param>
         /// <param name="nameArea">the name of the area on which it will be placed. Default: "Prime" / название области на которую он будет помещён. По умолчанию: "Prime"</param>
         /// <returns></returns>
-        public IIndicatorCandle CreateCandleIndicator(IIndicatorCandle indicator, string nameArea)
+        public IIndicator CreateCandleIndicator(IIndicator indicator, string nameArea)
         {
             return _chartMaster.CreateIndicator(indicator, nameArea);
         }
@@ -303,7 +304,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// remove indicator / 
         /// удалить индикатор 
         /// </summary>
-        public void DeleteCandleIndicator(IIndicatorCandle indicator)
+        public void DeleteCandleIndicator(IIndicator indicator)
         {
             _chartMaster.DeleteIndicator(indicator);
         }
@@ -312,7 +313,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// all available indicators in the system / 
         /// все доступные индикаторы в системе
         /// </summary>
-        public List<IIndicatorCandle> Indicators
+        public List<IIndicator> Indicators
         {
             get { return _chartMaster.Indicators; }
         }
@@ -1554,7 +1555,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// cancel all purchase requisitions at level cross / 
         /// отменить все заявки на покупку по пробитию уровня
         /// </summary>
-        public void BuyAtStopCanсel()
+        public void BuyAtStopCancel()
         {
             try
             {
@@ -2017,7 +2018,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// cancel all purchase requisitions at level cross / 
         /// отменить все заявки на продажу по пробитию уровня
         /// </summary>
-        public void SellAtStopCanсel()
+        public void SellAtStopCancel()
         {
             try
             {
@@ -2957,8 +2958,6 @@ namespace OsEngine.OsTrader.Panels.Tab
                     return;
                 }
 
-                lock (_lockerManualReload)
-                {
                     Order openOrder = position.OpenOrders[position.OpenOrders.Count - 1];
 
                     if (openOrder.TradesIsComing == false)
@@ -2971,47 +2970,13 @@ namespace OsEngine.OsTrader.Panels.Tab
                         return;
                     }
 
-                    if (_manualControl.StopIsOn)
-                    {
-                        if (position.Direction == Side.Buy)
-                        {
-                            decimal priceRedLine = position.EntryPrice - Securiti.PriceStep*_manualControl.StopDistance;
-                            decimal priceOrder = priceRedLine - Securiti.PriceStep * _manualControl.StopSlipage;
-
-                            TryReloadStop(position,priceRedLine,priceOrder);
-                        }
-                        if (position.Direction == Side.Sell)
-                        {
-                            decimal priceRedLine = position.EntryPrice + Securiti.PriceStep * _manualControl.StopDistance;
-                            decimal priceOrder = priceRedLine + Securiti.PriceStep * _manualControl.StopSlipage;
-
-                            TryReloadStop(position, priceRedLine, priceOrder);
-                        }
-                    }
-                    if (_manualControl.ProfitIsOn)
-                    {
-                        if (position.Direction == Side.Buy)
-                        {
-                            decimal priceRedLine = position.EntryPrice + Securiti.PriceStep * _manualControl.ProfitDistance;
-                            decimal priceOrder = priceRedLine - Securiti.PriceStep * _manualControl.ProfitSlipage;
-
-                            TryReloadProfit(position, priceRedLine, priceOrder);
-                        }
-                        if (position.Direction == Side.Sell)
-                        {
-                            decimal priceRedLine = position.EntryPrice - Securiti.PriceStep * _manualControl.ProfitDistance;
-                            decimal priceOrder = priceRedLine + Securiti.PriceStep * _manualControl.ProfitSlipage;
-
-                            TryReloadProfit(position,priceRedLine,priceOrder);
-                        }
-                    }
+                    _manualControl.TryReloadStopAndProfit(this, position);
                 }
             }
-            catch (Exception error)
+            catch (Exception e)
             {
-                SetNewLogMessage(error.ToString(), LogMessageType.Error);
+                SetNewLogMessage(e.ToString(), LogMessageType.Error);
             }
-           
         }
         /// <summary>
         /// Дата последней проверки стопов
@@ -3607,24 +3572,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                     if (_manualControl.DoubleExitIsOn &&
                         position.CloseOrders.Count < 5)
                     {
-                        if (_manualControl.TypeDoubleExitOrder == OrderPriceType.Market)
-                        {
-                            CloseAtMarket(position, position.OpenVolume);
-                        } 
-                        else if(_manualControl.TypeDoubleExitOrder == OrderPriceType.Limit)
-                        {
-                            decimal price;
-                            if (position.Direction == Side.Buy)
-                            {
-                                price = PriceBestBid - Securiti.PriceStep*_manualControl.DoubleExitSlipage;
-                            }
-                            else
-                            {
-                                price = PriceBestAsk + Securiti.PriceStep * _manualControl.DoubleExitSlipage;
-                            }
-
-                            CloseAtLimit(position, price, position.OpenVolume);
-                        }
+                        _manualControl.TryEmergencyClosePosition(this, position);
                     }
 
                     if (PositionClosingFailEvent != null)

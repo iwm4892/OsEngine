@@ -16,6 +16,7 @@ using OsEngine.Charts.CandleChart.Elements;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Charts.ColorKeeper;
 using OsEngine.Entity;
+using OsEngine.Indicators;
 using OsEngine.Language;
 using OsEngine.Logging;
 using OsEngine.Market;
@@ -75,6 +76,20 @@ namespace OsEngine.Charts.CandleChart
                         }
 
                         string[] indicator = readerStr.Split('@');
+
+                        if (indicator[indicator.Length - 1] == "IsScript")
+                        {
+                            IIndicator ind = IndicatorsFactory.CreateIndicatorByName(indicator[0], indicator[1], Convert.ToBoolean(indicator[3]));
+
+                            if (ind == null)
+                            {
+                                LogMessageEvent("Indicator class " + indicator[0] + "do not exist in IndicatorFactory.cs", LogMessageType.Error);
+                                continue;
+                            }
+
+                            CreateIndicator(ind, indicator[2]);
+                            continue;
+                        }
 
                         if (indicator[0] == "StochRsi")
                         {
@@ -307,7 +322,6 @@ namespace OsEngine.Charts.CandleChart
             }
             try
             {
-
                 using (StreamWriter writer = new StreamWriter(@"Engine\" + Name + @".txt", false))
                 {
 
@@ -315,9 +329,19 @@ namespace OsEngine.Charts.CandleChart
                     {
                         for (int i = 0; i < _indicatorsCandles.Count; i++)
                         {
-                            writer.WriteLine(_indicatorsCandles[i].GetType().Name + "@" +
-                                             _indicatorsCandles[i].Name + "@" + _indicatorsCandles[i].NameArea +
-                                             "@" + _indicatorsCandles[i].CanDelete);
+                            if (_indicatorsCandles[i].ValuesToChart != null &&
+                                _indicatorsCandles[i].ValuesToChart.Count != 0)
+                            {
+                                writer.WriteLine(_indicatorsCandles[i].GetType().Name + "@" +
+                                                 _indicatorsCandles[i].Name + "@" + _indicatorsCandles[i].NameArea +
+                                                 "@" + _indicatorsCandles[i].CanDelete);
+                            }
+                            else
+                            {
+                                writer.WriteLine(_indicatorsCandles[i].GetType().Name + "@" +
+                                                 _indicatorsCandles[i].Name + "@" + _indicatorsCandles[i].NameArea +
+                                                 "@" + _indicatorsCandles[i].CanDelete + "@IsScript");
+                            }
                         }
                     }
                     if (ChartCandle.GetChartArea("TradeArea") != null)
@@ -606,7 +630,7 @@ namespace OsEngine.Charts.CandleChart
                     return;
                 }
 
-                List<IIndicatorCandle> indicators = _indicatorsCandles.FindAll(candle => candle.CanDelete == true);
+                List<IIndicator> indicators = _indicatorsCandles.FindAll(candle => candle.CanDelete == true);
                 if (number < indicators.Count)
                 {
                     DeleteIndicator(indicators[number]);
@@ -640,7 +664,7 @@ namespace OsEngine.Charts.CandleChart
         // работа по изменению точек сделок в зависимости от размера представления на оси Х
         private void ChartCandle_SizeAxisXChangeEvent(int newSizeX)
         {
-          //  return;
+            //  return;
 
             if (_myPosition == null ||
                 _myPosition.Count == 0)
@@ -692,11 +716,11 @@ namespace OsEngine.Charts.CandleChart
         /// Indicators
         /// Индикаторы
         /// </summary>
-        public List<IIndicatorCandle> Indicators
+        public List<IIndicator> Indicators
         {
             get { return _indicatorsCandles; }
         }
-        private List<IIndicatorCandle> _indicatorsCandles;
+        private List<IIndicator> _indicatorsCandles;
 
         /// <summary>
         /// to create an area for drawing ticks on chart
@@ -715,7 +739,7 @@ namespace OsEngine.Charts.CandleChart
         /// <param name="indicator">an indicator to be integrated into chart/индикатор, который нужно интегрировать в чарт</param>
         /// <param name="nameArea">ame of area where indicator should be drawn/имя области, на которой следует прорисовать индикатор</param>
         /// <returns></returns>
-        public IIndicatorCandle CreateIndicator(IIndicatorCandle indicator, string nameArea)
+        public IIndicator CreateIndicator(IIndicator indicator, string nameArea)
         {
             try
             {
@@ -743,24 +767,59 @@ namespace OsEngine.Charts.CandleChart
 
                 List<List<decimal>> values = indicator.ValuesToChart;
 
-                for (int i = 0; i < values.Count; i++)
-                {
-                    if (inNewArea == false)
+                if (values != null)
+                { // прогружаем классические индикаторы
+                    for (int i = 0; i < values.Count; i++)
                     {
-                        indicator.NameSeries = ChartCandle.CreateSeries(ChartCandle.GetChartArea(nameArea),
-                            indicator.TypeIndicator, indicator.Name + i);
+                        if (inNewArea == false)
+                        {
+                            indicator.NameSeries = ChartCandle.CreateSeries(ChartCandle.GetChartArea(nameArea),
+                                indicator.TypeIndicator, indicator.Name + i);
+                        }
+                        else
+                        {
+                            ChartArea area = ChartCandle.CreateArea(nameArea, 15);
+                            indicator.NameSeries = ChartCandle.CreateSeries(area,
+                                indicator.TypeIndicator, indicator.Name + i);
+                        }
                     }
-                    else
+                }
+                else
+                {
+                    Aindicator ind = (Aindicator)indicator;
+
+                    List<IndicatorDataSeries> series = ind.DataSeries;
+
+                    if (series == null ||
+                        series.Count == 0)
                     {
-                        ChartArea area = ChartCandle.CreateArea(nameArea, 15);
-                        indicator.NameSeries = ChartCandle.CreateSeries(area,
-                            indicator.TypeIndicator, indicator.Name + i);
+                        NewLogMessage("Indicator " + ind.Name + " don`t have a value series.", LogMessageType.Error);
+                        return null;
+                    }
+
+                    for (int i = 0; i < series.Count; i++)
+                    {
+
+                        if (inNewArea == false)
+                        {
+                            series[i].NameSeries = ChartCandle.CreateSeries(ChartCandle.GetChartArea(nameArea),
+                                series[i].ChartPaintType, indicator.Name + i);
+                        }
+                        else
+                        {
+                            ChartArea area = ChartCandle.CreateArea(nameArea, 15);
+
+                            series[i].NameSeries = ChartCandle.CreateSeries(area,
+                                series[i].ChartPaintType, indicator.Name + i);
+                        }
                     }
                 }
 
+
+
                 if (_indicatorsCandles == null)
                 {
-                    _indicatorsCandles = new List<IIndicatorCandle>();
+                    _indicatorsCandles = new List<IIndicator>();
                     _indicatorsCandles.Add(indicator);
                 }
                 else
@@ -786,7 +845,7 @@ namespace OsEngine.Charts.CandleChart
         /// Индикатор изменился. Надо перерисовать
         /// </summary>
         /// <param name="indicator">indicator/индикатор</param>
-        private void indicator_NeadToReloadEvent(IIndicatorCandle indicator)
+        private void indicator_NeadToReloadEvent(IIndicator indicator)
         {
             try
             {
@@ -810,7 +869,7 @@ namespace OsEngine.Charts.CandleChart
         /// Удалить индикатор
         /// </summary>
         /// <param name="indicator">indicator/индикатор</param>
-        public void DeleteIndicator(IIndicatorCandle indicator)
+        public void DeleteIndicator(IIndicator indicator)
         {
             try
             {
