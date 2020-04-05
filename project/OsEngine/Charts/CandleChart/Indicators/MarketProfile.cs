@@ -174,10 +174,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public bool PaintOn
         { get; set; }
-        /// <summary>
-        /// Цвета значений
-        /// </summary>
-        public List<Color> ColorSeries { get; set; }
 
         /// <summary>
         /// сохранить настройки в файл
@@ -308,10 +304,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         private void ProcessOneCandle(List<Candle> candles)
         {
-            if (ColorSeries == null)
-            {
-                ColorSeries = new List<Color>();
-            }
             _lastTradeIndex = 0;
             UpdateDate(candles[candles.Count - 1]);
             RemoveOldData(candles);
@@ -320,7 +312,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 Values[i].Add(_l[i]);
             }
-            ColorSeries.Add(GetColor(candles[candles.Count-1].ClasterData));
         }
 
         /// <summary>
@@ -329,7 +320,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
         private void ProcessAllCandle(List<Candle> candles)
         {
             initValues();
-            ColorSeries = new List<Color>();
             for (int i = 0; i < candles.Count; i++)
             {
                 _lastTradeIndex = 0;
@@ -340,7 +330,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
                 {
                     Values[j].Add(_l[j]);
                 }
-                ColorSeries.Add(GetColor(candles[i].ClasterData));
             }
         }
 
@@ -355,7 +344,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 Values[j][Values[j].Count - 1] = _l[j];
             }
-            ColorSeries[ColorSeries.Count - 1] = GetColor(candles[candles.Count - 1].ClasterData);
         }
         private void UpdateDate(Candle candle)
         {

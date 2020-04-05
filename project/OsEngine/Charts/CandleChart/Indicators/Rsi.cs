@@ -251,7 +251,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public List<decimal> Values { get; set; }
 
-       public List<Color> ColorSeries { get; set; }
+       
 
         /// <summary>
         /// candles to calculate indicator

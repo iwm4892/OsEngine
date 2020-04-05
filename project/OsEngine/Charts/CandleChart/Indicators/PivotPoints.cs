@@ -194,7 +194,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
 
         public Color ColorP { get; set; }
 
-       public List<Color> ColorSeries { get; set; }
         #endregion
 
         /// <summary>

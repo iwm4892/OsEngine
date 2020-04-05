@@ -161,8 +161,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public List<decimal> ValuesDown
         { get; set; }
 
-       public List<Color> ColorSeries { get; set; }
-
         /// <summary>
         /// Минимальное значение
         /// </summary>

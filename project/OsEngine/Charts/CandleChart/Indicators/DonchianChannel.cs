@@ -163,8 +163,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public bool PaintOn
         { get; set; }
 
-        public List<Color> ColorSeries => throw new NotImplementedException();
-
         /// <summary>
         /// загрузить настройки из файла
         /// </summary>

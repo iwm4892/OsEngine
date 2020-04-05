@@ -302,8 +302,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public List<decimal> ValuesD { get; set; }
 
-        public List<Color> ColorSeries => ((IIndicator)_rsi).ColorSeries;
-
         /// <summary>
         /// candles to calculate indicator
         /// свечи по которым строиться индикатор

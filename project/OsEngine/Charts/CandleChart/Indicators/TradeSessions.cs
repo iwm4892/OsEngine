@@ -321,7 +321,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public Decimal DayChanel;
 
-       public List<Color> ColorSeries { get; set; }
+       
 
         /// <summary>
         /// сохранить настройки в файл
@@ -574,12 +574,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
             if (Values == null)
             {
                 Values = new List<decimal>();
-                ColorSeries = new List<Color>();
             }
             UpdateDate(candles, candles.Count - 1);
             Values.Add(GetValue(candles, candles.Count - 1));
             updateNullValue();
-            ColorSeries.Add(color);
 
         }
 
@@ -589,14 +587,12 @@ namespace OsEngine.Charts.CandleChart.Indicators
         private void ProcessAllCandle(List<Candle> candles)
         {
             Values = new List<decimal>();
-            ColorSeries = new List<Color>();
 
             for(int i = 0; i < candles.Count; i++)
             {
                 UpdateDate(candles, i);
                 Values.Add(GetValue(candles, i));
                 updateNullValue();
-                ColorSeries.Add(color);
             }
         }
 

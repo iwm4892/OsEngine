@@ -283,8 +283,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
         public List<decimal> MasAf { get; set; }
         public List<decimal> psar { get; set; }
 
-       public List<Color> ColorSeries { get; set; }
-
         /// <summary>
         /// прогрузить новыми свечками
         /// </summary>        

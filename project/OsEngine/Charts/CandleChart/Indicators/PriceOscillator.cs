@@ -200,7 +200,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// </summary>
         public bool PaintOn { get; set; }
 
-       public List<Color> ColorSeries { get; set; }
+       
 
         /// <summary>
         /// save settings to file

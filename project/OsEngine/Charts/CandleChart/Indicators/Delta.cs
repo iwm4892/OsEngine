@@ -146,7 +146,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
         /// <summary>
         /// Цвета значений
         /// </summary>
-        public List<Color> ColorSeries { get; set; }
+        
         /// <summary>
         /// Последняя обработаная сделка
         /// </summary>
@@ -284,12 +284,10 @@ namespace OsEngine.Charts.CandleChart.Indicators
             if (Values == null)
             {
                 Values = new List<decimal>();
-                ColorSeries = new List<Color>();
             }
             _lastTradeIndex = 0;
             Values.Add(0);
             GetValue(candles, candles.Count - 1);
-            ColorSeries.Add(GetColor(Values[Values.Count-1]));
         }
 
         /// <summary>
@@ -298,14 +296,12 @@ namespace OsEngine.Charts.CandleChart.Indicators
         private void ProcessAllCandle(List<Candle> candles)
         {
             Values = new List<decimal>();
-            ColorSeries = new List<Color>();
 
             for (int i = 0; i < candles.Count; i++)
             {
                 _lastTradeIndex = 0;
                 Values.Add(0);
                 GetValue(candles,i);
-                ColorSeries.Add(GetColor(Values[Values.Count - 1]));
             }
         }
 
@@ -315,7 +311,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
         private void ProcessLastCanlde(List<Candle> candles)
         {
             GetValue(candles, candles.Count - 1);
-            ColorSeries[ColorSeries.Count - 1] = GetColor(Values[Values.Count - 1]);
         }
         /// <summary>
         /// Получить цвет по значению
