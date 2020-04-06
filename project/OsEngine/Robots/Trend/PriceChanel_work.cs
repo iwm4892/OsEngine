@@ -561,6 +561,11 @@ namespace OsEngine.Robots.Trend
             }
             else
             {
+                switch (_tab.Securiti.Name)
+                {
+                    case "ETHUSDT": return Math.Round(v, 3);
+                    case "EOSUSDT": return Math.Round(v, 1);
+                }
                 return Math.Round(v, 3);
             }
         }
