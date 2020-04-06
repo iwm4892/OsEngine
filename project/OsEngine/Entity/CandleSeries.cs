@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using OsEngine.Market;
 using OsEngine.Market.Servers.Tester;
 
@@ -65,6 +66,25 @@ namespace OsEngine.Entity
         }
 
         private readonly TimeFrameBuilder _timeFrameBuilder;
+
+        public string Specification
+        {
+            get
+            {
+                StringBuilder result = new StringBuilder();
+
+                string _specification = "";
+
+                result.Append(Security.NameFull + "_");
+                //result.Append(Security.NameClass + "_");
+                result.Append(_timeFrameBuilder.Specification);
+
+                _specification = result.ToString();
+                return _specification;
+            }
+        }
+
+        public bool IsMergedByCandlesFromFile;
 
         /// <summary>
         /// бумага по которой собираются свечи
@@ -262,10 +282,12 @@ namespace OsEngine.Entity
                     continue;
                 }
 
-                if (CandlesAll[CandlesAll.Count - 1].Trades == null)
-                { CandlesAll[CandlesAll.Count - 1].Trades = new List<Trade>(); }
-
-                CandlesAll[CandlesAll.Count - 1].Trades.Add(trades[i]);
+                if (_timeFrameBuilder.SaveTradesInCandles)
+                {
+                    List<Trade> tradesInCandle = CandlesAll[CandlesAll.Count - 1].Trades;
+                    tradesInCandle.Add(trades[i]);
+                    CandlesAll[CandlesAll.Count - 1].Trades = tradesInCandle;
+                }
                 //+++
                 UpdateClasterDate(CandlesAll[CandlesAll.Count - 1]);
                 //----
@@ -294,11 +316,7 @@ namespace OsEngine.Entity
             {
                 UpDateCandle(trades[i].Time, trades[i].Price, trades[i].Volume, false, trades[i].Side);
 
-                if (CandlesAll[CandlesAll.Count - 1].Trades == null)
-                {
-                    CandlesAll[CandlesAll.Count-1].Trades = new List<Trade>();
-                }
-                CandlesAll[CandlesAll.Count-1].Trades.Add(trades[i]);
+
                 //+++
                 UpdateClasterDate(CandlesAll[CandlesAll.Count - 1]);
                 //----
@@ -706,10 +724,10 @@ namespace OsEngine.Entity
                 )
             {
                 // если пришли данные из новой свечки
-                CandlesAll[CandlesAll.Count - 1].Close = (CandlesAll[CandlesAll.Count - 1].Open +
+                CandlesAll[CandlesAll.Count - 1].Close = Math.Round((CandlesAll[CandlesAll.Count - 1].Open +
                                                           CandlesAll[CandlesAll.Count - 1].High +
                                                           CandlesAll[CandlesAll.Count - 1].Low +
-                                                          CandlesAll[CandlesAll.Count - 1].Close) / 4;
+                                                          CandlesAll[CandlesAll.Count - 1].Close) / 4, Security.Decimals);
 
                 if (CandlesAll[CandlesAll.Count - 1].State != CandleState.Finished)
                 {
@@ -760,8 +778,8 @@ namespace OsEngine.Entity
                     Close = price,
                     High = price,
                     Low = price,
-                    Open = (CandlesAll[CandlesAll.Count - 1].Open +
-                            CandlesAll[CandlesAll.Count - 1].Close) / 2,
+                    Open = Math.Round((CandlesAll[CandlesAll.Count - 1].Open +
+                            CandlesAll[CandlesAll.Count - 1].Close) / 2, Security.Decimals),
                     State = CandleState.Started,
                     TimeStart = timeNextCandle,
                     Volume = volume
