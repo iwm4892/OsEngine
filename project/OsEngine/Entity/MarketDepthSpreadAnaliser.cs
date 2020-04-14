@@ -14,6 +14,7 @@ namespace OsEngine.Entity
         {
             Tabs = new List<BotTabSimple>();
             MaxSpread = 0.005m;
+            
         }
         public MarketDepthSpreadAnaliser(decimal _maxSpread)
         {
@@ -24,6 +25,17 @@ namespace OsEngine.Entity
         {
             Tabs.Add(tab);
             Tabs[Tabs.Count - 1].MarketDepthUpdateEvent += MarketDepthSpreadAnaliser_MarketDepthUpdateEvent;
+            Tabs[Tabs.Count - 1].CandleFinishedEvent += MarketDepthSpreadAnaliser_CandleFinishedEvent;
+            _Tabs _t = new _Tabs();
+            
+            _t._tab = tab;
+            if (_tabs == null) _tabs = new List<_Tabs>(); 
+            _tabs.Add(_t);
+        }
+
+        private void MarketDepthSpreadAnaliser_CandleFinishedEvent(List<Candle> candles)
+        {
+            CalcChanges();
         }
 
         private void MarketDepthSpreadAnaliser_MarketDepthUpdateEvent(MarketDepth obj)
@@ -44,8 +56,25 @@ namespace OsEngine.Entity
             }
             lock (_locker)
             {
-                if (Tabs[1].PriceBestAsk == 0) return;
-                decimal NewSpread = 100*((Tabs[0].PriceBestBid - Tabs[1].PriceBestAsk) / Tabs[1].PriceBestAsk);
+                decimal NewSpread =0;
+                decimal av = average;
+                foreach (var el in _tabs)
+                {
+                    if (el.Change == 0) return;
+
+                    if(el.Change > av)
+                    {
+                        el.side = Side.Sell;
+                        NewSpread += el.Change;
+                    }
+                    else
+                    {
+                        el.side = Side.Buy;
+                        NewSpread -= el.Change;
+                    }
+                }
+                //    decimal NewSpread = 100*((Tabs[0].PriceBestBid - Tabs[1].PriceBestAsk) / Tabs[1].PriceBestAsk);
+             
                 NewSpread = Math.Round(NewSpread, 2);
                 if (Spread != NewSpread)
                 {
@@ -55,6 +84,36 @@ namespace OsEngine.Entity
                     }
                     Spread = NewSpread;
                 }
+            }
+        }
+        private void CalcChanges()
+        {
+            foreach (var el in _tabs)
+            {
+
+                if (el._tab.PriceBestAsk > el._tab.CandlesAll.Last().Open)
+                {
+                    if (el._tab.PriceBestAsk == 0) return;
+                    el.Change = 100 * (el._tab.PriceBestAsk - el._tab.CandlesAll.Last().Open) / el._tab.CandlesAll.Last().Open;
+                }
+                else
+                {
+                    if (el._tab.PriceBestBid == 0) return;
+                    el.Change = 100 * (el._tab.PriceBestBid - el._tab.CandlesAll.Last().Open) / el._tab.CandlesAll.Last().Open;
+                }
+            }
+
+        }
+        public decimal average
+        {
+            get
+            {
+                decimal res = 0;
+                foreach (var el in _tabs)
+                {
+                    res += el.Change;
+                }
+                return res / _tabs.Count;
             }
         }
         private object _locker = new object();
@@ -70,6 +129,20 @@ namespace OsEngine.Entity
         /// Максимальный спред внутри одного инструмента(если больше то считаем что пришли ошибочные данные)
         /// </summary>
         public decimal MaxSpread;
+
+        /// <summary>
+        /// Таблица изменений цены в рамках одной свечи
+        /// </summary>
+        public class _Tabs
+        {
+            public BotTabSimple _tab;
+            public decimal Change = 0;
+            public Side side;
+        }
+        /// <summary>
+        /// Список таблиц и их изменения
+        /// </summary>
+        public List<_Tabs> _tabs;
 
         public event Action<decimal> SpreadChangeEvent;
     }
