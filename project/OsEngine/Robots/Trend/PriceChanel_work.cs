@@ -13,6 +13,7 @@ using OsEngine.OsTrader.Panels;
 using OsEngine.OsTrader.Panels.Tab;
 using System.Drawing;
 using System.Threading;
+using OsEngine.Logging;
 
 namespace OsEngine.Robots.Trend
 {
@@ -331,7 +332,12 @@ namespace OsEngine.Robots.Trend
             */
 
             List<Position> openPositions = _tab.PositionsOpenAll;
-
+            /*
+            if(openPositions!=null && openPositions.Count > 0)
+            {
+                _tab.SetNewLogMessage("Количество открытых позицый: " + openPositions.Count, LogMessageType.Signal);
+            }
+            */
             if (openPositions != null && openPositions.Count != 0)
             {
                 LogicClosePosition();
@@ -368,6 +374,8 @@ namespace OsEngine.Robots.Trend
                 if (Regime.ValueString != "OnlyShort")
                 {
                     if (FastMA.Values[FastMA.Values.Count - 1] > SlowMA.Values[SlowMA.Values.Count - 1]
+                        
+                     //   && Math.Abs(FastMA.Values[FastMA.Values.Count - 1]- SlowMA.Values[SlowMA.Values.Count - 1])>_lastAtr
                         /*
                         && candles[candles.Count-1].Volume > candles[candles.Count - 2].Volume
                         && candles[candles.Count - 2].Volume > candles[candles.Count - 3].Volume
@@ -387,6 +395,7 @@ namespace OsEngine.Robots.Trend
                 if (Regime.ValueString != "OnlyLong")
                 {
                     if (FastMA.Values[FastMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 1]
+                     //   && Math.Abs(FastMA.Values[FastMA.Values.Count - 1] - SlowMA.Values[SlowMA.Values.Count - 1]) > _lastAtr
                         /*
                         && candles[candles.Count - 1].Volume > candles[candles.Count - 2].Volume
                         && candles[candles.Count - 2].Volume > candles[candles.Count - 3].Volume
@@ -475,6 +484,8 @@ namespace OsEngine.Robots.Trend
 
         private void Strateg_PositionOpen(Position position)
         {
+            _tab.SellAtStopCancel();
+            _tab.BuyAtStopCancel();
             List<Position> openPositions = _tab.PositionsOpenAll;
             for (int i = 0; openPositions != null && i < openPositions.Count; i++)
             {

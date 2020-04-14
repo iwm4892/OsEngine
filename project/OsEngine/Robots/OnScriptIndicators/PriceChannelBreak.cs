@@ -3,7 +3,7 @@ using OsEngine.Entity;
 using OsEngine.Indicators;
 using OsEngine.OsTrader.Panels.Tab;
 using OsEngine.OsTrader.Panels;
-
+using System;
 
 /// <summary>
 ///When the candle is closed outside the PriceChannel channel,
@@ -109,7 +109,10 @@ public class PriceChannelBreak : BotPanel
     private decimal _lastPrice;
     private decimal _lastPcUp;
     private decimal _lastPcDown;
-
+    /// <summary>
+    /// «аглушка от повторного открыти€
+    /// </summary>
+    private DateTime _LastCandleTime;
     // logic логика
 
     /// <summary>
@@ -132,7 +135,14 @@ public class PriceChannelBreak : BotPanel
         {
             return;
         }
-
+        if (_LastCandleTime != candles[candles.Count - 1].TimeStart)
+        {
+            _LastCandleTime = candles[candles.Count - 1].TimeStart;
+        }
+        else
+        {
+            return;
+        }
         _lastPrice = candles[candles.Count - 1].Close;
         _lastPcUp = _pc.DataSeries[0].Values[_pc.DataSeries[0].Values.Count - 2];
         _lastPcDown = _pc.DataSeries[1].Values[_pc.DataSeries[1].Values.Count - 2];
@@ -166,7 +176,8 @@ public class PriceChannelBreak : BotPanel
             {
                 if (_lastPrice > _lastPcUp)
                 {
-                    _tab.BuyAtLimit(Volume.ValueDecimal, _lastPrice + Slippage.ValueInt * _tab.Securiti.PriceStep);
+                    //   _tab.BuyAtLimit(Volume.ValueDecimal, _lastPrice + Slippage.ValueInt * _tab.Securiti.PriceStep);
+                    _tab.BuyAtMarket(Volume.ValueDecimal);
                 }
             }
 
@@ -175,7 +186,8 @@ public class PriceChannelBreak : BotPanel
             {
                 if (_lastPrice < _lastPcDown)
                 {
-                    _tab.SellAtLimit(Volume.ValueDecimal, _lastPrice - Slippage.ValueInt * _tab.Securiti.PriceStep);
+                    //   _tab.SellAtLimit(Volume.ValueDecimal, _lastPrice - Slippage.ValueInt * _tab.Securiti.PriceStep);
+                    _tab.SellAtMarket(Volume.ValueDecimal);
                 }
             }
         }
