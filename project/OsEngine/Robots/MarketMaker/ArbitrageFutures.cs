@@ -25,28 +25,70 @@ namespace OsEngine.Robots.MarketMaker
             TabCreate(BotTabType.Simple);
             _tab2 = TabsSimple[1];
 
+            _tab1.PositionClosingSuccesEvent += PositionClosingSuccesEvent;
+            _tab2.PositionClosingSuccesEvent += PositionClosingSuccesEvent;
 
             Analiser = new MarketDepthSpreadAnaliser();
             Analiser.addTab(_tab1);
             Analiser.addTab(_tab2);
             Analiser.SpreadChangeEvent += Analiser_SpreadChangeEvent;
+            Analiser.ProfitChangeEvent += Analiser_ProfitChangeEvent;
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On", "OnlyClosePosition" });
             
-            minSpread = CreateParameter("minSpread", 0.4m, 0.1m, 3, 0.05m);
-            minProfit = CreateParameter("minProfit", 0.3m, 0.1m, 3, 0.05m);
+            minSpread = CreateParameter("minSpread", 0.5m, 0.1m, 3, 0.05m);
+            minSpreadAdd = CreateParameter("Добирать при расхождении", 0.5m, 0.1m, 3, 0.05m);
+
+            minProfit = CreateParameter("minProfit", 0.5m, 0.1m, 3, 0.05m);
 
             Slippage = CreateParameter("Slipage", 0, 0, 20, 1);
+            MaxTrade = CreateParameter("MaxTrade", 4, 1, 5, 1);
+            
+            _CountTrade = CreateParameter("Открыто доборов", 0,0, 5, 1);
 
             leverage = CreateParameter("Маржинальное плечо", 1m, 1m, 10, 0.1m);
+            isContract = CreateParameter("Торгуем контрактами", false);
 
             ParametrsChangeByUser += ArbitrageIndex_ParametrsChangeByUser;
 
         }
 
+        private void Analiser_ProfitChangeEvent(decimal obj)
+        {
+            if (_lastTime.AddSeconds(2) < DateTime.Now)
+            {
+                _lastTime = DateTime.Now;
+            }
+            else
+            {
+                return;
+            }
+            ClosePositions(obj);
+            //Добор позиции
+            if (_CountTrade.ValueInt != 0
+                && - obj > _CountTrade.ValueInt * minSpreadAdd.ValueDecimal
+                && _CountTrade.ValueInt <= MaxTrade.ValueInt)
+            {
+                UpdatePositions();
+            }
 
+        }
+
+        private void PositionClosingSuccesEvent(Position obj)
+        {
+            _CountTrade.ValueInt = 0;
+        }
+        private DateTime _lastTime;
         private void Analiser_SpreadChangeEvent(decimal obj)
         {
+            if (_lastTime.AddSeconds(2) < DateTime.Now)
+            {
+                _lastTime = DateTime.Now;
+            }
+            else 
+            {
+                return;
+            }
 
             Console.WriteLine("Spread: " + obj);
             if(obj > minSpread.ValueDecimal || obj < -minSpread.ValueDecimal)
@@ -73,19 +115,32 @@ namespace OsEngine.Robots.MarketMaker
                 if (obj > minSpread.ValueDecimal || obj < -minSpread.ValueDecimal)
                 {
                     OpenPositions();
+                     
                 }
             }
             if (CanTrade == 0)
             {
-                ClosePositions();
+                //ClosePositions();
+                //Добор позиции
+                if(_CountTrade.ValueInt !=0 
+                    && obj > _CountTrade.ValueInt* minSpreadAdd.ValueDecimal
+                    && _CountTrade.ValueInt <=MaxTrade.ValueInt)
+                {
+                    UpdatePositions();
+                }
             }
 
         }
         private void OpenPositions()
         {
-            foreach(var t in Analiser._tabs)
+            if (Regime.ValueString == "OnlyClosePosition")
             {
-                decimal vol = leverage.ValueDecimal * (GetBalance(t._tab)) / GetPrice(t._tab.CandlesAll[t._tab.CandlesAll.Count-1].Close,t._tab);//GetBalance(t._tab)*Volume.ValueInt/100;
+                return;
+            }
+
+            foreach (var t in Analiser._tabs)
+            {
+                decimal vol = leverage.ValueDecimal * (GetBalance(t._tab)) / GetPrice(t._tab.CandlesAll[t._tab.CandlesAll.Count-1].Close,t._tab) / TabsSimple.Count;
                 if (t.side == Side.Buy)
                 {
                     t._tab.BuyAtMarket(GetVol(vol,t._tab));
@@ -94,32 +149,45 @@ namespace OsEngine.Robots.MarketMaker
                 {
                     t._tab.SellAtMarket(GetVol(vol,t._tab));
                 }
-            }        
+            }
+            _CountTrade.ValueInt += 1;
+        }
+        private void UpdatePositions()
+        {
+            foreach (var t in Analiser._tabs)
+            {
+
+                decimal vol = leverage.ValueDecimal * (GetBalance(t._tab)) / GetPrice(t._tab.CandlesAll[t._tab.CandlesAll.Count - 1].Close, t._tab) / TabsSimple.Count;
+                if (t.side == Side.Buy)
+                {
+                    t._tab.BuyAtMarketToPosition(t._tab.PositionsLast,GetVol(vol, t._tab));
+                }
+                else
+                {
+                    t._tab.SellAtMarketToPosition(t._tab.PositionsLast,GetVol(vol, t._tab));
+                }
+            }
+            _CountTrade.ValueInt += 1;
         }
         private void ClosePositions()
         {
-            decimal openVol = 0;
-            decimal profit = 0;
-            foreach (var t in Analiser._tabs)
-            {
-                List<Position> Op = t._tab.PositionsAll;
-                foreach(Position pos in Op)
-                {
-                    profit += pos.ProfitOperationPersent;
-                }
-            }
-            if(profit > minProfit.ValueDecimal / 100)
+            decimal profit = Analiser.GetProfitPersent();
+            ClosePositions(profit);    
+        }
+        private void ClosePositions(decimal profit)
+        {
+            if (profit > minProfit.ValueDecimal)
             {
                 foreach (var t in Analiser.Tabs)
                 {
                     t.CloseAllAtMarket();
+                    t.SetNewLogMessage("profit: " + profit, Logging.LogMessageType.Signal);
                 }
             }
 
-            //Console.WriteLine("profit: " + Math.Round(profit * 100, 2));
+            Console.WriteLine("profit: " + Math.Round(profit, 2));
 
         }
-
         private PositionStateType Status;
 
 
@@ -187,6 +255,21 @@ namespace OsEngine.Robots.MarketMaker
         /// Плечо
         /// </summary>
         private StrategyParameterDecimal leverage;
+        
+        /// <summary>
+        /// Максимальное количество доборов позиции
+        /// </summary>
+        public StrategyParameterInt MaxTrade;
+
+        /// <summary>
+        /// Текущее количество сделок
+        /// </summary>
+        private StrategyParameterInt _CountTrade;
+        
+        /// <summary>
+        /// Прикаком спреде добирать позицию
+        /// </summary>
+        public StrategyParameterDecimal minSpreadAdd; 
 
         private decimal GetPrice(decimal price,BotTabSimple _tab)
         {
@@ -212,6 +295,28 @@ namespace OsEngine.Robots.MarketMaker
                 {
                     case "ETHUSDT": return Math.Round(v, 3);
                     case "EOSUSDT": return Math.Round(v, 1);
+                    case "LINKUSDT": return Math.Round(v, 2);
+                    case "XMRUSDT": return Math.Round(v, 3);
+                    case "ATOMUSDT": return Math.Round(v, 2);
+                    case "TRXUSDT": return Math.Round(v, 0);
+                    case "ADAUSDT": return Math.Round(v, 0);
+                    case "BNBUSDT": return Math.Round(v, 2);
+                    case "BTCUSDT": return Math.Round(v, 3);
+                    case "ETCUSDT": return Math.Round(v, 2);
+                    case "BCHUSDT": return Math.Round(v, 3);
+                    case "ZECUSDT": return Math.Round(v, 3);
+                    case "LTCUSDT": return Math.Round(v, 3);
+                    case "XTZUSDT": return Math.Round(v, 1);
+                    case "XRPUSDT": return Math.Round(v, 1);
+                    case "XLMUSDT": return Math.Round(v, 0);
+                    case "ONTUSDT": return Math.Round(v, 1);
+                    case "IOTAUSDT": return Math.Round(v, 1);
+                    case "BATUSDT": return Math.Round(v, 1);
+                    case "VETUSDT": return Math.Round(v, 0);
+                    case "NEOUSDT": return Math.Round(v, 2);
+
+                        
+
                 }
                 return Math.Round(v, 3);
             }
