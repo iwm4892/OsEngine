@@ -323,6 +323,7 @@ namespace OsEngine.Robots.MarketMaker
         }
         private decimal GetBalance(BotTabSimple _tab)
         {
+            return 300;
             if (_tab.Connector.MyServer.ServerType == ServerType.Tester ||
                 _tab.Connector.MyServer.ServerType == ServerType.Optimizer)
             {
