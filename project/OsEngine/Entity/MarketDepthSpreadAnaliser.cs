@@ -14,7 +14,8 @@ namespace OsEngine.Entity
         {
             Tabs = new List<BotTabSimple>();
             MaxSpread = 0.005m;
-            
+            maFast = new MovingAverageSimle() { Lenth = 3 };
+            maSlow = new MovingAverageSimle() { Lenth = 20 };
         }
         public MarketDepthSpreadAnaliser(decimal _maxSpread)
         {
@@ -41,6 +42,8 @@ namespace OsEngine.Entity
             _tabs.Add(_t);
         }
 
+
+
         private void MarketDepthSpreadAnaliser_PositionOpeningSuccesEvent(Position obj)
         {
             foreach (var el in _tabs)
@@ -53,14 +56,21 @@ namespace OsEngine.Entity
                 
             }
             CalcChanges();
+            maFast = new MovingAverageSimle() { Lenth = 3 };
+            maSlow = new MovingAverageSimle() { Lenth = 20 };
 
         }
 
         private void MarketDepthSpreadAnaliser_CandleFinishedEvent(List<Candle> candles)
         {
             CalcChanges();
+            if (CanChange)
+            {
+                maFast = new MovingAverageSimle() { Lenth = 3 };
+                maSlow = new MovingAverageSimle() { Lenth = 20 };
+            }
         }
-
+        private decimal _LastPriceInd = 0;
         private void MarketDepthSpreadAnaliser_MarketDepthUpdateEvent(MarketDepth obj)
         {
             if (Tabs.Count < 2)
@@ -82,6 +92,7 @@ namespace OsEngine.Entity
             }
             lock (_locker)
             {
+                CalcIndex();
                 CalcChanges();
                 decimal NewSpread = 0;
                 foreach (var el in _tabs)
@@ -130,9 +141,30 @@ namespace OsEngine.Entity
                         {
                             ProfitChangeEvent(NewProfit);
                         }
-                        Profit = NewSpread;
+                        Profit = NewProfit;
                     }
                 }
+            }
+        }
+        private void CalcIndex()
+        {
+            decimal ind = 0;
+            decimal Last1 = _tabs[0]._tab.CandlesAll.Last().Close;
+            decimal Last2 = _tabs[1]._tab.CandlesAll.Last().Close;
+            if (_tabs[0].Fast)
+            {
+                ind = Last1 / Last2;
+            }
+            else
+            {
+                ind = Last2 / Last1;
+            }
+            ind = Math.Round(ind, 4);
+            if(ind != _LastPriceInd)
+            {
+                _LastPriceInd = ind;
+                maFast.Add(ind);
+                maSlow.Add(ind);
             }
         }
         private void CalcChanges()
@@ -370,6 +402,24 @@ namespace OsEngine.Entity
         /// </summary>
         public decimal MaxSpread;
 
+        public bool CanTrade
+        {
+            get
+            {
+                if (maFast.lastMa == 0 || maSlow.lastMa == 0) return false;
+                if(maFast.lastMa < maSlow.lastMa)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        private MovingAverageSimle maFast;
+        private MovingAverageSimle maSlow;
         /// <summary>
         /// Таблица изменений цены в рамках одной свечи
         /// </summary>

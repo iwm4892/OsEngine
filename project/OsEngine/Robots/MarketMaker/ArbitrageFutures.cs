@@ -69,6 +69,7 @@ namespace OsEngine.Robots.MarketMaker
                 && - obj > _CountTrade.ValueInt * minSpreadAdd.ValueDecimal
                 && _CountTrade.ValueInt <= MaxTrade.ValueInt)
             {
+                _tab1.SetNewLogMessage("Profit: " + _tab1.Securiti.Name + ": " + obj, Logging.LogMessageType.Signal);
                 UpdatePositions();
             }
 
@@ -93,7 +94,7 @@ namespace OsEngine.Robots.MarketMaker
             Console.WriteLine("Spread: " + obj);
             if(obj > minSpread.ValueDecimal || obj < -minSpread.ValueDecimal)
             {
-                _tab1.SetNewLogMessage("Spread: "+obj,Logging.LogMessageType.Signal);
+                _tab1.SetNewLogMessage("Spread: "+ _tab1.Securiti.Name +": "+ obj,Logging.LogMessageType.Signal);
             }
             if (Regime.ValueString == "Off")
             {
@@ -137,7 +138,10 @@ namespace OsEngine.Robots.MarketMaker
             {
                 return;
             }
-
+            if (!Analiser.CanTrade)
+            {
+                return;
+            }
             foreach (var t in Analiser._tabs)
             {
                 decimal vol = leverage.ValueDecimal * (GetBalance(t._tab)) / GetPrice(t._tab.CandlesAll[t._tab.CandlesAll.Count-1].Close,t._tab) / TabsSimple.Count;
@@ -154,10 +158,15 @@ namespace OsEngine.Robots.MarketMaker
         }
         private void UpdatePositions()
         {
+            if (!Analiser.CanTrade)
+            {
+                return;
+            }
             foreach (var t in Analiser._tabs)
             {
 
                 decimal vol = leverage.ValueDecimal * (GetBalance(t._tab)) / GetPrice(t._tab.CandlesAll[t._tab.CandlesAll.Count - 1].Close, t._tab) / TabsSimple.Count;
+                
                 if (t.side == Side.Buy)
                 {
                     t._tab.BuyAtMarketToPosition(t._tab.PositionsLast,GetVol(vol, t._tab));
@@ -184,8 +193,32 @@ namespace OsEngine.Robots.MarketMaker
                     t.SetNewLogMessage("profit: " + profit, Logging.LogMessageType.Signal);
                 }
             }
+            bool needclose=false;
+            foreach (var t in Analiser.Tabs)
+            {
+                List<Position> opos = t.PositionsOpenAll;
+                if (opos != null && opos.Count > 0)
+                {
+                    foreach(var p in opos) 
+                    {
+                        if (p.TimeCreate.AddHours(4) < t.TimeServerCurrent)
+                        {
+                            needclose = true;
+                        }
+                    }
+                }
+            }
+            if (needclose)
+            {
+                foreach (var t in Analiser.Tabs)
+                {
+                    t.CloseAllAtMarket();
+                    t.SetNewLogMessage("profit: " + profit + " закрыта тк жила дольше 4х часов", Logging.LogMessageType.Signal);
 
-            Console.WriteLine("profit: " + Math.Round(profit, 2));
+                }
+            }
+
+                Console.WriteLine("profit: " + Math.Round(profit, 2));
 
         }
         private PositionStateType Status;
