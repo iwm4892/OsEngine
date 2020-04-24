@@ -341,6 +341,7 @@
     <Compile Include="Entity\HorizontalVolume.cs" />
     <Compile Include="Entity\MarketDepthPainter.cs" />
     <Compile Include="Entity\MarketDepthSpreadAnaliser.cs" />
+    <Compile Include="Entity\MovingAverageSimle.cs" />
     <Compile Include="Entity\ProxyHolder.cs" />
     <Compile Include="Entity\ProxyHolderAddUi.xaml.cs">
       <DependentUpon>ProxyHolderAddUi.xaml</DependentUpon>
