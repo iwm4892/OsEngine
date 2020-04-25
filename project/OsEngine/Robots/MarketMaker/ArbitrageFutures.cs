@@ -48,6 +48,7 @@ namespace OsEngine.Robots.MarketMaker
 
             leverage = CreateParameter("Маржинальное плечо", 1m, 1m, 10, 0.1m);
             isContract = CreateParameter("Торгуем контрактами", false);
+            autoCanselTrades = CreateParameter("Принудительно закрывать по времени", true);
 
             ParametrsChangeByUser += ArbitrageIndex_ParametrsChangeByUser;
 
@@ -193,31 +194,33 @@ namespace OsEngine.Robots.MarketMaker
                     t.SetNewLogMessage("profit: " + profit, Logging.LogMessageType.Signal);
                 }
             }
-            bool needclose=false;
-            foreach (var t in Analiser.Tabs)
+            if (autoCanselTrades.ValueBool)
             {
-                List<Position> opos = t.PositionsOpenAll;
-                if (opos != null && opos.Count > 0)
+                bool needclose = false;
+                foreach (var t in Analiser.Tabs)
                 {
-                    foreach(var p in opos) 
+                    List<Position> opos = t.PositionsOpenAll;
+                    if (opos != null && opos.Count > 0)
                     {
-                        if (p.TimeCreate.AddHours(4) < t.TimeServerCurrent)
+                        foreach (var p in opos)
                         {
-                            needclose = true;
+                            if (p.TimeCreate.AddHours(4) < t.TimeServerCurrent)
+                            {
+                                needclose = true;
+                            }
                         }
                     }
                 }
-            }
-            if (needclose)
-            {
-                foreach (var t in Analiser.Tabs)
+                if (needclose)
                 {
-                    t.CloseAllAtMarket();
-                    t.SetNewLogMessage("profit: " + profit + " закрыта тк жила дольше 4х часов", Logging.LogMessageType.Signal);
+                    foreach (var t in Analiser.Tabs)
+                    {
+                        t.CloseAllAtMarket();
+                        t.SetNewLogMessage("profit: " + profit + " закрыта тк жила дольше 4х часов", Logging.LogMessageType.Signal);
 
+                    }
                 }
             }
-
                 Console.WriteLine("profit: " + Math.Round(profit, 2));
 
         }
@@ -283,6 +286,10 @@ namespace OsEngine.Robots.MarketMaker
         /// торгуем контрактами
         /// </summary>
         private StrategyParameterBool isContract;
+        /// <summary>
+        /// Принудительно закрывать сделки по времени
+        /// </summary>
+        private StrategyParameterBool autoCanselTrades;
 
         /// <summary>
         /// Плечо

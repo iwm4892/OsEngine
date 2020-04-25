@@ -14,7 +14,7 @@ namespace OsEngine.Entity
         {
             Tabs = new List<BotTabSimple>();
             MaxSpread = 0.005m;
-            maFast = new MovingAverageSimle() { Lenth = 3 };
+            maFast = new MovingAverageSimle() { Lenth = 5 };
             maSlow = new MovingAverageSimle() { Lenth = 20 };
         }
         public MarketDepthSpreadAnaliser(decimal _maxSpread)
@@ -29,7 +29,9 @@ namespace OsEngine.Entity
             Tabs[Tabs.Count - 1].CandleFinishedEvent += MarketDepthSpreadAnaliser_CandleFinishedEvent;
             Tabs[Tabs.Count - 1].PositionOpeningSuccesEvent += MarketDepthSpreadAnaliser_PositionOpeningSuccesEvent;
             Tabs[Tabs.Count - 1].PositionNetVolumeChangeEvent += MarketDepthSpreadAnaliser_PositionOpeningSuccesEvent;
-            
+
+            this.ProfitChangeEvent += MarketDepthSpreadAnaliser_ProfitChangeEvent;
+            this.SpreadChangeEvent += MarketDepthSpreadAnaliser_SpreadChangeEvent;
             _Tabs _t = new _Tabs();
             
             _t._tab = tab;
@@ -42,7 +44,27 @@ namespace OsEngine.Entity
             _tabs.Add(_t);
         }
 
+        private void MarketDepthSpreadAnaliser_SpreadChangeEvent(decimal obj)
+        {
+            if (!CanChange) return;
+            if (obj != _LastPriceInd)
+            {
+                _LastPriceInd = obj;
+                maFast.Add(obj);
+                maSlow.Add(obj);
+            }
+        }
 
+        private void MarketDepthSpreadAnaliser_ProfitChangeEvent(decimal obj)
+        {
+            if (CanChange) return;
+            if (obj != _LastPriceInd)
+            {
+                _LastPriceInd = obj;
+                maFast.Add(obj);
+                maSlow.Add(obj);
+            }
+        }
 
         private void MarketDepthSpreadAnaliser_PositionOpeningSuccesEvent(Position obj)
         {
@@ -56,7 +78,7 @@ namespace OsEngine.Entity
                 
             }
             CalcChanges();
-            maFast = new MovingAverageSimle() { Lenth = 3 };
+            maFast = new MovingAverageSimle() { Lenth = 5 };
             maSlow = new MovingAverageSimle() { Lenth = 20 };
 
         }
@@ -66,7 +88,7 @@ namespace OsEngine.Entity
             CalcChanges();
             if (CanChange)
             {
-                maFast = new MovingAverageSimle() { Lenth = 3 };
+                maFast = new MovingAverageSimle() { Lenth = 5 };
                 maSlow = new MovingAverageSimle() { Lenth = 20 };
             }
         }
@@ -92,7 +114,7 @@ namespace OsEngine.Entity
             }
             lock (_locker)
             {
-                CalcIndex();
+                //CalcIndex();
                 CalcChanges();
                 decimal NewSpread = 0;
                 foreach (var el in _tabs)
@@ -148,6 +170,7 @@ namespace OsEngine.Entity
         }
         private void CalcIndex()
         {
+            /*
             decimal ind = 0;
             decimal Last1 = _tabs[0]._tab.CandlesAll.Last().Close;
             decimal Last2 = _tabs[1]._tab.CandlesAll.Last().Close;
@@ -159,13 +182,14 @@ namespace OsEngine.Entity
             {
                 ind = Last2 / Last1;
             }
-            ind = Math.Round(ind, 4);
+            ind = Math.Round(ind, 8);
             if(ind != _LastPriceInd)
             {
                 _LastPriceInd = ind;
                 maFast.Add(ind);
                 maSlow.Add(ind);
             }
+            */
         }
         private void CalcChanges()
         {
@@ -406,15 +430,16 @@ namespace OsEngine.Entity
         {
             get
             {
-                if (maFast.lastMa == 0 || maSlow.lastMa == 0) return false;
-                if(maFast.lastMa < maSlow.lastMa)
+                bool _result = false;
+                if (maFast.lastMa == 0 || maSlow.lastMa == 0) return _result;
+                if(
+                    (maSlow.lastMa>0 && maFast.lastMa < maSlow.lastMa)
+                    ||(maSlow.lastMa < 0 && maFast.lastMa > maSlow.lastMa)
+                    )
                 {
-                    return true;
+                    _result = true;
                 }
-                else
-                {
-                    return false;
-                }
+                return _result;
             }
         }
 
