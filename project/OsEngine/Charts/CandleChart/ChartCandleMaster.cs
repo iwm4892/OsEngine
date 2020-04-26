@@ -279,12 +279,6 @@ namespace OsEngine.Charts.CandleChart
                         {
                             CreateIndicator(new TradeThread(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
                         }
-                        ////+++
-                        if (indicator[0] == "Fractail_lenth")
-                        {
-                            CreateIndicator(new Fractail_lenth(indicator[1], Convert.ToBoolean(indicator[3])), indicator[2]);
-                        }
-
                     }
 
                     reader.Close();

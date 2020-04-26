@@ -14,6 +14,7 @@ using OsEngine.OsTrader.Panels.Tab;
 using System.Drawing;
 using System.Threading;
 using OsEngine.Logging;
+using OsEngine.Indicators;
 
 namespace OsEngine.Robots.Trend
 {
@@ -86,8 +87,9 @@ namespace OsEngine.Robots.Trend
             SlowMA.Lenght = 30;
             SlowMA.Save();
 
-            Fractail = new Fractail_lenth(name + "Fractail", false) { Lenght = 5 };
-            Fractail = (Fractail_lenth)_tab.CreateCandleIndicator(Fractail, "Prime");
+            Fractail = IndicatorsFactory.CreateIndicatorByName("Fractail_lenth", name + "Fractail", false);
+            Fractail = (Aindicator)_tab.CreateCandleIndicator(Fractail, "Prime");
+            Fractail.ParametersDigit[0].Value = Fractaillenth.ValueInt;
             Fractail.Save();
 
             TrendMA = new MovingAverage(name + "TrendMA", false) { ColorBase = System.Drawing.Color.AntiqueWhite, Lenght = 300, TypePointsToSearch = PriceTypePoints.Close, TypeCalculationAverage = MovingAverageTypeCalculation.Simple };
@@ -112,8 +114,9 @@ namespace OsEngine.Robots.Trend
 
         private void PriceChanel_work_ParametrsChangeByUser()
         {
-            Fractail.Lenght = Fractaillenth.ValueInt;
+            Fractail.ParametersDigit[0].Value = Fractaillenth.ValueInt;
             Fractail.Save();
+            Fractail.Reload();
 
             LengthAtr.ValueInt = LengthPC.ValueInt;
             LengthUp.ValueInt = LengthPC.ValueInt;
@@ -255,7 +258,7 @@ namespace OsEngine.Robots.Trend
         
         private MovingAverage TrendMA;
 
-        private Fractail_lenth Fractail;
+        private Aindicator Fractail;
         /// <summary>
         /// Плечо
         /// </summary>
@@ -298,7 +301,7 @@ namespace OsEngine.Robots.Trend
             {
                 return;
             }
-            if (GetLastFractail(Fractail.ValuesUp) == 0 || GetLastFractail(Fractail.ValuesDown) == 0)
+            if (GetLastFractail(Fractail.DataSeries.ByName("SeriesUp")) == 0 || GetLastFractail(Fractail.DataSeries.ByName("SeriesDown")) == 0)
             {
                 return;
             }
@@ -438,7 +441,7 @@ namespace OsEngine.Robots.Trend
                     //    _tab.CloseAtTrailingStop(openPositions[i],delta, delta - Slipage.ValueDecimal);
                     }
                     decimal priceClose = _lastPcDown;
-                    decimal newfr = GetLastFractail(Fractail.ValuesDown);
+                    decimal newfr = GetLastFractail(Fractail.DataSeries.ByName("SeriesDown"));
                     /*
                     if(FastMA.Values[FastMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 1])
                     {
@@ -463,7 +466,7 @@ namespace OsEngine.Robots.Trend
                     }
 
                     decimal priceClose = _lastPcUp;
-                    decimal newfr = GetLastFractail(Fractail.ValuesUp);
+                    decimal newfr = GetLastFractail(Fractail.DataSeries.ByName("SeriesUp"));
                     /*
                     if (FastMA.Values[FastMA.Values.Count - 1] > SlowMA.Values[SlowMA.Values.Count - 1])
                     {
@@ -493,14 +496,14 @@ namespace OsEngine.Robots.Trend
                 if (openPositions[i].Direction == Side.Buy)
                 {
                     _tab.SellAtStopCancel();
-                    _tab.CloseAtStop(openPositions[i], GetLastFractail(Fractail.ValuesDown), GetLastFractail(Fractail.ValuesDown) - Slipage.ValueDecimal);
+                    _tab.CloseAtStop(openPositions[i], GetLastFractail(Fractail.DataSeries.ByName("SeriesDown")), GetLastFractail(Fractail.DataSeries.ByName("SeriesDown")) - Slipage.ValueDecimal);
                      //   _tab.CloseAtStop(openPositions[i], _tab.CandlesAll[_tab.CandlesAll.Count-1].Low, _tab.CandlesAll[_tab.CandlesAll.Count - 1].Low - Slipage.ValueDecimal);
                     //    _tab.CloseAtProfit(openPositions[i], openPositions[i].EntryPrice+_lastAtr*0.5m, openPositions[i].EntryPrice + _lastAtr * 0.5m - Slipage.ValueDecimal);
                 }
                 else
                 {
                     _tab.BuyAtStopCancel();
-                    _tab.CloseAtStop(openPositions[i], GetLastFractail(Fractail.ValuesUp), GetLastFractail(Fractail.ValuesUp) + Slipage.ValueDecimal);
+                    _tab.CloseAtStop(openPositions[i], GetLastFractail(Fractail.DataSeries.ByName("SeriesUp")), GetLastFractail(Fractail.DataSeries.ByName("SeriesUp")) + Slipage.ValueDecimal);
                     //    _tab.CloseAtStop(openPositions[i], _tab.CandlesAll[_tab.CandlesAll.Count - 1].High, _tab.CandlesAll[_tab.CandlesAll.Count - 1].High + Slipage.ValueDecimal);
                     //    _tab.CloseAtProfit(openPositions[i], openPositions[i].EntryPrice - _lastAtr * 0.5m, openPositions[i].EntryPrice + _lastAtr * 0.5m + Slipage.ValueDecimal);
                 }
@@ -517,12 +520,12 @@ namespace OsEngine.Robots.Trend
             decimal priceEnter = 0;
             if (side == Side.Buy)
             {
-                Laststop = GetLastFractail(Fractail.ValuesDown);
+                Laststop = GetLastFractail(Fractail.DataSeries.ByName("SeriesDown"));
                 priceEnter = _lastPcUp + (_lastAtr * KofAtr);
             }
             else
             {
-                Laststop = GetLastFractail(Fractail.ValuesUp);
+                Laststop = GetLastFractail(Fractail.DataSeries.ByName("SeriesUp"));
                 priceEnter = _lastPcDown - (_lastAtr * KofAtr);
             }
 

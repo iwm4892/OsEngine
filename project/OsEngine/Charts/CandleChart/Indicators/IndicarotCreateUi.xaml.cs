@@ -114,7 +114,6 @@ namespace OsEngine.Charts.CandleChart.Indicators
             _gridViewIndicators.Rows.Add("Claster");
             _gridViewIndicators.Rows.Add("MarketProfile");
             _gridViewIndicators.Rows.Add("MovingChanel");
-            _gridViewIndicators.Rows.Add("Fractail_lenth");
             //----
 
             _gridViewIndicators.Click += delegate { _lastScriptGrid = false; };

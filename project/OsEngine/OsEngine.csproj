@@ -193,7 +193,6 @@
     <Compile Include="Charts\CandleChart\Indicators\CCIUi.xaml.cs">
       <DependentUpon>CCIUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Charts\CandleChart\Indicators\Fractail_lenth.cs" />
     <Compile Include="Charts\CandleChart\Indicators\MovingChanel.cs" />
     <Compile Include="Charts\CandleChart\Indicators\MarketProfile.cs" />
     <Compile Include="Charts\CandleChart\Indicators\Cmo.cs" />
