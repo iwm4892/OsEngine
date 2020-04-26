@@ -13,6 +13,7 @@ namespace OsEngine.Indicators
     {
         public static List<string> GetIndicatorsNames()
         {
+            
             if (Directory.Exists(@"Custom") == false)
             {
                 Directory.CreateDirectory(@"Custom");
@@ -83,10 +84,11 @@ namespace OsEngine.Indicators
         {
             Aindicator Indicator = null;
 
-            /* if (nameClass == "ATR")
-             {
-                 Indicator = new ATR();
-             }*/
+           /* if (nameClass == "FBD")
+            {
+                Indicator = new FBD();
+            }*/
+
             try
             {
                 if (Indicator == null)
@@ -141,6 +143,7 @@ namespace OsEngine.Indicators
                 CompilerParameters cp = new CompilerParameters(
                     Array.ConvertAll<Assembly, string>(AppDomain.CurrentDomain.GetAssemblies(),
                     x => x.Location));
+                cp.IncludeDebugInformation = true;
 
                 cp.GenerateInMemory = true;
                 cp.TempFiles.KeepFiles = false;

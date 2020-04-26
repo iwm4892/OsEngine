@@ -21,6 +21,7 @@ using OsEngine.Robots.High_Frequency;
 using OsEngine.Robots.MarketMaker;
 using OsEngine.Robots.Patterns;
 using OsEngine.Robots.Trend;
+using OsEngine.Robots.OnScriptIndicators;
 using OsEngine.Robots.VSA;
 
 namespace OsEngine.Robots
@@ -37,6 +38,7 @@ namespace OsEngine.Robots
 
             result.Add("Engine");
             result.Add("ClusterEngine");
+            result.Add("FundBalanceDivergenceBot");
             result.Add("PairTraderSimple");
             result.Add("MomentumMACD");
             result.Add("MarketMakerBot");
@@ -119,6 +121,10 @@ namespace OsEngine.Robots
                 return bot;
             }
 
+            if (nameClass == "FundBalanceDivergenceBot")
+            {
+                bot = new FundBalanceDivergenceBot(name, startProgram);
+            }
             if (nameClass == "BbPowerTrade")
             {
                 bot = new BbPowerTrade(name, startProgram);
@@ -457,6 +463,7 @@ namespace OsEngine.Robots
 
                 // Помечаем сборку, как временную
                 cp.GenerateInMemory = true;
+                cp.IncludeDebugInformation = true;
 
                 // Обрабатываем CSC компилятором
                 CompilerResults results = prov.CompileAssemblyFromSource(cp, fileStr);

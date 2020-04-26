@@ -37,6 +37,7 @@ using OsEngine.Market.Servers.Tester;
 using OsEngine.Market.Servers.Transaq;
 using OsEngine.Market.Servers.ZB;
 using OsEngine.Market.Servers.Hitbtc;
+using OsEngine.Market.Servers.MOEX;
 using OsEngine.Market.Servers.Tinkoff;
 using OsEngine.Market.Servers.HuobiDM;
 
@@ -78,6 +79,7 @@ namespace OsEngine.Market
                 serverTypes.Add(ServerType.Plaza);
                 serverTypes.Add(ServerType.Transaq);
                 serverTypes.Add(ServerType.Tinkoff);
+                serverTypes.Add(ServerType.MoexDataServer);
 
                 serverTypes.Add(ServerType.GateIo);
                 serverTypes.Add(ServerType.BitMax);
@@ -98,11 +100,27 @@ namespace OsEngine.Market
                 serverTypes.Add(ServerType.Lmax);
                 serverTypes.Add(ServerType.Oanda);
 
-                serverTypes.Add(ServerType.Finam);
                 serverTypes.Add(ServerType.AstsBridge);
 
                 return serverTypes;
             }
+        }
+
+        public static List<ServerType> ActiveServersTypes
+        {
+            get
+            {
+                List<ServerType> types = new List<ServerType>();
+
+                for (int i = 0; _servers != null && i < _servers.Count; i++)
+                {
+                    types.Add(_servers[i].ServerType);
+                }
+
+                return types;
+            }
+
+
         }
 
         /// <summary>
@@ -174,7 +192,10 @@ namespace OsEngine.Market
                 }
 
                 IServer newServer = null;
-
+                if (type == ServerType.MoexDataServer)
+                {
+                    newServer = new MoexDataServer();
+                }
                 if (type == ServerType.Tinkoff)
                 {
                     newServer = new TinkoffServer();
@@ -788,9 +809,15 @@ namespace OsEngine.Market
         /// AstsBridge, он же ШЛЮЗ, он же TEAP 
         /// </summary>
         AstsBridge,
+
+        /// <summary>
+        /// Дата сервер московской биржи
+        /// </summary>
+        MoexDataServer
         /// <summary>
         /// HuobiDM
         /// </summary>
         HuobiDM
     }
+
 }

@@ -509,6 +509,7 @@
     <Compile Include="Market\Servers\Lmax\LmaxFixClient.cs" />
     <Compile Include="Market\Servers\Lmax\LmaxServer.cs" />
     <Compile Include="Market\Servers\Lmax\Tags.cs" />
+    <Compile Include="Market\Servers\MOEX\MoexIssDataServer.cs" />
     <Compile Include="Market\Servers\NinjaTrader\NinjaTraderClient.cs" />
     <Compile Include="Market\Servers\NinjaTrader\NinjaTraderServer.cs" />
     <Compile Include="Market\Servers\Oanda\OandaClient.cs" />
@@ -631,6 +632,7 @@
     <Compile Include="OsMiner\Patterns\PatternVolume.cs" />
     <Compile Include="OsOptimizer\OptimizerExecutor.cs" />
     <Compile Include="OsOptimizer\OptimizerMaster.cs" />
+    <Compile Include="OsOptimizer\OptimizerReport.cs" />
     <Compile Include="OsOptimizer\OptimizerUi.xaml.cs">
       <DependentUpon>OptimizerUi.xaml</DependentUpon>
     </Compile>
@@ -684,6 +686,7 @@
     <Compile Include="Robots\OnScriptIndicators\BollingerRevers.cs" />
     <Compile Include="Robots\OnScriptIndicators\BollingerTrailing.cs" />
     <Compile Include="Robots\OnScriptIndicators\CciTrade.cs" />
+    <Compile Include="Robots\OnScriptIndicators\FundBalanceDivergenceBot.cs" />
     <Compile Include="Robots\OnScriptIndicators\MacdRevers.cs" />
     <Compile Include="Robots\OnScriptIndicators\MacdTrail.cs" />
     <Compile Include="Robots\OnScriptIndicators\OneLegArbitrage.cs" />
