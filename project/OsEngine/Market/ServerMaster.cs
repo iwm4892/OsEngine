@@ -813,7 +813,7 @@ namespace OsEngine.Market
         /// <summary>
         /// Дата сервер московской биржи
         /// </summary>
-        MoexDataServer
+        MoexDataServer,
         /// <summary>
         /// HuobiDM
         /// </summary>
