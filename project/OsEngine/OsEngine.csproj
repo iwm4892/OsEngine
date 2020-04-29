@@ -697,6 +697,7 @@
     <Compile Include="Robots\MarketMaker\ArbitrageFutures.cs" />
     <Compile Include="Robots\MarketMaker\ArbitrageIndex.cs" />
     <Compile Include="Robots\Trend\FractialMA_work .cs" />
+    <Compile Include="Robots\Trend\TrendLine.cs" />
     <Compile Include="Robots\Trend\PriceChanel_work.cs" />
     <Compile Include="Robots\Trend\FastDelta_2.cs" />
     <Compile Include="Robots\Trend\GridBot.cs" />

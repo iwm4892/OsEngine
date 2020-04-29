@@ -1433,7 +1433,9 @@ namespace OsEngine.Market.Servers.Binance.Futures
 
                             else if (mes.Contains("\"e\"" + ":" + "\"trade\""))
                             {
-                                var quotes = JsonConvert.DeserializeAnonymousType(mes, new TradeResponse());
+                                //+++
+                                //Console.WriteLine(mes);
+                                   var quotes = JsonConvert.DeserializeAnonymousType(mes, new TradeResponse());
 
                                 if (NewTradesEvent != null)
                                 {

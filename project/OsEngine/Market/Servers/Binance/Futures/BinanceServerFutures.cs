@@ -313,6 +313,12 @@ namespace OsEngine.Market.Servers.Binance.Futures
                 {
                     return;
                 }
+                //++
+                if (trades.data.M)
+                {
+                    return;
+                }
+                //--
                 Trade trade = new Trade();
                 trade.SecurityNameCode = trades.data.s;
                 trade.Price =

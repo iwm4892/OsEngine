@@ -27,19 +27,13 @@ namespace OsEngine.Robots.Trend
     /// дополнительный вход при уходе цены ниже линии канала на ATR*коэффициент.
     /// Трейлинг стоп по нижней линии канала PriceChannel
     /// </summary>
-    public class PriceChanel_work : BotPanel
+    public class TrendLine : BotPanel
     {
-        public PriceChanel_work(string name, StartProgram startProgram)
+        public TrendLine(string name, StartProgram startProgram)
             : base(name, startProgram)
         {
             TabCreate(BotTabType.Simple);
             _tab = TabsSimple[0];
-
-            _pc = new PriceChannel(name + "PriceChannel", false) { LenghtUpLine = 3, LenghtDownLine = 3, ColorUp = Color.DodgerBlue, ColorDown = Color.DarkRed };
-            _atr = new Atr(name + "ATR", false) { Lenght = 14, ColorBase = Color.DodgerBlue, };
-
-            _pc.Save();
-            _atr.Save();
 
             _tab.CandleFinishedEvent += Strateg_CandleFinishedEvent;
             _tab.PositionOpeningSuccesEvent += Strateg_PositionOpen;
@@ -57,45 +51,29 @@ namespace OsEngine.Robots.Trend
 
             Slipage = CreateParameter("Slipage", 0m, 0m, 20, 0.1m);
 
-            LengthAtr = CreateParameter("LengthAtr", 14, 14, 200, 1);
-            LengthUp = CreateParameter("LengthUp", 14, 14, 200, 1);
-            LengthDown = CreateParameter("LengthDown", 14, 14, 200, 1);
-
-            LengthPC = CreateParameter("Длина скользящей для PriceChannel", 14, 14, 200, 1);
-            
-            LengthAtr.ValueInt = LengthPC.ValueInt;
-            LengthUp.ValueInt = LengthPC.ValueInt;
-            LengthDown.ValueInt = LengthPC.ValueInt;
-
-            //Slipage = 10;
-            //VolumeFix1 = 1;
-            //VolumeFix2 = 1;
-            //LengthAtr = 14;
-            KofAtr = 0.5m;
-            //LengthUp = 3;
-            //LengthDown = 3;
-
             DeleteEvent += Strategy_DeleteEvent;
 
-            FastMA = new MovingAverage(name + "FastMA", false) { ColorBase = System.Drawing.Color.Yellow, Lenght = 15, TypePointsToSearch = PriceTypePoints.Close, TypeCalculationAverage = MovingAverageTypeCalculation.Simple };
-            FastMA = (MovingAverage)_tab.CreateCandleIndicator(FastMA, "Prime");
-            FastMA.Lenght = 15;
-            FastMA.Save();
+            _trendLine = IndicatorsFactory.CreateIndicatorByName("TrendLine", name + "TrendLine", false);
+            _trendLine = (Aindicator)_tab.CreateCandleIndicator(_trendLine, "Prime");
+            _trendLine.ParametersDigit[0].Value = Fractaillenth.ValueInt;
+            _trendLine.Save();
 
-            SlowMA = new MovingAverage(name + "SlowMA", false) { ColorBase = System.Drawing.Color.Blue, Lenght = 30, TypePointsToSearch = PriceTypePoints.Close, TypeCalculationAverage = MovingAverageTypeCalculation.Simple };
-            SlowMA = (MovingAverage)_tab.CreateCandleIndicator(SlowMA, "Prime");
-            SlowMA.Lenght = 30;
-            SlowMA.Save();
+            _Ssma = IndicatorsFactory.CreateIndicatorByName("Ssma", name + "_Ssma", false);
+            _Ssma = (Aindicator)_tab.CreateCandleIndicator(_Ssma, "Prime");
+            _Ssma.ParametersDigit[0].Value = Fractaillenth.ValueInt;
+            _Ssma.Save();
 
-            Fractail = IndicatorsFactory.CreateIndicatorByName("Fractail_lenth", name + "Fractail", false);
-            Fractail = (Aindicator)_tab.CreateCandleIndicator(Fractail, "Prime");
-            Fractail.ParametersDigit[0].Value = Fractaillenth.ValueInt;
-            Fractail.Save();
+            _FastMa = IndicatorsFactory.CreateIndicatorByName("Ssma", name + "_FastMa", false);
+            _FastMa = (Aindicator)_tab.CreateCandleIndicator(_FastMa, "Prime");
+            _FastMa.ParametersDigit[0].Value = 15;
+            _FastMa.Save();
 
-            TrendMA = new MovingAverage(name + "TrendMA", false) { ColorBase = System.Drawing.Color.AntiqueWhite, Lenght = 300, TypePointsToSearch = PriceTypePoints.Close, TypeCalculationAverage = MovingAverageTypeCalculation.Simple };
-            TrendMA = (MovingAverage)_tab.CreateCandleIndicator(TrendMA, "Prime");
-            TrendMA.Lenght = 300;
-            TrendMA.Save();
+            _SlowMa = IndicatorsFactory.CreateIndicatorByName("Ssma", name + "_SlowMa", false);
+            _SlowMa = (Aindicator)_tab.CreateCandleIndicator(_SlowMa, "Prime");
+            _SlowMa.ParametersDigit[0].Value = 30;
+            _SlowMa.Save();
+
+            Fractail = _trendLine.IncludeIndicators.FindLast(x => x.Name == name +"TrendLineFractail");
 
             Thread closerThread = new Thread(CloseFailPosition);
             closerThread.IsBackground = true;
@@ -118,9 +96,9 @@ namespace OsEngine.Robots.Trend
             Fractail.Save();
             Fractail.Reload();
 
-            LengthAtr.ValueInt = LengthPC.ValueInt;
-            LengthUp.ValueInt = LengthPC.ValueInt;
-            LengthDown.ValueInt = LengthPC.ValueInt;
+            _trendLine.ParametersDigit[0].Value = Fractaillenth.ValueInt;
+            _trendLine.Save();
+            _trendLine.Reload();
         }
 
         private void CloseFailPosition()
@@ -163,7 +141,7 @@ namespace OsEngine.Robots.Trend
         /// </summary>
         public override string GetNameStrategyType()
         {
-            return "PriceChanel_work";
+            return "TrendLine";
         }
 
         /// <summary>
@@ -182,38 +160,7 @@ namespace OsEngine.Robots.Trend
         /// Заглушка от повторного открытия
         /// </summary>
         private DateTime _LastCandleTime;
-        /// <summary>
-        /// Atr period
-        /// период ATR
-        /// </summary>
-        public StrategyParameterInt LengthAtr;
 
-        /// <summary>
-        /// PriceChannel up line length
-        /// период PriceChannel Up
-        /// </summary>
-        public StrategyParameterInt LengthUp;
-
-        /// <summary>
-        /// PriceChannel down line length
-        /// период PriceChannel Down
-        /// </summary>
-        public StrategyParameterInt LengthDown;
-        /// <summary>
-        /// PriceChannel up line length
-        /// период PriceChannel общий
-        /// </summary>
-        public StrategyParameterInt LengthPC;
-
-        /// <summary>
-        /// PriceChannel
-        /// </summary>
-        private PriceChannel _pc;
-
-        /// <summary>
-        /// ATR
-        /// </summary>
-        private Atr _atr;
 
         //settings / настройки публичные
 
@@ -223,12 +170,6 @@ namespace OsEngine.Robots.Trend
         /// </summary>
         public StrategyParameterDecimal Slipage;
 
-
-        /// <summary>
-        /// atr coef
-        /// коэффициент ATR
-        /// </summary>
-        public decimal KofAtr;
 
         /// <summary>
         /// regime
@@ -251,14 +192,15 @@ namespace OsEngine.Robots.Trend
 
         private decimal _lastPcUp;
         private decimal _lastPcDown;
-        private decimal _lastAtr;
+        private decimal _lastTrendUp;
+        private decimal _lastTrendDown;
 
-        private MovingAverage FastMA;
-        private MovingAverage SlowMA;
-        
-        private MovingAverage TrendMA;
 
         private Aindicator Fractail;
+        private Aindicator _trendLine;
+        private Aindicator _Ssma;
+        private Aindicator _FastMa;
+        private Aindicator _SlowMa;
         /// <summary>
         /// Плечо
         /// </summary>
@@ -280,7 +222,8 @@ namespace OsEngine.Robots.Trend
         /// </summary>
         public StrategyParameterInt Fractaillenth;
         // logic логика
-
+        private decimal _lastfastma;
+        private decimal _lastslowma;
         /// <summary>
         /// candle finished event
         /// событие завершения свечи
@@ -291,60 +234,36 @@ namespace OsEngine.Robots.Trend
             {
                 return;
             }
-            _pc.LenghtUpLine = LengthUp.ValueInt;
-            _pc.LenghtDownLine = LengthDown.ValueInt;
-            _pc.Process(candles);
-            _atr.Lenght = LengthAtr.ValueInt;
-            _atr.Process(candles);
+            _trendLine.Process(candles);
+            _lastPcUp = GetLastFractail(Fractail.DataSeries.ByName("SeriesUp"));
+            _lastPcDown = GetLastFractail(Fractail.DataSeries.ByName("SeriesDown"));
+            _lastTrendUp = _trendLine.DataSeries.ByName("SeriesUp")[_trendLine.DataSeries.ByName("SeriesUp").Count - 1];
+            _lastTrendDown = _trendLine.DataSeries.ByName("SeriesDown")[_trendLine.DataSeries.ByName("SeriesDown").Count - 1];
+            _lastfastma = _FastMa.DataSeries.ByName("Ma")[_FastMa.DataSeries.ByName("Ma").Count - 1];
+            _lastslowma = _SlowMa.DataSeries.ByName("Ma")[_FastMa.DataSeries.ByName("Ma").Count - 1];
 
-            if (_pc.ValuesUp == null || _pc.ValuesDown == null || _atr.Values == null)
+            if (_lastPcUp == 0 || _lastPcDown == 0 )
             {
                 return;
             }
-            if (GetLastFractail(Fractail.DataSeries.ByName("SeriesUp")) == 0 || GetLastFractail(Fractail.DataSeries.ByName("SeriesDown")) == 0)
-            {
-                return;
-            }
-            _lastPcUp = _pc.ValuesUp[_pc.ValuesUp.Count - 1];
-            _lastPcDown = _pc.ValuesDown[_pc.ValuesDown.Count - 1];
-            _lastAtr = _atr.Values[_atr.Values.Count - 1];
-
-            if (_pc.ValuesUp == null || _pc.ValuesDown == null || _pc.ValuesUp.Count < _pc.LenghtUpLine + 1 ||
-                _pc.ValuesDown.Count < _pc.LenghtDownLine + 1 || _atr.Values == null || _atr.Values.Count < _atr.Lenght + 1)
-            {
-                return;
-            }
-            /*
-            if(TrendMA.Values == null ||TrendMA.Values.Count < TrendMA.Lenght)
-            {
-                return;
-            }
-            
-            if (Regime.ValueString != "Off" && Regime.ValueString != "OnlyClosePosition")
-            {
-               if(candles[candles.Count-1].Close > TrendMA.Values[TrendMA.Values.Count-1])
-                {
-                    Regime.ValueString = "OnlyLong";
-                }
-                if (candles[candles.Count - 1].Close < TrendMA.Values[TrendMA.Values.Count - 1])
-                {
-                    Regime.ValueString = "OnlyShort";
-                }
-
-            }
-            */
 
             List<Position> openPositions = _tab.PositionsOpenAll;
-            /*
-            if(openPositions!=null && openPositions.Count > 0)
-            {
-                _tab.SetNewLogMessage("Количество открытых позицый: " + openPositions.Count, LogMessageType.Signal);
-            }
-            */
             if (openPositions != null && openPositions.Count != 0)
             {
                 LogicClosePosition();
             }
+
+            if (_lastTrendUp == 0 || _lastTrendDown == 0)
+            {
+                return;
+            }
+            /*
+            if(candles[candles.Count-1].High > _lastTrendUp
+                || candles[candles.Count - 1].Low < _lastTrendDown)
+            {
+                return;
+            }
+            */
 
             if (Regime.ValueString == "OnlyClosePosition")
             {
@@ -374,45 +293,17 @@ namespace OsEngine.Robots.Trend
             if (openPositions == null || openPositions.Count == 0)
             {
                 // long
-                if (Regime.ValueString != "OnlyShort")
+                if (Regime.ValueString != "OnlyShort" && _lastTrendDown !=0 && _lastfastma >_lastslowma)
                 {
-                    if (FastMA.Values[FastMA.Values.Count - 1] > SlowMA.Values[SlowMA.Values.Count - 1]
-                        
-                     //   && Math.Abs(FastMA.Values[FastMA.Values.Count - 1]- SlowMA.Values[SlowMA.Values.Count - 1])>_lastAtr
-                        /*
-                        && candles[candles.Count-1].Volume > candles[candles.Count - 2].Volume
-                        && candles[candles.Count - 2].Volume > candles[candles.Count - 3].Volume
-                        */
-                        //                        && FastMA.Values[FastMA.Values.Count - 1]> FastMA.Values[FastMA.Values.Count - 3]
-                        //                        && SlowMA.Values[SlowMA.Values.Count - 1]> SlowMA.Values[SlowMA.Values.Count - 3]
-                        )
-                    {
-                        decimal priceEnter = _lastPcUp + (_lastAtr * KofAtr);
-                        //   priceEnter = GetLastFractail(Fractail.ValuesUp);
-                        //_tab.BuyAtStop(VolumeFix1.ValueDecimal, priceEnter + Slipage.ValueDecimal, priceEnter, StopActivateType.HigherOrEqual);
-                        _tab.BuyAtStop(GetVolume(Side.Buy), priceEnter + Slipage.ValueDecimal, priceEnter, StopActivateType.HigherOrEqual);
-                    }
+                        decimal priceEnter = _lastTrendDown;
+                        _tab.BuyAtStop(GetVolume(Side.Buy), priceEnter + Slipage.ValueDecimal, priceEnter, StopActivateType.LowerOrEqyal,1);
                 }
 
                 // Short
-                if (Regime.ValueString != "OnlyLong")
+                if (Regime.ValueString != "OnlyLong" && _lastTrendUp !=0 && _lastfastma < _lastslowma)
                 {
-                    if (FastMA.Values[FastMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 1]
-                     //   && Math.Abs(FastMA.Values[FastMA.Values.Count - 1] - SlowMA.Values[SlowMA.Values.Count - 1]) > _lastAtr
-                        /*
-                        && candles[candles.Count - 1].Volume > candles[candles.Count - 2].Volume
-                        && candles[candles.Count - 2].Volume > candles[candles.Count - 3].Volume
-                        */
-                        //                       && FastMA.Values[FastMA.Values.Count - 1] < FastMA.Values[FastMA.Values.Count - 3]
-                        //                       && SlowMA.Values[SlowMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 3]
-
-                        )
-                    {
-                        decimal priceEnter = _lastPcDown - (_lastAtr * KofAtr);
-                        //   priceEnter = GetLastFractail(Fractail.ValuesDown);
-                        //_tab.SellAtStop(VolumeFix1.ValueDecimal, priceEnter - Slipage.ValueDecimal, priceEnter, StopActivateType.LowerOrEqyal);
-                        _tab.SellAtStop(GetVolume(Side.Sell), priceEnter - Slipage.ValueDecimal, priceEnter, StopActivateType.LowerOrEqyal);
-                    }
+                        decimal priceEnter = _lastTrendUp;
+                        _tab.SellAtStop(GetVolume(Side.Sell), priceEnter - Slipage.ValueDecimal, priceEnter, StopActivateType.HigherOrEqual,1);
                 }
                 return;
             }
@@ -432,53 +323,20 @@ namespace OsEngine.Robots.Trend
                 {
                     continue;
                 }
-                
+                List<decimal> ma = _Ssma.DataSeries.ByName("Ma");
+                decimal lastma = ma[ma.Count - 1];
                 if (openPositions[i].Direction == Side.Buy)
                 {
-                    if (openPositions[i].ProfitPortfolioPersent > 0.03m)
-                    {
-                        decimal delta = openPositions[i].EntryPrice + 2 * openPositions[i].EntryPrice * 0.0005m; 
-                    //    _tab.CloseAtTrailingStop(openPositions[i],delta, delta - Slipage.ValueDecimal);
-                    }
-                    decimal priceClose = _lastPcDown;
                     decimal newfr = GetLastFractail(Fractail.DataSeries.ByName("SeriesDown"));
-                    /*
-                    if(FastMA.Values[FastMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 1])
-                    {
-                        _tab.CloseAllAtMarket();
-                    }
-                    */
-                    if (newfr > _tab.CandlesAll[_tab.CandlesAll.Count - 1].Low)
-                    {
-                        //_tab.CloseAllAtMarket();
-                        //_tab.CloseAtStop(openPositions[i], _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close, _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close - Slipage.ValueDecimal);
-                    }
-                    //_tab.CloseAtTrailingStop(openPositions[i], priceClose, priceClose - Slipage.ValueDecimal);
                     _tab.CloseAtTrailingStop(openPositions[i], newfr, newfr - Slipage.ValueDecimal);
-
+                    _tab.CloseAtProfit(openPositions[i], lastma + Slipage.ValueDecimal, lastma);
                 }
                 else
                 {
-                    if (openPositions[i].ProfitPortfolioPersent > 0.03m)
-                    {
-                        decimal delta = openPositions[i].EntryPrice - 2 * openPositions[i].EntryPrice * 0.0005m;
-                    //    _tab.CloseAtTrailingStop(openPositions[i], delta, delta - Slipage.ValueDecimal);
-                    }
 
-                    decimal priceClose = _lastPcUp;
                     decimal newfr = GetLastFractail(Fractail.DataSeries.ByName("SeriesUp"));
-                    /*
-                    if (FastMA.Values[FastMA.Values.Count - 1] > SlowMA.Values[SlowMA.Values.Count - 1])
-                    {
-                        _tab.CloseAllAtMarket();
-                    }
-                    */
-                    if (newfr < _tab.CandlesAll[_tab.CandlesAll.Count - 1].High)
-                    {
-                        //_tab.CloseAtStop(openPositions[i], _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close, _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close + Slipage.ValueDecimal);
-                    }
-                    //_tab.CloseAtTrailingStop(openPositions[i], priceClose, priceClose + Slipage.ValueDecimal);
                     _tab.CloseAtTrailingStop(openPositions[i], newfr, newfr + Slipage.ValueDecimal);
+                    _tab.CloseAtProfit(openPositions[i], lastma - Slipage.ValueDecimal, lastma);
 
                 }
             }
@@ -489,6 +347,8 @@ namespace OsEngine.Robots.Trend
         {
             _tab.SellAtStopCancel();
             _tab.BuyAtStopCancel();
+            decimal profit = Math.Abs((_lastPcUp - _lastPcDown)) * 1;
+
             List<Position> openPositions = _tab.PositionsOpenAll;
             for (int i = 0; openPositions != null && i < openPositions.Count; i++)
             {
@@ -496,18 +356,14 @@ namespace OsEngine.Robots.Trend
                 if (openPositions[i].Direction == Side.Buy)
                 {
                     _tab.SellAtStopCancel();
-                    decimal stop = GetLastFractail(Fractail.DataSeries.ByName("SeriesDown"));
-                    _tab.CloseAtStop(openPositions[i], stop, stop - Slipage.ValueDecimal);
-                     //   _tab.CloseAtStop(openPositions[i], _tab.CandlesAll[_tab.CandlesAll.Count-1].Low, _tab.CandlesAll[_tab.CandlesAll.Count - 1].Low - Slipage.ValueDecimal);
-                     //   _tab.CloseAtProfit(openPositions[i], openPositions[i].EntryPrice +(openPositions[i].EntryPrice-stop)*0.5m, openPositions[i].EntryPrice + (openPositions[i].EntryPrice - stop) * 0.5m - Slipage.ValueDecimal);
+                    _tab.CloseAtStop(openPositions[i], _lastPcDown, _lastPcDown - Slipage.ValueDecimal);
+                    _tab.CloseAtProfit(openPositions[i],openPositions[i].EntryPrice+profit + Slipage.ValueDecimal, openPositions[i].EntryPrice + profit);
                 }
                 else
                 {
                     _tab.BuyAtStopCancel();
-                    decimal stop = GetLastFractail(Fractail.DataSeries.ByName("SeriesUp"));
-                    _tab.CloseAtStop(openPositions[i], stop, stop + Slipage.ValueDecimal);
-                    //    _tab.CloseAtStop(openPositions[i], _tab.CandlesAll[_tab.CandlesAll.Count - 1].High, _tab.CandlesAll[_tab.CandlesAll.Count - 1].High + Slipage.ValueDecimal);
-                    //_tab.CloseAtProfit(openPositions[i], openPositions[i].EntryPrice -(stop-openPositions[i].EntryPrice) * 0.5m, openPositions[i].EntryPrice -(stop - openPositions[i].EntryPrice) * 0.5m + Slipage.ValueDecimal);
+                    _tab.CloseAtStop(openPositions[i], _lastPcUp, _lastPcUp + Slipage.ValueDecimal);
+                    _tab.CloseAtProfit(openPositions[i], openPositions[i].EntryPrice - profit - Slipage.ValueDecimal, openPositions[i].EntryPrice - profit);
                 }
 
             }
@@ -523,12 +379,12 @@ namespace OsEngine.Robots.Trend
             if (side == Side.Buy)
             {
                 Laststop = GetLastFractail(Fractail.DataSeries.ByName("SeriesDown"));
-                priceEnter = _lastPcUp + (_lastAtr * KofAtr);
+                priceEnter = _lastTrendDown;
             }
             else
             {
                 Laststop = GetLastFractail(Fractail.DataSeries.ByName("SeriesUp"));
-                priceEnter = _lastPcDown - (_lastAtr * KofAtr);
+                priceEnter = _lastTrendUp;
             }
 
             decimal VollAll = leverage.ValueDecimal * (GetBalance()) / GetPrice(priceEnter);

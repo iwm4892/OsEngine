@@ -80,6 +80,7 @@ namespace OsEngine.Robots
             result.Add("ArbitrageIndex");
             result.Add("ArbitrageFutures");
             result.Add("PriceChanel_work");
+            result.Add("TrendLine");
 
             List<string> resultTrue = new List<string>();
 
@@ -296,6 +297,10 @@ namespace OsEngine.Robots
             if (nameClass == "ArbitrageFutures")
             {
                 bot = new ArbitrageFutures(name, startProgram);
+            }
+            if (nameClass == "TrendLine")
+            {
+                bot = new TrendLine(name, startProgram);
             }
             //-----
             return bot;
