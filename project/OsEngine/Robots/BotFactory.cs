@@ -22,6 +22,7 @@ using OsEngine.Robots.MarketMaker;
 using OsEngine.Robots.Patterns;
 using OsEngine.Robots.Trend;
 using OsEngine.Robots.OnScriptIndicators;
+using System.Runtime;
 using OsEngine.Robots.VSA;
 
 namespace OsEngine.Robots
@@ -414,6 +415,7 @@ namespace OsEngine.Robots
             }
 
             bot.IsScript = true;
+            bot.FileName = nameClass;
 
             //++++
             if (nameClass == "PriceLavelBot")
@@ -469,12 +471,26 @@ namespace OsEngine.Robots
 
                 //Объявляем провайдер кода С#
                 CSharpCodeProvider prov = new CSharpCodeProvider();
-                CompilerParameters cp = new CompilerParameters(Array.ConvertAll<Assembly, string>(AppDomain.CurrentDomain.GetAssemblies(), x => x.Location));
+
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+                var res = Array.ConvertAll<Assembly, string>(assemblies, (x) =>
+                {
+                    if (!x.IsDynamic)
+                    {
+                        return x.Location;
+                    }
+
+                    return null;
+                });
+
+                CompilerParameters cp = new CompilerParameters(res);
 
                 // Помечаем сборку, как временную
                 cp.GenerateInMemory = true;
                 cp.IncludeDebugInformation = true;
-
+              
+               
                 // Обрабатываем CSC компилятором
                 CompilerResults results = prov.CompileAssemblyFromSource(cp, fileStr);
 

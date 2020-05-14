@@ -1568,7 +1568,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 {
                     if (_stopsOpener[i].Side == Side.Buy)
                     {
-                        _stopsOpener.Remove(_stopsOpener[i]);
+                        _stopsOpener.RemoveAt(i);
                         i--;
                     }
                 }
@@ -2031,7 +2031,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 {
                     if (_stopsOpener[i].Side == Side.Sell)
                     {
-                        _stopsOpener.Remove(_stopsOpener[i]);
+                        _stopsOpener.RemoveAt(i);// будет работать
                         i--;
                     }
                 }
@@ -3373,7 +3373,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                             PositionOpenerToStop opener = _stopsOpener[i];
                             LongCreate(_stopsOpener[i].PriceOrder, _stopsOpener[i].Volume, _stopsOpener[i].orderPriceType,
                                 _manualControl.SecondToOpen, true);
-                            _stopsOpener.Remove(opener);
+                            _stopsOpener.RemoveAt(i);
                             i--;
                             continue;
                         }
@@ -3382,7 +3382,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                             PositionOpenerToStop opener = _stopsOpener[i];
                             ShortCreate(_stopsOpener[i].PriceOrder, _stopsOpener[i].Volume, _stopsOpener[i].orderPriceType,
                                 _manualControl.SecondToOpen, true);
-                            _stopsOpener.Remove(opener);
+                            _stopsOpener.RemoveAt(i);
                             i--;
                             continue;
                         }
@@ -3626,11 +3626,14 @@ namespace OsEngine.OsTrader.Panels.Tab
 
                 _chartMaster.SetCandles(candles);
 
-                if (CandleFinishedEvent != null)
+                try
                 {
-                    CandleFinishedEvent(candles);
+                    CandleFinishedEvent?.Invoke(candles);
                 }
-               
+                catch (Exception error)
+                {
+                    SetNewLogMessage(error.ToString(), LogMessageType.Error);
+                }
             }
             catch (Exception error)
             {
