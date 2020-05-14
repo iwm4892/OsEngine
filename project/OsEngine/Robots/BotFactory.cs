@@ -81,6 +81,7 @@ namespace OsEngine.Robots
             result.Add("ArbitrageFutures");
             result.Add("PriceChanel_work");
             result.Add("TrendLine");
+            result.Add("EnvelopCountertrend");
 
             List<string> resultTrue = new List<string>();
 
@@ -301,6 +302,10 @@ namespace OsEngine.Robots
             if (nameClass == "TrendLine")
             {
                 bot = new TrendLine(name, startProgram);
+            }
+            if (nameClass == "EnvelopCountertrend")
+            {
+                bot = new EnvelopCountertrend(name, startProgram);
             }
             //-----
             return bot;

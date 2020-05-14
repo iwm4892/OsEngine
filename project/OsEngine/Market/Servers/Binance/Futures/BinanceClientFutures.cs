@@ -1435,7 +1435,8 @@ namespace OsEngine.Market.Servers.Binance.Futures
                             {
                                 //+++
                                 //Console.WriteLine(mes);
-                                   var quotes = JsonConvert.DeserializeAnonymousType(mes, new TradeResponse());
+                                SendLogMessage(mes, LogMessageType.Trade);
+                                var quotes = JsonConvert.DeserializeAnonymousType(mes, new TradeResponse());
 
                                 if (NewTradesEvent != null)
                                 {

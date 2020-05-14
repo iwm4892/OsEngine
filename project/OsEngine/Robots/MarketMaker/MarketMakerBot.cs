@@ -168,7 +168,7 @@ namespace OsEngine.Robots.MarketMaker
             }
 
             List<Position> openPosition = _tab.PositionsOpenAll;
-
+            
             if (candles[candles.Count - 1].TimeStart.DayOfWeek == DayOfWeek.Friday &&
              candles[candles.Count - 1].TimeStart.Hour >= 18)
             {//if we have friday evening  если у нас пятница вечер
@@ -178,7 +178,7 @@ namespace OsEngine.Robots.MarketMaker
                 }
                 return;
             }
-
+            
             if (_lastReloadLineTime == DateTime.MinValue ||
                 candles[candles.Count - 1].TimeStart.DayOfWeek == DayOfWeek.Monday &&
                 candles[candles.Count - 1].TimeStart.Hour < 11 &&

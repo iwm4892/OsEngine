@@ -304,7 +304,9 @@ namespace OsEngine.Market.Servers.Binance.Futures
         /// блокиратор многопоточного доступа к тикам
         /// </summary>
         private readonly object _newTradesLoker = new object();
-
+        //+++
+        private decimal _lastprice;
+        //---
         void _client_NewTradesEvent(TradeResponse trades)
         {
             lock (_newTradesLoker)
@@ -314,15 +316,24 @@ namespace OsEngine.Market.Servers.Binance.Futures
                     return;
                 }
                 //++
-                if (trades.data.M)
+                decimal newPr = trades.data.p.ToDecimal();
+                if (_lastprice!=0 && Math.Abs((_lastprice - newPr)/_lastprice)>0.05m)
                 {
+                    _lastprice = newPr;
                     return;
+                }
+                else
+                {
+                    _lastprice = newPr;
                 }
                 //--
                 Trade trade = new Trade();
                 trade.SecurityNameCode = trades.data.s;
+                /*
                 trade.Price =
                         trades.data.p.ToDecimal();
+                */
+                trade.Price = newPr;
                 trade.Id = trades.data.t.ToString();
                 trade.Time = new DateTime(1970, 1, 1).AddMilliseconds(Convert.ToDouble(trades.data.T));
                 trade.Volume =

@@ -673,6 +673,7 @@
     </Compile>
     <Compile Include="Robots\BotFactory.cs" />
     <Compile Include="Robots\CounterTrend\ClusterCountertrend.cs" />
+    <Compile Include="Robots\CounterTrend\EnvelopCountertrend.cs" />
     <Compile Include="Robots\Engines\CandleEngine.cs" />
     <Compile Include="Robots\Engines\ClusterEngine.cs" />
     <Compile Include="Robots\CounterTrend\MovingChanelFlat.cs" />
