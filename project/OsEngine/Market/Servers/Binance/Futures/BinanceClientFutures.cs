@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -1431,12 +1432,17 @@ namespace OsEngine.Market.Servers.Binance.Futures
                                 SendLogMessage(mes, LogMessageType.Error);
                             }
 
-                            else if (mes.Contains("\"e\"" + ":" + "\"trade\""))
+                            else if (mes.Contains("\"e\":\"trade\""))
                             {
                                 //+++
                                 //Console.WriteLine(mes);
                                 SendLogMessage(mes, LogMessageType.Trade);
                                 var quotes = JsonConvert.DeserializeAnonymousType(mes, new TradeResponse());
+
+                                if(quotes.data.X.ToString() != "MARKET")
+                                {//INSURANCE_FUND
+                                    continue;
+                                }
 
                                 if (NewTradesEvent != null)
                                 {

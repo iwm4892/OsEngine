@@ -681,6 +681,7 @@
     <Compile Include="Robots\CounterTrend\EnvelopCountertrend.cs" />
     <Compile Include="Robots\Engines\CandleEngine.cs" />
     <Compile Include="Robots\Engines\ClusterEngine.cs" />
+    <Compile Include="Robots\High Frequency\Fisher.cs" />
     <Compile Include="Robots\CounterTrend\MovingChanelFlat.cs" />
     <Compile Include="Robots\High Frequency\HighFrequencyTrader.cs" />
     <Compile Include="Robots\MarketMaker\PairTraderSimple.cs" />
