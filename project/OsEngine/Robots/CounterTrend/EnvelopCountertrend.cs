@@ -36,19 +36,24 @@ namespace OsEngine.Robots.Trend
             Volume= CreateParameter("Volume", 0.1m, 0.1m, 50, 0.1m);
             EnvelopDeviation = CreateParameter("Envelop Deviation", 0.3m, 0.3m, 4, 0.3m);
             EnvelopMovingLength = CreateParameter("Envelop Moving Length", 10, 10, 200, 5);
-            TrailStop = CreateParameter("Trail Stop", 0.1m, 0.1m, 5, 0.1m);
+            
             Fractaillenth = CreateParameter("Длина фрактала", 51, 5, 200, 1);
 
             leverage = CreateParameter("Маржинальное плечо", 1m, 1m, 10, 0.1m);
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
             isContract = CreateParameter("Торгуем контрактами", false);
             MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
+            SmaLength = CreateParameter("SmaLength", 10, 5, 150, 2);
 
             Fractail = IndicatorsFactory.CreateIndicatorByName("Fractail_lenth", name + "Fractail", false);
             Fractail = (Aindicator)_tab.CreateCandleIndicator(Fractail, "Prime");
             Fractail.ParametersDigit[0].Value = Fractaillenth.ValueInt;
             Fractail.Save();
 
+            _sma = IndicatorsFactory.CreateIndicatorByName("Sma", name + "Moving", false);
+            _sma = (Aindicator)_tab.CreateCandleIndicator(_sma, "Prime");
+            _sma.ParametersDigit[0].Value = SmaLength.ValueInt;
+            _sma.Save();
 
             _envelop = new Envelops(name + "Envelop", false);
             _envelop = (Envelops)_tab.CreateCandleIndicator(_envelop, "Prime");
@@ -63,6 +68,10 @@ namespace OsEngine.Robots.Trend
             _envelop.MovingAverage.Lenght = EnvelopMovingLength.ValueInt;
             _envelop.Save();
             _envelop.Reload();
+
+            _sma.ParametersDigit[0].Value = SmaLength.ValueInt;
+            _sma.Save();
+
         }
 
         // public settings / настройки публичные
@@ -90,12 +99,6 @@ namespace OsEngine.Robots.Trend
         /// длинна скользящей средней в конверте
         /// </summary>
         public StrategyParameterInt EnvelopMovingLength;
-
-        /// <summary>
-        /// Trail stop length in percent
-        /// длинна трейлинг стопа в процентах
-        /// </summary>
-        public StrategyParameterDecimal TrailStop;
 
         /// <summary>
         /// regime
@@ -130,12 +133,15 @@ namespace OsEngine.Robots.Trend
 
         private decimal _lastUp;
         private decimal _lastDown;
+        private decimal _lastMa;
 
+        public StrategyParameterInt SmaLength;
         // indicators / индикаторы
 
         private Envelops _envelop;
 
         private Aindicator Fractail;
+        private Aindicator _sma;
         // trade logic
 
         private void _tab_PositionOpeningSuccesEvent(Position position)
@@ -145,23 +151,35 @@ namespace OsEngine.Robots.Trend
             List<Position> openPositions = _tab.PositionsOpenAll;
             for (int i = 0; openPositions != null && i < openPositions.Count; i++)
             {
+                decimal stop = GetStop(openPositions[i].Direction);
+                _tab.CloseAtStop(openPositions[i], stop, stop);
+                _tab.CloseAtProfit(openPositions[i],_lastMa,_lastMa);
+                if(openPositions[i].Direction == Side.Buy)
+                {
+                    _tab.BuyAtLimitToPosition(openPositions[i], openPositions[i].EntryPrice - openPositions[i].EntryPrice * 0.03m, openPositions[i].OpenVolume);
+                }
+                else
+                {
+                    _tab.SellAtLimitToPosition(openPositions[i], openPositions[i].EntryPrice + openPositions[i].EntryPrice * 0.03m, openPositions[i].OpenVolume);
+                }
+
+                /*
                 //decimal st =  GetStop(openPositions[i].Direction);//
                 if (openPositions[i].Direction == Side.Buy)
                 {
-                    _tab.SellAtStopCancel();
-                    decimal stop = GetLastFractail(Fractail.DataSeries.ByName("SeriesDown"));
+                    decimal stop = GetStop(openPositions[i].Direction);
                     decimal dl = openPositions[i].EntryPrice * 0.03m;//(_lastUp - _lastDown) / 2;//openPositions[i].EntryPrice - stop;
                     _tab.CloseAtStop(openPositions[i], openPositions[i].EntryPrice - dl, openPositions[i].EntryPrice - dl);
                     _tab.CloseAtProfit(openPositions[i], openPositions[i].EntryPrice + dl, openPositions[i].EntryPrice + dl);
                 }
                 else
                 {
-                    _tab.BuyAtStopCancel();
                     decimal stop = GetLastFractail(Fractail.DataSeries.ByName("SeriesUp"));
                     decimal dl = openPositions[i].EntryPrice * 0.03m;//(_lastUp - _lastDown) / 2; //stop - openPositions[i].EntryPrice;
                     _tab.CloseAtStop(openPositions[i], openPositions[i].EntryPrice + dl, openPositions[i].EntryPrice + dl); 
                     _tab.CloseAtProfit(openPositions[i], openPositions[i].EntryPrice - dl, openPositions[i].EntryPrice - dl);
                 }
+                */
 
             }
 
@@ -192,7 +210,11 @@ namespace OsEngine.Robots.Trend
             }
             _lastUp = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1];
             _lastDown = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1];
-            
+            _lastMa = _sma.DataSeries[0].Values[_sma.DataSeries[0].Values.Count - 1];
+            if (_lastUp==0|| _lastDown == 0)
+            {
+                return;
+            }
             _tab.SellAtStopCancel();
             _tab.BuyAtStopCancel();
 
@@ -214,57 +236,53 @@ namespace OsEngine.Robots.Trend
         }
         private void LogicClosePosition()
         {
-            List<Position> openPositions = _tab.PositionsOpenAll;
-            /*
-            if(_tab.PositionsLast!=null|| _tab.PositionsLast.State != PositionStateType.Done)
+
+            if (_tab.PositionsLast != null && _tab.PositionsLast.State != PositionStateType.Done)
             {
-                decimal dl = (_lastUp + _lastDown) / 2;
-                _tab.CloseAtProfit(_tab.PositionsLast, dl, dl);
+                _tab.CloseAtProfit(_tab.PositionsLast, _lastMa, _lastMa);
             }
-            */
-            /*
-            decimal lastclose = _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close;
+
+            List<Position> openPositions = _tab.PositionsOpenAll;
             for (int i = 0; openPositions != null && i < openPositions.Count; i++)
             {
-                decimal dl = (_lastUp + _lastDown) / 2;
-                
-                if(openPositions[i].Direction == Side.Buy)
+               // _tab.CloseAtProfit(openPositions[i], _lastMa, _lastMa);
+                /*
+                if (openPositions[i].Direction == Side.Buy)
                 {
-                    _tab.CloseAtTrailingStop(openPositions[i], lastclose - lastclose * TrailStop.ValueDecimal/100, lastclose - lastclose * TrailStop.ValueDecimal / 100);
+                    _tab.CloseAtTrailingStop(openPositions[i], lastclose - lastclose , lastclose - lastclose );
                     //_tab.CloseAtProfit(openPositions[i], _lastUp, _lastUp);
                 }
                 else
                 {
-                    _tab.CloseAtTrailingStop(openPositions[i], lastclose + lastclose * TrailStop.ValueDecimal / 100, lastclose + lastclose * TrailStop.ValueDecimal / 100);
+                    _tab.CloseAtTrailingStop(openPositions[i], lastclose + lastclose , lastclose + lastclose );
                     //_tab.CloseAtProfit(openPositions[i], _lastDown, _lastDown);
                 }
+                */
 
 
             }
-            */
             
         }
         private void LogicOpenPosition(List<Candle> candles)
         {
+           
+            if(_lastMa<_lastDown || _lastMa > _lastUp)
+            {
+                return;
+            }
             List<Position> openPositions = _tab.PositionsOpenAll;
             if (openPositions == null || openPositions.Count == 0)
             {
                 // long
                 if (Regime.ValueString != "OnlyShort")
                 {
-                    if (candles[candles.Count - 2].High < _lastDown)
-                    {
-                        _tab.BuyAtStop(GetVolume(Side.Buy), _lastDown, _lastDown, StopActivateType.HigherOrEqual);
-                    }
+                     _tab.BuyAtStop(GetVolume(Side.Buy), _lastDown, _lastDown, StopActivateType.LowerOrEqyal);
                 }
 
                 // Short
                 if (Regime.ValueString != "OnlyLong")
                 {
-                    if (candles[candles.Count - 2].Low > _lastUp)
-                    {
-                        _tab.SellAtStop(GetVolume(Side.Sell), _lastUp, _lastUp, StopActivateType.LowerOrEqyal);
-                    }
+                    _tab.SellAtStop(GetVolume(Side.Sell), _lastUp, _lastUp, StopActivateType.HigherOrEqual);
                 }
             }
 
@@ -281,14 +299,17 @@ namespace OsEngine.Robots.Trend
             if (side == Side.Buy)
             {
                 Laststop = GetStop(side);//GetLastFractail(Fractail.DataSeries.ByName("SeriesDown"));
-                priceEnter = _lastUp;
+                priceEnter = _lastDown;
             }
             else
             {
                 Laststop = GetStop(side);////GetLastFractail(Fractail.DataSeries.ByName("SeriesUp"));
-                priceEnter = _lastDown;
+                priceEnter = _lastUp;
             }
-
+            if (GetPrice(priceEnter)==0)
+            {
+                Console.WriteLine("Ошибка");
+            }
             decimal VollAll = leverage.ValueDecimal * (GetBalance()) / GetPrice(priceEnter);
 
             decimal StopSize = Math.Abs((Laststop - priceEnter) / priceEnter);
@@ -312,11 +333,11 @@ namespace OsEngine.Robots.Trend
         {
             if(side == Side.Buy)
             {
-                return _lastDown - (_lastUp - _lastDown);
+                return _lastDown - _lastDown * 0.2m; 
             }
             else
             {
-                return _lastUp + (_lastUp - _lastDown);
+                return _lastUp + _lastUp * 0.2m;
             }
         }
         private decimal GetPrice(decimal price)
