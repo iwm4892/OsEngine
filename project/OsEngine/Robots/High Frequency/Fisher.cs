@@ -215,7 +215,7 @@ namespace OsEngine.Robots.High_Frequency
             }
 
             decimal priceBuy = _tab.PriceBestAsk - _tab.PriceBestAsk * (PersentFromBorder.ValueDecimal /100);
-            decimal priceSell = _tab.PriceBestBid + _tab.PriceBestAsk * (PersentFromBorder.ValueDecimal / 100);
+            decimal priceSell = _tab.PriceBestBid + _tab.PriceBestBid * (PersentFromBorder.ValueDecimal / 100);
 
             _tab.BuyAtLimit(Volume.ValueDecimal, Math.Round(priceBuy,PriceDecimals.ValueInt));
             _tab.SellAtLimit(Volume.ValueDecimal, Math.Round(priceSell, PriceDecimals.ValueInt));

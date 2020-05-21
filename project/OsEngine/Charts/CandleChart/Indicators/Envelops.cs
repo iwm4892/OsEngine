@@ -435,7 +435,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 index = MovingAverage.Values.Count - 1;
             }
-            return Math.Round(MovingAverage.Values[index] + MovingAverage.Values[index]*(Deviation/100),5);
+            return Math.Round(MovingAverage.Values[index] + MovingAverage.Values[index]*(Deviation/100),8);
         }
 
         private decimal GetDownValue(int index)
@@ -444,7 +444,7 @@ namespace OsEngine.Charts.CandleChart.Indicators
             {
                 index = MovingAverage.Values.Count - 1;
             }
-            return Math.Round(MovingAverage.Values[index] - MovingAverage.Values[index] * (Deviation / 100),5);
+            return Math.Round(MovingAverage.Values[index] - MovingAverage.Values[index] * (Deviation / 100),8);
         }
     }
 }
