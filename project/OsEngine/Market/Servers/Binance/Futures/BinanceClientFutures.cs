@@ -84,7 +84,6 @@ namespace OsEngine.Market.Servers.Binance.Futures
                 UserDataMessageHandler(sender, args);
             };
 
-
             Thread keepalive = new Thread(KeepaliveUserDataStream);
             keepalive.CurrentCulture = new CultureInfo("ru-RU");
             keepalive.IsBackground = true;
@@ -1417,6 +1416,7 @@ namespace OsEngine.Market.Servers.Binance.Futures
         /// </summary>
         public void Converter()
         {
+            
             while (true)
             {
                 try
@@ -1439,7 +1439,8 @@ namespace OsEngine.Market.Servers.Binance.Futures
                                 SendLogMessage(mes, LogMessageType.Trade);
                                 var quotes = JsonConvert.DeserializeAnonymousType(mes, new TradeResponse());
 
-                                if(quotes.data.X.ToString() != "MARKET")
+
+                                if (quotes.data.X.ToString() != "MARKET")
                                 {//INSURANCE_FUND
                                     continue;
                                 }
