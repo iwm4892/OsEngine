@@ -36,14 +36,14 @@ namespace OsEngine.Robots.Trend
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On", "OnlyClosePosition", "OnlyShort", "OnlyLong" });
             Slippage = CreateParameter("Slippage", 0, 0, 20, 1);
-            EnvelopDeviation = CreateParameter("Envelop Deviation", 0.3m, 0.3m, 4, 0.3m);
-            EnvelopMovingLength = CreateParameter("Envelop Moving Length", 10, 10, 200, 5);
+            EnvelopDeviation = CreateParameter("Envelop Deviation", 0.3m, 5m, 10, 0.3m);
+            EnvelopMovingLength = CreateParameter("Envelop Moving Length", 10, 5, 200, 5);
             
 
             leverage = CreateParameter("Маржинальное плечо", 1m, 1m, 10, 0.1m);
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
             isContract = CreateParameter("Торгуем контрактами", false);
-            MaxStop = CreateParameter("MaxStop", 1, 1, 10, 0.1m);
+            MaxStop = CreateParameter("MaxStop", 1, 25, 30, 0.1m);
             SmaLength = CreateParameter("SmaLength", 10, 5, 150, 2);
             VolumeDecimals = CreateParameter("Volume Decimals", 0, 0, 20, 1);
 
