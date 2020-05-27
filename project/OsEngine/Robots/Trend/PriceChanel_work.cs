@@ -15,6 +15,7 @@ using System.Drawing;
 using System.Threading;
 using OsEngine.Logging;
 using OsEngine.Indicators;
+using System.Linq;
 
 namespace OsEngine.Robots.Trend
 {
@@ -395,9 +396,35 @@ namespace OsEngine.Robots.Trend
                 {
                     continue;
                 }
-                
+                /*
                 if (openPositions[i].Direction == Side.Buy)
                 {
+                    if(FastMA.Values[FastMA.Values.Count - 2] > SlowMA.Values[SlowMA.Values.Count - 2]
+                        && FastMA.Values[FastMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 1])
+                    {
+                        _tab.CloseAllAtMarket();
+                        return;
+                    }
+                }
+                else
+                {
+                    if (FastMA.Values[FastMA.Values.Count - 2] < SlowMA.Values[SlowMA.Values.Count - 2]
+                        && FastMA.Values[FastMA.Values.Count - 1] > SlowMA.Values[SlowMA.Values.Count - 1])
+                    {
+                        _tab.CloseAllAtMarket();
+                        return;
+                    }
+                }
+                */
+                if (openPositions[i].Direction == Side.Buy)
+                {
+                    /*
+                    if((_tab.CandlesAll.Last().Close - openPositions[i].EntryPrice)/ openPositions[i].EntryPrice > 0.005m)
+                    {
+                        decimal st = openPositions[i].EntryPrice + 3 * openPositions[i].EntryPrice * openPositions[i].ComissionValue / 100;
+                        _tab.CloseAtTrailingStop(openPositions[i], st, st - Slipage.ValueDecimal);
+                    }
+                    */
                     decimal priceClose = _lastPcDown;
                     decimal newfr = GetLastFractail(Fractail.DataSeries.ByName("SeriesDown"));
                     //_tab.CloseAtTrailingStop(openPositions[i], priceClose, priceClose - Slipage.ValueDecimal);
@@ -406,6 +433,13 @@ namespace OsEngine.Robots.Trend
                 }
                 else
                 {
+                    /*
+                    if ((openPositions[i].EntryPrice -_tab.CandlesAll.Last().Close ) / openPositions[i].EntryPrice > 0.005m)
+                    {
+                        decimal st = openPositions[i].EntryPrice - 3 * openPositions[i].EntryPrice * openPositions[i].ComissionValue / 100;
+                        _tab.CloseAtTrailingStop(openPositions[i], st, st - Slipage.ValueDecimal);
+                    }
+                    */
 
                     decimal priceClose = _lastPcUp;
                     decimal newfr = GetLastFractail(Fractail.DataSeries.ByName("SeriesUp"));

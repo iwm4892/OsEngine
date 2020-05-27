@@ -214,15 +214,21 @@ namespace OsEngine.Robots.Trend
                 {
                     continue;
                 }
-                decimal _lastprice = _tab.CandlesAll.Last().Close;
-                decimal spread = 0;
-                if(_lastprice > (_lastUp + _lastDown) / 2)
+                if(_tab.CandlesAll == null || _tab.CandlesAll.Count == 0)
                 {
-                    spread = (_lastUp - _lastprice) / ((_lastUp - _lastDown) / 2);
+                    continue;
                 }
-                if (_lastprice < (_lastUp + _lastDown) / 2)
+                decimal _lastprice = _tab.CandlesAll[_tab.CandlesAll.Count-1].Close;
+                decimal spread = 0;
+                decimal spreadAver = (_lastUp + _lastDown) / 2;
+                decimal spreadEnv = (_lastUp - _lastDown) / 2;
+                if (_lastprice > spreadAver)
                 {
-                    spread = ( _lastprice-_lastDown) / ((_lastUp - _lastDown) / 2);
+                    spread = (_lastUp - _lastprice) / spreadEnv;
+                }
+                else
+                {
+                    spread = ( _lastprice -_lastDown) / spreadEnv;
                 }
                 
                 List<Position> positions = _tab.PositionsOpenAll;
@@ -375,7 +381,7 @@ namespace OsEngine.Robots.Trend
             if (openPositions == null || openPositions.Count == 0)
             {
                 // long
-                if (Regime.ValueString != "OnlyShort" )//&& candles.Last().Close <= (_lastUp+_lastDown)/2)
+                if (Regime.ValueString != "OnlyShort" && candles.Last().Close <= (_lastUp+_lastDown)/2)
                 {
                     if (_tab.Connector.MyServer.ServerType != ServerType.Tester && _tab.Connector.MyServer.ServerType != ServerType.Optimizer) { Thread.Sleep(1000); }
                     decimal vol = GetVolume(Side.Buy);
@@ -497,6 +503,10 @@ namespace OsEngine.Robots.Trend
             if (_tab.Connector.MyServer.ServerType == ServerType.Tester ||
                 _tab.Connector.MyServer.ServerType == ServerType.Optimizer)
             {
+                if(_tab.Portfolio.ValueBlocked != 0)
+                {
+                    Console.WriteLine("Заблокировано "+ _tab.Portfolio.ValueBlocked);
+                }
                 return _tab.Portfolio.ValueCurrent;
             }
             if (_tab.Connector.MyServer.ServerType == ServerType.BinanceFutures)
