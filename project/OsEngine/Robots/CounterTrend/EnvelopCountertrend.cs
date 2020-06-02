@@ -179,7 +179,7 @@ namespace OsEngine.Robots.Trend
 
             while (true)
             {
-                Thread.Sleep(30 * 1000);
+                Thread.Sleep(5 * 1000);
                 if (!_tab.IsConnected) continue;
                 if (_tab.Connector.MyServer.ServerType == ServerType.Tester ||
                     _tab.Connector.MyServer.ServerType == ServerType.Optimizer)
@@ -232,12 +232,16 @@ namespace OsEngine.Robots.Trend
                 }
                 
                 List<Position> positions = _tab.PositionsOpenAll;
-
-                if (spread > 0.3m)
+                decimal minspread = 0.4m;
+                if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
+                {
+                    minspread = 0.7m;
+                }
+                if (spread > minspread)
                 {
                     CanselAllOrders();
                 }
-                if (spread <= 0.3m)
+                if (spread <= minspread)
                 {
 
                     if (positions == null || positions.Count == 0)
@@ -263,6 +267,12 @@ namespace OsEngine.Robots.Trend
                 
                 decimal stop = GetStop(openPositions[i].Direction);
                 _tab.CloseAtStop(openPositions[i], stop, stop);
+                if (_tab.Connector.MyServer.ServerType != ServerType.Tester &&
+                _tab.Connector.MyServer.ServerType != ServerType.Optimizer)
+                {
+                    _tab.CloseAtProfit(openPositions[i], _lastMa, _lastMa);
+                }
+
                 //_tab.CloseAtProfit(openPositions[i],_lastMa,_lastMa);
                 /*
                 if (openPositions[i].Direction == Side.Buy)
@@ -274,25 +284,25 @@ namespace OsEngine.Robots.Trend
                     _tab.BuyAtStopCancel();
                 }
                 */
-              /*
-                    if (openPositions[i].OpenOrders.Count<3 && openPositions[i].OpenOrders[openPositions[i].OpenOrders.Count-1].State == OrderStateType.Done)
-                    {
-                        if (openPositions[i].Direction == Side.Buy)
-                        {
-                            _tab.BuyAtLimitToPosition(openPositions[i], openPositions[i].EntryPrice - openPositions[i].EntryPrice * 0.02m, openPositions[i].OpenVolume);
-                        }
-                        else
-                        {
-                            _tab.SellAtLimitToPosition(openPositions[i], openPositions[i].EntryPrice + openPositions[i].EntryPrice * 0.02m, openPositions[i].OpenVolume);
+                /*
+                      if (openPositions[i].OpenOrders.Count<3 && openPositions[i].OpenOrders[openPositions[i].OpenOrders.Count-1].State == OrderStateType.Done)
+                      {
+                          if (openPositions[i].Direction == Side.Buy)
+                          {
+                              _tab.BuyAtLimitToPosition(openPositions[i], openPositions[i].EntryPrice - openPositions[i].EntryPrice * 0.02m, openPositions[i].OpenVolume);
+                          }
+                          else
+                          {
+                              _tab.SellAtLimitToPosition(openPositions[i], openPositions[i].EntryPrice + openPositions[i].EntryPrice * 0.02m, openPositions[i].OpenVolume);
 
-                        }
-                        _canGrid = false;
-                    }
-              */      
-
-                }
+                          }
+                          _canGrid = false;
+                      }
+                */
 
             }
+
+        }
 
         private void _tab_CandleFinishedEvent(List<Candle> candles)
         {
@@ -349,7 +359,10 @@ namespace OsEngine.Robots.Trend
 
             for (int i = 0; poses != null && i < poses.Length; i++)
             {
-                if (poses[i].State != PositionStateType.Open)
+                if(poses[i].State == PositionStateType.ClosingFail){
+                    poses[i].State = PositionStateType.Open;
+                }
+                if (poses[i].State == PositionStateType.Opening || poses[i].State == PositionStateType.OpeningFail)
                 {
                     _tab.CloseAllOrderToPosition(poses[i]);
                     _tab.GetJournal().DeletePosition(poses[i]);

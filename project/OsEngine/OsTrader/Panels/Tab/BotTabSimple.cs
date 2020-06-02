@@ -3227,10 +3227,12 @@ namespace OsEngine.OsTrader.Panels.Tab
         private void CheckSurplusPositions()
         {
             //там стопы и так закрывают всю позициюю
+            /*
             if(_connector.ServerType == ServerType.BitMex)
             {
                 return;
             }
+            */
             if (StartProgram == StartProgram.IsOsTrader && _lastClosingSurplusTime != DateTime.MinValue &&
                 _lastClosingSurplusTime.AddSeconds(10) > DateTime.Now)
             {
