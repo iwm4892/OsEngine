@@ -14,6 +14,7 @@ using OsEngine.OsTrader.Panels.Tab;
 using OsEngine.Indicators;
 using System.Threading;
 using System.Linq;
+using OsEngine.OsTrader;
 
 namespace OsEngine.Robots.Trend
 {
@@ -449,11 +450,10 @@ namespace OsEngine.Robots.Trend
             {
                 Console.WriteLine("Ошибка");
             }
-            decimal VollAll = leverage.ValueDecimal * (GetBalance()) / GetPrice(priceEnter);
+            decimal VollAll = (GetBalance()) / GetPrice(priceEnter);
 
             decimal StopSize = Math.Abs((Laststop - priceEnter) / priceEnter);
 
-            Math.Abs((Laststop - priceEnter) / priceEnter);
             if (StopSize <= 0)
             {
                 return 0;
@@ -464,9 +464,46 @@ namespace OsEngine.Robots.Trend
                 _Vol = VollAll;
             }
 
-            _Vol = GetVol(_Vol);
+            int _maxPositions = (int)(1 / leverage.ValueDecimal);
+            int _posCountNaw = GetOpenPositionsCount();
 
+            if (_maxPositions > 1)
+            {
+                
+                if(_posCountNaw >= _maxPositions)
+                {
+                    return 0;
+                }
+                _Vol = _Vol / (_maxPositions - _posCountNaw);
+            }
+            else
+            {
+                _Vol = _Vol * leverage.ValueDecimal;
+            }
+            _Vol = GetVol(_Vol);
             return _Vol;
+        }
+        private int GetOpenPositionsCount()
+        {
+            int result = 0;
+            foreach(var panel in OsTraderMaster.Master._panelsArray)
+            {
+                if (panel.IsConnected && panel.GetNameStrategyType() == this.GetNameStrategyType())
+                {
+                    foreach(var tab in panel.TabsSimple)
+                    {
+                        if(tab.Connector.ServerType == _tab.Connector.ServerType 
+                            && tab.Connector.PortfolioName == _tab.Connector.PortfolioName)
+                        {
+                            if (tab.PositionsOpenAll != null)
+                            {
+                                result += tab.PositionsOpenAll.Count;
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
         }
         private decimal GetStop(Side side)
         {
@@ -542,6 +579,16 @@ namespace OsEngine.Robots.Trend
                     PositionOnBoard b = bal.FindLast(x => x.SecurityNameCode == _tab.Securiti.NameClass);
                     if (b != null)
                     {
+                        if(_tab.Connector.PortfolioName == "BinanceMargin" && b.ValueCurrent == 0 && b.ValueBlocked != 0)
+                        {
+                            int _posCountNaw = GetOpenPositionsCount();
+                            if (_posCountNaw >= 3) //тк 3е плечо на маржиналке то ограничимся 3мя позициями
+                            {
+                                return 0;
+                            }
+
+                            return b.ValueBlocked / _posCountNaw;
+                        }
                         return b.ValueCurrent;
                     }
                 }
