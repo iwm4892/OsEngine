@@ -105,6 +105,7 @@ namespace OsEngine.Robots.Trend
 
             _sma.ParametersDigit[0].Value = SmaLength.ValueInt;
             _sma.Save();
+            _sma.Reload();
 
         }
 
@@ -207,6 +208,7 @@ namespace OsEngine.Robots.Trend
                 
                 if (_lastMa == 0 || _lastUp == 0 || _lastDown == 0)
                 {
+                    _envelop.Process(_tab.CandlesAll);
                     _lastUp = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1];
                     _lastDown = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1];
                     _lastMa = _sma.DataSeries[0].Values[_sma.DataSeries[0].Values.Count - 1];
