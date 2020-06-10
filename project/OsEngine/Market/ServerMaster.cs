@@ -40,7 +40,6 @@ using OsEngine.Market.Servers.Hitbtc;
 using OsEngine.Market.Servers.MFD;
 using OsEngine.Market.Servers.MOEX;
 using OsEngine.Market.Servers.Tinkoff;
-using OsEngine.Market.Servers.HuobiDM;
 
 using MessageBox = System.Windows.MessageBox;
 
@@ -94,7 +93,6 @@ namespace OsEngine.Market
                 serverTypes.Add(ServerType.Exmo);
                 serverTypes.Add(ServerType.Zb);
                 serverTypes.Add(ServerType.Hitbtc);
-                serverTypes.Add(ServerType.HuobiDM);
 
                 serverTypes.Add(ServerType.InteractivBrokers);
                 serverTypes.Add(ServerType.NinjaTrader);
@@ -299,11 +297,6 @@ namespace OsEngine.Market
                 {
                     newServer = new FinamServer();
                 }
-                else if (type == ServerType.HuobiDM)
-                {
-                    newServer = new HuobiDMServer();
-                }
-
                 if (newServer == null)
                 {
                     return;
@@ -869,11 +862,7 @@ namespace OsEngine.Market
         /// <summary>
         /// MFD web server
         /// </summary>
-        MfdWeb,
-        /// <summary>
-        /// HuobiDM
-        /// </summary>
-        HuobiDM
+        MfdWeb
     }
 
 }
