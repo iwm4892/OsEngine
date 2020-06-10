@@ -324,6 +324,11 @@ namespace OsEngine.OsTrader.Panels
                 {
                     _botTabs[i].Clear();
                 }
+
+                if (_log != null)
+                {
+                    _log.Clear();
+                }
             }
             catch (Exception error)
             {
@@ -1358,7 +1363,7 @@ position => position.State != PositionStateType.OpeningFail
         /// send new message / 
         /// выслать новое сообщение на верх
         /// </summary>
-        private void SendNewLogMessage(string message, LogMessageType type)
+        protected void SendNewLogMessage(string message, LogMessageType type)
         {
             if (LogMessageEvent != null)
             {

@@ -37,6 +37,8 @@ using OsEngine.Market.Servers.Tester;
 using OsEngine.Market.Servers.Transaq;
 using OsEngine.Market.Servers.ZB;
 using OsEngine.Market.Servers.Hitbtc;
+using OsEngine.Market.Servers.Huobi.Futures;
+using OsEngine.Market.Servers.Huobi.Spot;
 using OsEngine.Market.Servers.MFD;
 using OsEngine.Market.Servers.MOEX;
 using OsEngine.Market.Servers.Tinkoff;
@@ -93,6 +95,8 @@ namespace OsEngine.Market
                 serverTypes.Add(ServerType.Exmo);
                 serverTypes.Add(ServerType.Zb);
                 serverTypes.Add(ServerType.Hitbtc);
+                serverTypes.Add(ServerType.HuobiSpot);
+                serverTypes.Add(ServerType.HuobiFutures);
 
                 serverTypes.Add(ServerType.InteractivBrokers);
                 serverTypes.Add(ServerType.NinjaTrader);
@@ -189,6 +193,14 @@ namespace OsEngine.Market
                 }
 
                 IServer newServer = null;
+                if (type == ServerType.HuobiFutures)
+                {
+                    newServer = new HuobiFuturesServer();
+                }
+                if (type == ServerType.HuobiSpot)
+                {
+                    newServer = new HuobiSpotServer();
+                }
                 if (type == ServerType.MfdWeb)
                 {
                     newServer = new MfdServer();
@@ -317,40 +329,51 @@ namespace OsEngine.Market
             }
         }
 
+        private static object _optimizerGeneratorLocker = new object();
+
         /// <summary>
         /// create a new optimization server
         /// создать новый сервер оптимизации
         /// </summary>
         public static OptimizerServer CreateNextOptimizerServer(OptimizerDataStorage storage, int num, decimal portfolioStartVal)
         {
-            OptimizerServer serv = new OptimizerServer(storage, num, portfolioStartVal);
-
-            bool isInArray = false;
-
-            if (_servers == null)
+            lock (_optimizerGeneratorLocker)
             {
-                _servers = new List<IServer>();
-            }
+                OptimizerServer serv = new OptimizerServer(storage, num, portfolioStartVal);
 
-            for (int i = 0; i < _servers.Count; i++)
-            {
-                if (_servers[i].ServerType == ServerType.Optimizer)
+                if (serv == null)
                 {
-                    _servers[i] = serv;
-                    isInArray = true;
+                    return null;
                 }
-            }
 
-            if (isInArray == false)
-            {
-                _servers.Add(serv);
+                bool isInArray = false;
+
+                if (_servers == null)
+                {
+                    _servers = new List<IServer>();
+                }
+
+                for (int i = 0; i < _servers.Count; i++)
+                {
+                    if (_servers[i].ServerType == ServerType.Optimizer &&
+                        ((OptimizerServer)_servers[i]).NumberServer == serv.NumberServer)
+                    {
+                        _servers[i] = serv;
+                        isInArray = true;
+                    }
+                }
+
+                if (isInArray == false)
+                {
+                    _servers.Add(serv);
+                }
+
+                if (ServerCreateEvent != null)
+                {
+                    ServerCreateEvent(serv);
+                }
+                return serv;
             }
-            
-            if (ServerCreateEvent != null)
-            {
-                ServerCreateEvent(serv);
-            }
-            return serv;
         }
 
         /// <summary>
@@ -862,7 +885,14 @@ namespace OsEngine.Market
         /// <summary>
         /// MFD web server
         /// </summary>
-        MfdWeb
+        MfdWeb,
+
+        /// <summary>
+        /// Huobi
+        /// </summary>
+        HuobiSpot,
+
+        HuobiFutures,
     }
 
 }

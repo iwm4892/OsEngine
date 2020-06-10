@@ -80,6 +80,11 @@ namespace OsEngine.Entity
                 result.Append(_timeFrameBuilder.Specification);
 
                 _specification = result.ToString();
+
+                _specification =
+                    _specification.Replace("(", "").Replace(")", "").Replace(" ", "").Replace("\"", "");
+
+
                 return _specification;
             }
         }
@@ -209,10 +214,15 @@ namespace OsEngine.Entity
                 return;
             }
 
-            if ((CandlesAll[CandlesAll.Count - 1].TimeStart.Add(TimeFrameSpan) < time)
-                ||
-                (TimeFrame == TimeFrame.Day && CandlesAll[CandlesAll.Count - 1].TimeStart.Date < time.Date)
+            if (
+                (
+                    (CandlesAll[CandlesAll.Count - 1].TimeStart.Add(TimeFrameSpan) < time)
+                    ||
+                    (TimeFrame == TimeFrame.Day 
+                     && CandlesAll[CandlesAll.Count - 1].TimeStart.Date < time.Date)
                 )
+                &&
+                CandlesAll[CandlesAll.Count - 1].State != CandleState.Finished)
             {
                 // пришло время закрыть свечу
                 CandlesAll[CandlesAll.Count - 1].State = CandleState.Finished;
