@@ -4104,7 +4104,7 @@ namespace OsEngine.OsTrader.Panels.Tab
                 {
                     if (position.State != PositionStateType.Closing)
                     {
-                        CloseDeal(position, OrderPriceType.Market, Trades[Trades.Count - 1].Price, _manualControl.SecondToClose, true);
+                        CloseDeal(position, OrderPriceType.Market, Trades[Trades.Count - 1].Price, ManualPositionSupport.SecondToClose, true);
                     }
                 }
 
@@ -4211,7 +4211,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
-                LongCreate(priceLimit, volume, OrderPriceType.BuyStop, _manualControl.SecondToOpen, false);
+                LongCreate(priceLimit, volume, OrderPriceType.BuyStop, ManualPositionSupport.SecondToOpen, false);
             }
             catch (Exception error)
             {
@@ -4223,7 +4223,7 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             try
             {
-                ShortCreate(priceLimit, volume, OrderPriceType.BuyStop, _manualControl.SecondToOpen, false);
+                ShortCreate(priceLimit, volume, OrderPriceType.BuyStop, ManualPositionSupport.SecondToOpen, false);
             }
             catch (Exception error)
             {

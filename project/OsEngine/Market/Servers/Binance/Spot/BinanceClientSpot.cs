@@ -937,7 +937,15 @@ namespace OsEngine.Market.Servers.Binance.Spot
                     param.Add("&type=", "LIMIT");
                     param.Add("&timeInForce=", "GTC");
                     param.Add("&newClientOrderId=", order.NumberUser.ToString());
-                    param.Add("&sideEffectType=", "MARGIN_BUY");
+                    if (order.IsStopOrProfit)
+                    {
+                        param.Add("&sideEffectType=", "AUTO_REPAY");
+                    }
+                    else
+                    {
+                        param.Add("&sideEffectType=", "MARGIN_BUY");
+                    }
+                    
                     param.Add("&quantity=",
                         order.Volume.ToString(CultureInfo.InvariantCulture)
                             .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));
