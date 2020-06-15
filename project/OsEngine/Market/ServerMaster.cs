@@ -39,6 +39,7 @@ using OsEngine.Market.Servers.ZB;
 using OsEngine.Market.Servers.Hitbtc;
 using OsEngine.Market.Servers.Huobi.Futures;
 using OsEngine.Market.Servers.Huobi.Spot;
+using OsEngine.Market.Servers.Huobi.FuturesSwap;
 using OsEngine.Market.Servers.MFD;
 using OsEngine.Market.Servers.MOEX;
 using OsEngine.Market.Servers.Tinkoff;
@@ -97,6 +98,7 @@ namespace OsEngine.Market
                 serverTypes.Add(ServerType.Hitbtc);
                 serverTypes.Add(ServerType.HuobiSpot);
                 serverTypes.Add(ServerType.HuobiFutures);
+                serverTypes.Add(ServerType.HuobiFuturesSwap);
 
                 serverTypes.Add(ServerType.InteractivBrokers);
                 serverTypes.Add(ServerType.NinjaTrader);
@@ -193,6 +195,10 @@ namespace OsEngine.Market
                 }
 
                 IServer newServer = null;
+                if (type == ServerType.HuobiFuturesSwap)
+                {
+                    newServer = new HuobiFuturesSwapServer();
+                }
                 if (type == ServerType.HuobiFutures)
                 {
                     newServer = new HuobiFuturesServer();
@@ -435,6 +441,43 @@ namespace OsEngine.Market
 
                 return serverPermission;
             }
+            if (type == ServerType.HuobiSpot)
+            {
+                serverPermission = _serversPermissions.Find(s => s.ServerType == type);
+
+                if (serverPermission == null)
+                {
+                    serverPermission = new HuobiSpotServerPermission();
+                    _serversPermissions.Add(serverPermission);
+                }
+
+                return serverPermission;
+            }
+            if (type == ServerType.HuobiFutures)
+            {
+                serverPermission = _serversPermissions.Find(s => s.ServerType == type);
+
+                if (serverPermission == null)
+                {
+                    serverPermission = new HuobiFuturesServerPermission();
+                    _serversPermissions.Add(serverPermission);
+                }
+
+                return serverPermission;
+            }
+            if (type == ServerType.HuobiFuturesSwap)
+            {
+                serverPermission = _serversPermissions.Find(s => s.ServerType == type);
+
+                if (serverPermission == null)
+                {
+                    serverPermission = new HuobiFuturesSwapServerPermission();
+                    _serversPermissions.Add(serverPermission);
+                }
+
+                return serverPermission;
+            }
+            
 
             return null;
         }
@@ -888,11 +931,19 @@ namespace OsEngine.Market
         MfdWeb,
 
         /// <summary>
-        /// Huobi
+        /// Huobi Spot
         /// </summary>
         HuobiSpot,
 
+        /// <summary>
+        /// Huobi Futures
+        /// </summary>
         HuobiFutures,
+
+        /// <summary>
+        /// Huobi Futures Swap
+        /// </summary>
+        HuobiFuturesSwap
     }
 
 }
