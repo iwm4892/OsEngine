@@ -937,15 +937,16 @@ namespace OsEngine.Market.Servers.Binance.Spot
                     param.Add("&type=", "LIMIT");
                     param.Add("&timeInForce=", "GTC");
                     param.Add("&newClientOrderId=", order.NumberUser.ToString());
-                    if (order.PositionConditionType == OrderPositionConditionType.Close)
-                    {
-                        param.Add("&sideEffectType=", "AUTO_REPAY");
-                    }
-                    else
+
+                    if (order.PositionConditionType == OrderPositionConditionType.Open)
                     {
                         param.Add("&sideEffectType=", "MARGIN_BUY");
                     }
-                    
+                    else
+                    {
+                        param.Add("&sideEffectType=", "AUTO_REPAY");
+                    }
+
                     param.Add("&quantity=",
                         order.Volume.ToString(CultureInfo.InvariantCulture)
                             .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));
@@ -1318,7 +1319,7 @@ namespace OsEngine.Market.Servers.Binance.Spot
         /// <param name="e"></param>
         private void WsError(object sender, EventArgs e)
         {
-            if (e.ToString().Contains("Unknown order send"))
+            if (e.ToString().Contains("Unknown order"))
             {
                 return;
             }
