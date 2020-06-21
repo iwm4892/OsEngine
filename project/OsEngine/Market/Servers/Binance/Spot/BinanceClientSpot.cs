@@ -937,7 +937,7 @@ namespace OsEngine.Market.Servers.Binance.Spot
                     param.Add("&type=", "LIMIT");
                     param.Add("&timeInForce=", "GTC");
                     param.Add("&newClientOrderId=", order.NumberUser.ToString());
-                    if (order.IsStopOrProfit)
+                    if (order.PositionConditionType == OrderPositionConditionType.Close)
                     {
                         param.Add("&sideEffectType=", "AUTO_REPAY");
                     }
