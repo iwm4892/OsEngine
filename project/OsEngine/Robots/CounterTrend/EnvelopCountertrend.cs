@@ -49,6 +49,7 @@ namespace OsEngine.Robots.Trend
             VolumeDecimals = CreateParameter("Volume Decimals", 0, 0, 20, 1);
 
             MinVolume = CreateParameter("MinVolume", 1, 1, 10000, 0.0001m);
+            MaxPosition = CreateParameter("Макс. открытых позиций", 1, 1, 10, 1);
 
             _sma = IndicatorsFactory.CreateIndicatorByName("Sma", name + "Moving", false);
             _sma = (Aindicator)_tab.CreateCandleIndicator(_sma, "Prime");
@@ -172,9 +173,16 @@ namespace OsEngine.Robots.Trend
         // indicators / индикаторы
 
         private Envelops _envelop;
-
+        /// <summary>
+        /// Машка для профита
+        /// </summary>
         private Aindicator _sma;
         private bool _isDisposed;
+        /// <summary>
+        /// Максимальное количество одновременно открытых позиций
+        /// </summary>
+        private StrategyParameterInt MaxPosition;
+
         // trade logic
         private void Logic()
         {
@@ -221,45 +229,51 @@ namespace OsEngine.Robots.Trend
                 {
                     continue;
                 }
-                decimal _lastprice = _tab.CandlesAll[_tab.CandlesAll.Count-1].Close;
-                decimal spread = 0;
-                decimal spreadAver = (_lastUp + _lastDown) / 2;
-                decimal spreadEnv = (_lastUp - _lastDown) / 2;
-                if (_lastprice > spreadAver)
-                {
-                    spread = (_lastUp - _lastprice) / spreadEnv;
-                }
-                else
-                {
-                    spread = ( _lastprice -_lastDown) / spreadEnv;
-                }
+
+                decimal spread = GetSpread();
+                decimal minspread = GetMinSpread();
                 
-                List<Position> positions = _tab.PositionsOpenAll;
-                decimal minspread = 0.4m;
-                if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
-                {
-                    minspread = 0.7m;
-                }
                 if (spread > minspread)
                 {
                     CanselAllOrders();
                 }
                 if (spread <= minspread)
                 {
-
+                    List<Position> positions = _tab.PositionsOpenAll;
                     if (positions == null || positions.Count == 0)
                     {
                         LogicOpenPosition(_tab.CandlesAll);
                     }
                 }
-                /*
-                CanselAllOrders();
-                CloseAllPositions();
-                OpenOrders();
-                */
             }
         }
+        private decimal GetMinSpread()
+        {
+            decimal minspread = 0.4m;
+            if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
+            {
+                minspread = 0.7m;
+            }
+            return minspread;
+        }
+        public decimal GetSpread()
+        {
+            decimal _lastprice = _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close;
+            decimal spread = 0;
+            decimal spreadAver = (_lastUp + _lastDown) / 2;
+            decimal spreadEnv = (_lastUp - _lastDown) / 2;
+            
+            if (_lastprice > spreadAver)
+            {
+                spread = (_lastUp - _lastprice) / spreadEnv;
+            }
+            else
+            {
+                spread = (_lastprice - _lastDown) / spreadEnv;
+            }
 
+            return spread;
+        }
         private void _tab_PositionOpeningSuccesEvent(Position position)
         {
             
@@ -333,10 +347,6 @@ namespace OsEngine.Robots.Trend
             {
                 return;
             }
-            /*
-            _tab.SellAtStopCancel();
-            _tab.BuyAtStopCancel();
-            */
             CanselAllOrders();
             List<Position> positions = _tab.PositionsOpenAll;
 
@@ -350,7 +360,12 @@ namespace OsEngine.Robots.Trend
                 if (_tab.Connector.MyServer.ServerType == ServerType.Tester ||
                     _tab.Connector.MyServer.ServerType == ServerType.Optimizer)
                 {
+                    decimal spread = GetSpread();
+                    decimal minspread = GetMinSpread();
+                    if (spread <= minspread)
+                    {
                         LogicOpenPosition(candles);
+                    }
                 }
             }
         }
@@ -465,23 +480,23 @@ namespace OsEngine.Robots.Trend
             {
                 _Vol = VollAll;
             }
-
-            int _maxPositions = (int)(1 / leverage.ValueDecimal);
+                
+            //int _maxPositions = (int)(1 / leverage.ValueDecimal);
             int _posCountNaw = GetOpenPositionsCount();
 
-            if (_maxPositions > 1)
+            if (MaxPosition.ValueInt > 1)
             {
                 
-                if(_posCountNaw >= _maxPositions)
+                if(_posCountNaw >= MaxPosition.ValueInt)
                 {
                     return 0;
                 }
-                _Vol = _Vol / (_maxPositions - _posCountNaw);
+                _Vol = _Vol / (MaxPosition.ValueInt - _posCountNaw);
             }
-            else
-            {
+            //else
+            //{
                 _Vol = _Vol * leverage.ValueDecimal;
-            }
+            //}
             _Vol = GetVol(_Vol);
             return _Vol;
         }
@@ -617,5 +632,18 @@ namespace OsEngine.Robots.Trend
         /// вкладка для торговли
         /// </summary>
         private BotTabSimple _tab;
+        public class EnvelopCountertrendLocker
+        {
+            public struct robot
+            {
+                string Security;
+                string Regime;
+                decimal spread;
+                decimal lastprise;
+                decimal _lastUp;
+                decimal _lastDown;
+            }
+            public List<robot> robots;
+        }
     }
 }
