@@ -643,7 +643,36 @@ namespace OsEngine.Robots.Trend
                 decimal _lastUp;
                 decimal _lastDown;
             }
+            private object _locker = new object();
             public List<robot> robots;
+            private ServerType _ServerType;
+            private string _PortfolioName;
+            public EnvelopCountertrendLocker(BotPanel bot)
+            {
+
+            }
+            private int GetOpenPositionsCount()
+            {
+                int result = 0;
+                foreach (var panel in OsTraderMaster.Master._panelsArray)
+                {
+                    if (panel.IsConnected && panel.GetNameStrategyType() == "EnvelopCountertrend")
+                    {
+                        foreach (var tab in panel.TabsSimple)
+                        {
+                            if (tab.Connector.ServerType == _ServerType
+                                && tab.Connector.PortfolioName == _PortfolioName)
+                            {
+                                if (tab.PositionsOpenAll != null)
+                                {
+                                    result += tab.PositionsOpenAll.Count;
+                                }
+                            }
+                        }
+                    }
+                }
+                return result;
+            }
         }
     }
 }
