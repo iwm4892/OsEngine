@@ -15,6 +15,7 @@ using OsEngine.Indicators;
 using System.Threading;
 using System.Linq;
 using OsEngine.OsTrader;
+using SmartCOM4Lib;
 
 namespace OsEngine.Robots.Trend
 {
@@ -200,7 +201,7 @@ namespace OsEngine.Robots.Trend
 
                 if (_isDisposed)
                 {
-                    return;
+                    continue;
                 }
 
                 if (Regime.ValueString == "Off")
@@ -271,7 +272,11 @@ namespace OsEngine.Robots.Trend
             {
                 spread = (_lastprice - _lastDown) / spreadEnv;
             }
-
+            if ((Regime.ValueString == "OnlyShort" && _lastprice < spreadAver)
+                || (Regime.ValueString == "OnlyLong" && _lastprice > spreadAver))
+            {
+                spread = 1;
+            }
             return spread;
         }
         private void _tab_PositionOpeningSuccesEvent(Position position)
@@ -357,16 +362,18 @@ namespace OsEngine.Robots.Trend
  
             if (positions == null || positions.Count == 0)
             {
+                /*
                 if (_tab.Connector.MyServer.ServerType == ServerType.Tester ||
                     _tab.Connector.MyServer.ServerType == ServerType.Optimizer)
                 {
+                */
                     decimal spread = GetSpread();
                     decimal minspread = GetMinSpread();
                     if (spread <= minspread)
                     {
                         LogicOpenPosition(candles);
                     }
-                }
+                //}
             }
         }
         private void CanselAllOrders()
@@ -408,6 +415,10 @@ namespace OsEngine.Robots.Trend
             {
                 return;
             }
+            if (!CanTrade())
+            {
+                return;
+            }
             List<Position> openPositions = _tab.PositionsOpenAll;
             if (openPositions == null || openPositions.Count == 0)
             {
@@ -444,10 +455,6 @@ namespace OsEngine.Robots.Trend
             }
 
 
-        }
-        private decimal GetLastFractail(List<decimal> values)
-        {
-            return values.FindLast(x => x != 0);
         }
         private decimal GetVolume(Side side)
         {
@@ -499,6 +506,48 @@ namespace OsEngine.Robots.Trend
             //}
             _Vol = GetVol(_Vol);
             return _Vol;
+        }
+        private struct Spreads
+        {
+            public Security Security;
+            public decimal spread;
+        }
+        private List<Spreads> SpredList;
+        private bool CanTrade()
+        {
+            if (SpredList == null)
+            {
+                SpredList = new List<Spreads>();
+            }
+            
+            SpredList.Clear();
+            foreach (var panel in OsTraderMaster.Master._panelsArray)
+            {
+                if (panel.IsConnected && panel.GetNameStrategyType() == this.GetNameStrategyType())
+                {
+                    foreach (var tab in panel.TabsSimple)
+                    {
+                        if (tab.Connector.ServerType == _tab.Connector.ServerType
+                            && tab.Connector.PortfolioName == _tab.Connector.PortfolioName
+                            && tab.CandlesAll!=null)
+                        {
+                            Spreads _sp = new Spreads();
+                            _sp.Security = tab.Securiti;
+                            _sp.spread = ((EnvelopCountertrend) panel).GetSpread();
+                            SpredList.Add(_sp);
+                        }
+                    }
+                }
+            }
+            SpredList.Sort((a, b) => decimal.Compare(a.spread, b.spread));
+            for(int i = 0; i < MaxPosition.ValueInt; i++)
+            {
+                if (_tab.Securiti == SpredList[i].Security)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         private int GetOpenPositionsCount()
         {

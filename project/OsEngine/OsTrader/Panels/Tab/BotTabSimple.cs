@@ -3049,8 +3049,14 @@ namespace OsEngine.OsTrader.Panels.Tab
                             position.StopOrderRedLine 
                             + " LastMarketPrice: " + lastTrade, 
                             LogMessageType.System);
-
-                        CloseDeal(position, OrderPriceType.Limit, position.StopOrderPrice, ManualPositionSupport.SecondToClose, true);
+                        if (_connector.ServerType == ServerType.BitMex)
+                        {
+                            CloseDeal(position, OrderPriceType.Market, position.StopOrderPrice, ManualPositionSupport.SecondToClose, true);
+                        }
+                        else
+                        {
+                            CloseDeal(position, OrderPriceType.Limit, position.StopOrderPrice, ManualPositionSupport.SecondToClose, true);
+                        }
                         PositionStopActivateEvent?.Invoke(position);
                         return true;
                     }
@@ -3067,7 +3073,14 @@ namespace OsEngine.OsTrader.Panels.Tab
                             + " LastMarketPrice: " + lastTrade,
                             LogMessageType.System);
 
-                        CloseDeal(position, OrderPriceType.Limit, position.StopOrderPrice, ManualPositionSupport.SecondToClose, true);
+                        if (_connector.ServerType == ServerType.BitMex)
+                        {
+                            CloseDeal(position, OrderPriceType.Market, position.StopOrderPrice, ManualPositionSupport.SecondToClose, true);
+                        }
+                        else
+                        {
+                            CloseDeal(position, OrderPriceType.Limit, position.StopOrderPrice, ManualPositionSupport.SecondToClose, true);
+                        }
                         PositionStopActivateEvent?.Invoke(position);
                         return true;
                     }
