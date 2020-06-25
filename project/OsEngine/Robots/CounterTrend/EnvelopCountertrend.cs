@@ -498,7 +498,7 @@ namespace OsEngine.Robots.Trend
                 {
                     return 0;
                 }
-                _Vol = _Vol / (MaxPosition.ValueInt - _posCountNaw);
+                _Vol = _Vol / (MaxPosition.ValueInt);
             }
             //else
             //{
@@ -515,11 +515,15 @@ namespace OsEngine.Robots.Trend
         private List<Spreads> SpredList;
         private bool CanTrade()
         {
+            if(GetOpenPositionsCount() > MaxPosition.ValueInt)
+            {
+                return false;
+            }
             if (SpredList == null)
             {
                 SpredList = new List<Spreads>();
             }
-            
+
             SpredList.Clear();
             foreach (var panel in OsTraderMaster.Master._panelsArray)
             {
@@ -648,7 +652,7 @@ namespace OsEngine.Robots.Trend
                         if(_tab.Connector.PortfolioName == "BinanceMargin" && b.ValueCurrent == 0 && b.ValueBlocked != 0)
                         {
                             int _posCountNaw = GetOpenPositionsCount();
-                            if (_posCountNaw >= 3) //тк 3е плечо на маржиналке то ограничимся 3мя позициями
+                            if (_posCountNaw > 3) //тк 3е плечо на маржиналке то ограничимся 3мя позициями
                             {
                                 return 0;
                             }
