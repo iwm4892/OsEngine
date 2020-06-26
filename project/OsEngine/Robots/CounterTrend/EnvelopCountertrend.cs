@@ -402,6 +402,11 @@ namespace OsEngine.Robots.Trend
         private void LogicClosePosition()
         {
             List<Position> openPositions = _tab.PositionsOpenAll;
+            
+            if (openPositions.Count > 1)
+            {
+                CanselAllOrders();
+            }
             for (int i = 0; openPositions != null && i < openPositions.Count; i++)
             {
                 _tab.CloseAtProfit(openPositions[i], _lastMa, _lastMa);
