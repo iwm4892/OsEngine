@@ -259,6 +259,10 @@ namespace OsEngine.Robots.Trend
         }
         public decimal GetSpread()
         {
+            if(_lastUp == 0 || _lastDown == 0)
+            {
+                return 1;
+            }
             decimal _lastprice = _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close;
             decimal spread = 0;
             decimal spreadAver = (_lastUp + _lastDown) / 2;
@@ -515,7 +519,7 @@ namespace OsEngine.Robots.Trend
         private List<Spreads> SpredList;
         private bool CanTrade()
         {
-            if(GetOpenPositionsCount() > MaxPosition.ValueInt)
+            if(GetOpenPositionsCount() >= MaxPosition.ValueInt)
             {
                 return false;
             }
@@ -523,7 +527,7 @@ namespace OsEngine.Robots.Trend
             {
                 SpredList = new List<Spreads>();
             }
-
+            
             SpredList.Clear();
             foreach (var panel in OsTraderMaster.Master._panelsArray)
             {
@@ -685,47 +689,5 @@ namespace OsEngine.Robots.Trend
         /// вкладка для торговли
         /// </summary>
         private BotTabSimple _tab;
-        public class EnvelopCountertrendLocker
-        {
-            public struct robot
-            {
-                string Security;
-                string Regime;
-                decimal spread;
-                decimal lastprise;
-                decimal _lastUp;
-                decimal _lastDown;
-            }
-            private object _locker = new object();
-            public List<robot> robots;
-            private ServerType _ServerType;
-            private string _PortfolioName;
-            public EnvelopCountertrendLocker(BotPanel bot)
-            {
-
-            }
-            private int GetOpenPositionsCount()
-            {
-                int result = 0;
-                foreach (var panel in OsTraderMaster.Master._panelsArray)
-                {
-                    if (panel.IsConnected && panel.GetNameStrategyType() == "EnvelopCountertrend")
-                    {
-                        foreach (var tab in panel.TabsSimple)
-                        {
-                            if (tab.Connector.ServerType == _ServerType
-                                && tab.Connector.PortfolioName == _PortfolioName)
-                            {
-                                if (tab.PositionsOpenAll != null)
-                                {
-                                    result += tab.PositionsOpenAll.Count;
-                                }
-                            }
-                        }
-                    }
-                }
-                return result;
-            }
-        }
     }
 }
