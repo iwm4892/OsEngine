@@ -855,26 +855,9 @@ namespace OsEngine.Market.Servers.Binance.Futures
                     param.Add("&type=", "LIMIT");
                     param.Add("&timeInForce=", "GTC");
                     param.Add("&newClientOrderId=", order.NumberUser.ToString());
-                    //++++++++ вычисляем количество из размера лота
-                    Decimal quant;
-                    /*
-                    if (order.Side == Side.Sell)
-                    {
-                        quant = order.Volume / order.Price;
-                    }
-                    else
-                    {
-                    */
-                        quant = order.Volume;
-                    //}
-                    param.Add("&quantity=",
-                        quant.ToString("0.000000")//CultureInfo.InvariantCulture)
-                            .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, ".").Replace(",", "."));
-                    /*
                     param.Add("&quantity=",
                         order.Volume.ToString(CultureInfo.InvariantCulture)
                             .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));
-                    */
                     param.Add("&price=",
                         order.Price.ToString(CultureInfo.InvariantCulture)
                             .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));
@@ -1438,9 +1421,6 @@ namespace OsEngine.Market.Servers.Binance.Futures
 
                             else if (mes.Contains("\"e\":\"trade\""))
                             {
-                                //+++
-                                //Console.WriteLine(mes);
-                                SendLogMessage(mes, LogMessageType.Trade);
                                 var quotes = JsonConvert.DeserializeAnonymousType(mes, new TradeResponse());
 
 

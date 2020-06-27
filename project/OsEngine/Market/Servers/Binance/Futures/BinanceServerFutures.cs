@@ -318,7 +318,7 @@ namespace OsEngine.Market.Servers.Binance.Futures
                 }
                 //++
                 decimal newPr = trades.data.p.ToDecimal();
-                if (_lastprice!=0 && Math.Abs((_lastprice - newPr)/_lastprice)>0.05m)
+                if (_lastprice != 0 && Math.Abs((_lastprice - newPr) / _lastprice) > 0.05m)
                 {
                     _lastprice = newPr;
                     return;
@@ -328,6 +328,7 @@ namespace OsEngine.Market.Servers.Binance.Futures
                     _lastprice = newPr;
                 }
                 //--
+
                 Trade trade = new Trade();
                 trade.SecurityNameCode = trades.data.s;
                 /*
