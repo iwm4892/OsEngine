@@ -299,6 +299,20 @@ namespace OsEngine.OsTrader.Panels.Tab
         {
             return _chartMaster.CreateIndicator(indicator, nameArea);
         }
+        
+        /// <summary>
+        /// create and save indicator / 
+        /// создать и сохранить индикатор
+        /// </summary>
+        /// <param name="indicator">indicator / индикатор</param>
+        /// <param name="nameArea">the name of the area on which it will be placed. Default: "Prime" / название области на которую он будет помещён. По умолчанию: "Prime"</param>
+        /// <returns></returns>
+        public T CreateIndicator<T>(T indicator, string nameArea = "Prime") where T : IIndicator
+        {
+            T newIndicator = (T) _chartMaster.CreateIndicator(indicator, nameArea);
+            newIndicator.Save();
+            return newIndicator;
+        }
 
         /// <summary>
         /// remove indicator / 
@@ -3805,6 +3819,16 @@ namespace OsEngine.OsTrader.Panels.Tab
                         return;
                     }
                     _journal.DeletePosition(position);
+                }
+
+                if (signalType == SignalType.FindPosition)
+                {
+                    if (position == null)
+                    {
+                        return;
+                    }
+                    
+                    GoChartToThisTime(position.TimeCreate);
                 }
             }
             catch (Exception error)
