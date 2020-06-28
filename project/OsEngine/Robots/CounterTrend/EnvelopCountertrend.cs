@@ -234,10 +234,11 @@ namespace OsEngine.Robots.Trend
                 decimal spread = GetSpread();
                 decimal minspread = GetMinSpread();
                 
-                if (spread > minspread)
+                if (spread > minspread || _tab.PositionsOpenAll.Count > 1)
                 {
                     CanselAllOrders();
                 }
+
                 if (spread <= minspread)
                 {
                     List<Position> positions = _tab.PositionsOpenAll;
@@ -402,11 +403,6 @@ namespace OsEngine.Robots.Trend
         private void LogicClosePosition()
         {
             List<Position> openPositions = _tab.PositionsOpenAll;
-            
-            if (openPositions.Count > 1)
-            {
-                CanselAllOrders();
-            }
             for (int i = 0; openPositions != null && i < openPositions.Count; i++)
             {
                 _tab.CloseAtProfit(openPositions[i], _lastMa, _lastMa);
