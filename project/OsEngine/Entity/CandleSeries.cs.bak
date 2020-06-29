@@ -326,9 +326,6 @@ namespace OsEngine.Entity
             {
                 UpDateCandle(trades[i].Time, trades[i].Price, trades[i].Volume, false, trades[i].Side);
 
-                List<Trade> tradesInCandle = CandlesAll[CandlesAll.Count - 1].Trades;
-                tradesInCandle.Add(trades[i]);
-                CandlesAll[CandlesAll.Count - 1].Trades = tradesInCandle;
 
                 //+++
                 UpdateClasterDate(CandlesAll[CandlesAll.Count - 1]);
