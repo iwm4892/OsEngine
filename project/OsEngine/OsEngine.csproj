@@ -383,6 +383,7 @@
     <Compile Include="Indicators\IndicatorParameter.cs" />
     <Compile Include="Indicators\IndicatorsFactory.cs" />
     <Compile Include="Indicators\ScriptSpells.cs" />
+    <Compile Include="Journal\Internal\PositionController.cs" />
     <Compile Include="Journal\JournalUi.xaml.cs">
       <DependentUpon>JournalUi.xaml</DependentUpon>
     </Compile>
@@ -765,6 +766,7 @@
     <Compile Include="Robots\OnScriptIndicators\PriceChannelVolatility.cs" />
     <Compile Include="Robots\OnScriptIndicators\RsiTrade.cs" />
     <Compile Include="Robots\OnScriptIndicators\RviTrade.cs" />
+    <Compile Include="Robots\OnScriptIndicators\TimeOfDayBot.cs" />
     <Compile Include="Robots\MarketMaker\ArbitrageFutures.cs" />
     <Compile Include="Robots\MarketMaker\ArbitrageIndex.cs" />
     <Compile Include="Robots\Trend\FractialMA_work .cs" />
@@ -834,7 +836,6 @@
     <Compile Include="OsTrader\RiskManager\RiskManagerUi.xaml.cs">
       <DependentUpon>RiskManagerUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Journal\Internal\PositionController.cs" />
     <Compile Include="OsTrader\Panels\BotPanel.cs" />
     <Compile Include="Robots\MarketMaker\MarketMakerBotUi.xaml.cs">
       <DependentUpon>MarketMakerBotUi.xaml</DependentUpon>
