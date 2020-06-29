@@ -149,8 +149,10 @@ namespace OsEngine.Market.Servers.Optimizer
             }
 
             _candleSeriesTesterActivate = null;
-
-            _myTrades.Clear();
+            if (_myTrades != null)
+            {
+                _myTrades.Clear();
+            }
             _storagePrime = null;
             _cleared = true;
 

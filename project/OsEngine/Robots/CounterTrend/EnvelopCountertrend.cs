@@ -520,7 +520,12 @@ namespace OsEngine.Robots.Trend
         private List<Spreads> SpredList;
         private bool CanTrade()
         {
-            if(GetOpenPositionsCount() >= MaxPosition.ValueInt)
+            if (_tab.Connector.MyServer.ServerType == ServerType.Optimizer)
+            {
+                return true;
+            }
+
+            if (GetOpenPositionsCount() >= MaxPosition.ValueInt)
             {
                 return false;
             }
@@ -560,6 +565,10 @@ namespace OsEngine.Robots.Trend
         }
         private int GetOpenPositionsCount()
         {
+            if(_tab.Connector.MyServer.ServerType == ServerType.Optimizer)
+            {
+                return 0;
+            }
             int result = 0;
             foreach(var panel in OsTraderMaster.Master._panelsArray)
             {
