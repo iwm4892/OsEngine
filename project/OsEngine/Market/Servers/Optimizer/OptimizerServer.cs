@@ -1806,7 +1806,7 @@ namespace OsEngine.Market.Servers.Optimizer
 		/// cancel order from the exchange
         /// отозвать ордер с биржи
         /// </summary>
-        public void CanselOrder(Order order)
+        public void CancelOrder(Order order)
         {
             if (ServerStatus == ServerConnectStatus.Disconnect)
             {
