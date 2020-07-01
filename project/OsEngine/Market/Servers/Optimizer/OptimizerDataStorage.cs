@@ -617,6 +617,9 @@ namespace OsEngine.Market.Servers.Optimizer
                             {
                                 minPriceStep = 0.0000001m;
                             }
+                            //++
+                            minPriceStep = (decimal)(1 /Math.Pow(10, lenght));
+                            //--
                         }
                         else
                         {
@@ -901,6 +904,9 @@ namespace OsEngine.Market.Servers.Optimizer
                             {
                                 minPriceStep = 0.0000001m;
                             }
+                            //++
+                            minPriceStep = (decimal)(1 / Math.Pow(10, lenght));
+                            //--
                         }
                         else
                         {
@@ -1138,6 +1144,9 @@ namespace OsEngine.Market.Servers.Optimizer
                             {
                                 minPriceStep = 0.0000001m;
                             }
+                            //++
+                            minPriceStep = (decimal)(1 / Math.Pow(10, lenght));
+                            //--
                         }
                         else
                         {
