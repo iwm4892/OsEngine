@@ -142,12 +142,12 @@ namespace OsEngine.OsTrader.Panels.Tab
         /// start drawing this robot / 
         /// начать прорисовку этого робота
         /// </summary> 
-        public void StartPaint(WindowsFormsHost hostChart, WindowsFormsHost hostGlass, WindowsFormsHost hostOpenDeals,
+        public void StartPaint(Grid gridChart, WindowsFormsHost hostChart, WindowsFormsHost hostGlass, WindowsFormsHost hostOpenDeals,
                      WindowsFormsHost hostCloseDeals, Rectangle rectangleChart, WindowsFormsHost hostAlerts, TextBox textBoxLimitPrice, Grid gridChartControlPanel)
         {
             try
             {
-                _chartMaster?.StartPaint(hostChart, rectangleChart);
+                _chartMaster?.StartPaint(gridChart, hostChart, rectangleChart);
                 _marketDepthPainter?.StartPaint(hostGlass, textBoxLimitPrice);
                 _journal?.StartPaint(hostOpenDeals, hostCloseDeals);
 
@@ -392,15 +392,6 @@ namespace OsEngine.OsTrader.Panels.Tab
         public void DeleteAllChartElement()
         {
             _chartMaster.DeleteAllChartElement();
-        }
-
-        /// <summary>
-        /// get chart
-        /// взять чарт
-        /// </summary>
-        public Chart GetChart()
-        {
-            return _chartMaster.GetChart();
         }
 
         /// <summary>
