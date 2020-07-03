@@ -290,7 +290,7 @@ namespace OsEngine.Robots.Trend
                         )
                     {
                         decimal priceEnter = _lastUp;
-                        _tab.BuyAtStop(GetVolume(Side.Buy), priceEnter + Slippage.ValueInt, priceEnter, StopActivateType.HigherOrEqual);
+                        _tab.BuyAtStopMarket(GetVolume(Side.Buy), priceEnter + Slippage.ValueInt, priceEnter, StopActivateType.HigherOrEqual,1);
                     }
                 }
 
@@ -302,7 +302,7 @@ namespace OsEngine.Robots.Trend
                         )
                     {
                         decimal priceEnter = _lastDown;
-                        _tab.SellAtStop(GetVolume(Side.Sell), priceEnter - Slippage.ValueInt, priceEnter, StopActivateType.LowerOrEqyal);
+                        _tab.SellAtStopMarket(GetVolume(Side.Sell), priceEnter - Slippage.ValueInt, priceEnter, StopActivateType.LowerOrEqyal,1);
                     }
                 }
                 return;
