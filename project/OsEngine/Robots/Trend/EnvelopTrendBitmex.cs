@@ -9,6 +9,9 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Entity;
 using OsEngine.Market;
@@ -39,7 +42,11 @@ namespace OsEngine.Robots.Trend
             _atr.Save();
 
             this.ParametrsChangeByUser += EnvelopTrendBitmex_ParametrsChangeByUser;
+            this.DeleteEvent += Strategy_DeleteEvent;
+
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On", "OnlyClosePosition", "OnlyShort", "OnlyLong" });
+            RegimeML = CreateParameter("RegimeML", "Off", new[] { "Off", "Parser", "Client" });
+
             Slippage = CreateParameter("Slippage", 0, 0, 20, 1);
             EnvelopDeviation = CreateParameter("Envelop Deviation", 0.3m, 0.3m, 4, 0.1m);
             EnvelopMovingLength = CreateParameter("Envelop Moving Length", 10, 10, 200, 5);
@@ -63,21 +70,117 @@ namespace OsEngine.Robots.Trend
 
             _envelop.Deviation = EnvelopDeviation.ValueDecimal;
             _envelop.MovingAverage.Lenght = EnvelopMovingLength.ValueInt;
+            _name = name;
 
+            #region ML Region
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            Load();
+            if (RegimeML.ValueString != "Off") // создаем файл(ы) если несуществуют и очищаем если существуют
+            {
+                initML();
+            }
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            #endregion
         }
 
+
+        private void initML()
+        {
+            for (int i = 0; i < 3; i++) // инициализируем списки индикаторов снимка состояния рынка
+            {
+                bearsPowersList.Add((BearsPower)_tab.CreateCandleIndicator(new BearsPower(_name + "BearsPower" + i.ToString(), false), "Prime"));
+                bearsPowersList[i].PaintOn = false;
+                bearsPowersList[i].Period = 10 + i * 10;
+                bearsPowersList[i].Save();
+
+                bullsPowersList.Add((BullsPower)_tab.CreateCandleIndicator(new BullsPower(_name + "BullsPower" + i.ToString(), false), "Prime"));
+                bullsPowersList[i].PaintOn = false;
+                bullsPowersList[i].Period = 10 + i * 10;
+                bullsPowersList[i].Save();
+                    
+                atrList.Add((Atr)_tab.CreateCandleIndicator(new Atr(_name + "Atr" + i.ToString(), false), "Prime"));
+                atrList[i].PaintOn = false;
+                atrList[i].Lenght = 10 + i * 10;
+                atrList[i].Save();
+            }
+        }
+        private void DisposeML()
+        {
+            foreach(var ind in bearsPowersList)
+            {
+                _tab.Indicators.Remove(ind);
+            }
+            foreach (var ind in bullsPowersList)
+            {
+                _tab.Indicators.Remove(ind);
+            }
+            foreach (var ind in atrList)
+            {
+                _tab.Indicators.Remove(ind);
+            }
+
+            bearsPowersList.Clear();
+            bullsPowersList.Clear();
+            atrList.Clear();
+        }
         private void EnvelopTrendBitmex_ParametrsChangeByUser()
         {
             _envelop.Deviation = EnvelopDeviation.ValueDecimal;
             _envelop.MovingAverage.Lenght = EnvelopMovingLength.ValueInt;
             _envelop.Save();
-        }
 
+            if (RegimeML.ValueString != "Off")
+            {
+                initML();
+            }
+            else
+            {
+                DisposeML();
+            }
+        }
+        /// <summary>
+        /// load settings
+        /// загрузить настройки
+        /// </summary>
+        private void Load()
+        {
+            #region ML Region
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + $@"\DataSource\")) // создаем папку для моделей если не существует
+                Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + $@"\DataSource\");
+
+            fname_data_firstmulti = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + $@"\DataSource\data-multi.csv";
+
+            if (!File.Exists(fname_data_firstmulti))
+            {
+                File.Create(fname_data_firstmulti);
+            }
+            else if (File.Exists(fname_data_firstmulti))
+            {
+                File.Delete(fname_data_firstmulti);
+                File.Create(fname_data_firstmulti);
+            }
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            #endregion
+        }
+        /// <summary>
+        /// delete save file
+        /// удаление файла с сохранением
+        /// </summary>
+        private void Strategy_DeleteEvent()
+        {
+            if (File.Exists(@"Engine\" + NameStrategyUniq + @"SettingsBot.txt"))
+            {
+                File.Delete(@"Engine\" + NameStrategyUniq + @"SettingsBot.txt");
+            }
+        }
         private void _tab_PositionClosingSuccesEvent(Position obj)
         {
-
+            Filltabel_multi(obj);
         }
-
+        private string _name;
         // public settings / настройки публичные
 
         /// <summary>
@@ -160,6 +263,159 @@ namespace OsEngine.Robots.Trend
         /// Количество знаков после запятой в объеме
         /// </summary>
         public StrategyParameterInt VolumeDecimals;
+
+        #region ML Region
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        private string delim = ";"; // разделитель значений индикаторов для записи в csv
+
+        private string fname_data_firstmulti; // файл в который будут сохраняться значения
+
+        private string IpAdress = "127.0.0.1"; // ip сокета
+
+        private int Port = 8020; // порт сокета
+
+        private List<Atr> atrList = new List<Atr>(); // списки индикаторов снимка состояния рынка
+        private List<BearsPower> bearsPowersList = new List<BearsPower>(); // списки индикаторов снимка состояния рынка
+        private List<BullsPower> bullsPowersList = new List<BullsPower>(); // списки индикаторов снимка состояния рынка
+
+        private Dictionary<string, string> dealsDataDictionary = new Dictionary<string, string>(); // промежуточная база данных в виде словаря
+        private List<string> tabel_multi = new List<string>(); // конечная база данных под запись в файл
+        private List<string> ValueList = new List<string>(); // список значений индикаторов
+        private int dealID;
+        /// <summary>
+        /// Режим МЛ
+        /// </summary>
+        public StrategyParameterString RegimeML;
+        
+        /// <summary>
+        /// Перечень открываемых позиций
+        /// </summary>
+        private List<pos> stopPositions = new List<pos>();
+        private struct pos
+        {
+            public Side Side;
+            public long dealID;
+        }
+        private string CollectData()
+        {
+            ValueList.Clear();
+            if (RegimeML.ValueString != "Off")
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    ValueList.Add(bearsPowersList[k].Values[bearsPowersList[k].Values.Count - 1].ToString());
+                    ValueList.Add(bullsPowersList[k].Values[bullsPowersList[k].Values.Count - 1].ToString());
+                    ValueList.Add(atrList[k].Values[atrList[k].Values.Count - 1].ToString());
+                }
+
+                return string.Join(delim, ValueList.ToArray());
+            }
+            else
+                return "null";
+        }
+        IPEndPoint ipPoint;
+        public string WebClient(string message)
+        {
+            try
+            {
+                ipPoint = new IPEndPoint(IPAddress.Parse(IpAdress), Port);
+                Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                // подключаемся к удаленному хосту
+                socket.Connect(ipPoint);
+                byte[] data = Encoding.Unicode.GetBytes(message);
+                socket.Send(data);
+
+                // получаем ответ
+                data = new byte[1024];
+                // буфер для ответа
+                StringBuilder builder = new StringBuilder();
+                int bytes = 0;
+                // количество полученных байт
+                do
+                {
+                    bytes = socket.Receive(data, data.Length, 0);
+                    builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                } while (socket.Available > 0);
+
+                // закрываем сокет
+                socket.Shutdown(SocketShutdown.Both);
+                socket.Close();
+                //Print(builder.ToString());
+                return builder.ToString();
+
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        private void Filltabel_multi(Position position)
+        {
+            if (position != null)
+            {
+                if (position.ProfitPortfolioPersent > 0 && position.Direction == Side.Buy)
+                {
+                    pos p = stopPositions.FindLast(x => x.Side == Side.Buy);
+                    if (dealsDataDictionary.ContainsKey(p.dealID.ToString()))
+                    {
+                        tabel_multi.Add("0" + delim + dealsDataDictionary[p.dealID.ToString()]);
+                        dealsDataDictionary.Remove(p.dealID.ToString());
+                    }
+                }
+                else if (position.ProfitPortfolioPersent < 0 && position.Direction == Side.Buy)
+                {
+                    pos p = stopPositions.FindLast(x => x.Side == Side.Buy);
+                    if (dealsDataDictionary.ContainsKey(p.dealID.ToString()))
+                    {
+                        tabel_multi.Add("1" + delim + dealsDataDictionary[p.dealID.ToString()]);
+                        dealsDataDictionary.Remove(p.dealID.ToString());
+                    }
+                }
+                else if (position.ProfitPortfolioPersent > 0 && position.Direction == Side.Sell)
+                {
+                    pos p = stopPositions.FindLast(x => x.Side == Side.Sell);
+                    if (dealsDataDictionary.ContainsKey(p.dealID.ToString()))
+                    {
+                        tabel_multi.Add("3" + delim + dealsDataDictionary[position.SignalTypeOpen]);
+                        dealsDataDictionary.Remove(position.SignalTypeOpen);
+                    }
+                }
+                else if (position.ProfitPortfolioPersent < 0 && position.Direction == Side.Sell)
+                {
+                    pos p = stopPositions.FindLast(x => x.Side == Side.Sell);
+                    if (dealsDataDictionary.ContainsKey(p.dealID.ToString()))
+                    {
+                        tabel_multi.Add("4" + delim + dealsDataDictionary[p.dealID.ToString()]);
+                        dealsDataDictionary.Remove(p.dealID.ToString());
+                    }
+                }
+            }
+            else
+            {
+                foreach(var el in stopPositions)
+                {
+                    if(el.Side == Side.Buy && dealsDataDictionary.ContainsKey(el.dealID.ToString()))
+                    {
+                        tabel_multi.Add("1" + delim + dealsDataDictionary[el.dealID.ToString()]);
+                        dealsDataDictionary.Remove(el.dealID.ToString());
+                    }
+                    if (el.Side == Side.Sell && dealsDataDictionary.ContainsKey(el.dealID.ToString()))
+                    {
+                        tabel_multi.Add("4" + delim + dealsDataDictionary[el.dealID.ToString()]);
+                        dealsDataDictionary.Remove(el.dealID.ToString());
+                    }
+                }
+            }
+            stopPositions.Clear();
+        }
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        #endregion
+
+
         // trade logic
 
         private void _tab_PositionOpeningSuccesEvent(Position position)
@@ -180,6 +436,42 @@ namespace OsEngine.Robots.Trend
         }
         private bool ValidateParams()
         {
+            #region ML Region
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+            if (RegimeML.ValueString != "Off")
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    if (atrList[i].Values.Count < atrList[i].Lenght * 2)
+                        return false;
+                    if (bearsPowersList[i].Values.Count < bearsPowersList[i].Period * 2)
+                        return false;
+                    if (bullsPowersList[i].Values.Count < bullsPowersList[i].Period * 2)
+                        return false;
+                }
+            }
+
+            if (RegimeML.ValueString == "Parser")
+            {
+                if (tabel_multi.Count >= 200)
+                {
+                    // tabel_multi.ForEach(x => x = x.Replace(",", ".")); 
+                    List<string> newTable = new List<string>(); // эта конструкция меняет разделитель на нужный
+                    foreach (string str in tabel_multi)
+                    {
+                        newTable.Add(str.Replace(",", "."));
+                    }
+
+                    File.AppendAllLines(fname_data_firstmulti, newTable);
+                    tabel_multi.Clear();
+                }
+            }
+
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            #endregion
 
             if (Regime.ValueString == "Off")
             {
@@ -202,6 +494,7 @@ namespace OsEngine.Robots.Trend
             {
                 return false;
             }
+
             return true;
         }
         private void CanselOldOrders()
@@ -224,6 +517,10 @@ namespace OsEngine.Robots.Trend
 
         private void _tab_CandleFinishedEvent(List<Candle> candles)
         {
+            if(stopPositions.Count != 0)
+            {
+                Filltabel_multi(null);
+            }
             _tab.BuyAtStopCancel();
             _tab.SellAtStopCancel();
             CanselOldOrders();
@@ -283,31 +580,78 @@ namespace OsEngine.Robots.Trend
             if (openPositions == null || openPositions.Count == 0)
             {
                 // long
-                if (Regime.ValueString != "OnlyShort")
+                if (CanBuy())
                 {
-                    if (FastMA.Values[FastMA.Values.Count - 1] > SlowMA.Values[SlowMA.Values.Count - 1]
-
-                        )
+                    decimal priceEnter = _lastUp;
+                    _tab.BuyAtStopMarket(GetVolume(Side.Buy), priceEnter + Slippage.ValueInt, priceEnter, StopActivateType.HigherOrEqual, 1);
+                    if(RegimeML.ValueString != "Client")
                     {
-                        decimal priceEnter = _lastUp;
-                        _tab.BuyAtStopMarket(GetVolume(Side.Buy), priceEnter + Slippage.ValueInt, priceEnter, StopActivateType.HigherOrEqual,1);
+                        dealID++;
+                        stopPositions.Add(new pos{ Side = Side.Buy, dealID = dealID});
+                        dealsDataDictionary.Add(dealID.ToString(), CollectData()); // кидаем снимок в предварительную базу
                     }
                 }
 
                 // Short
-                if (Regime.ValueString != "OnlyLong")
+                if (CanSell())
                 {
-                    if (FastMA.Values[FastMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 1]
-
-                        )
+                    decimal priceEnter = _lastDown;
+                    _tab.SellAtStopMarket(GetVolume(Side.Sell), priceEnter - Slippage.ValueInt, priceEnter, StopActivateType.LowerOrEqyal, 1);
+                    if (RegimeML.ValueString != "Client")
                     {
-                        decimal priceEnter = _lastDown;
-                        _tab.SellAtStopMarket(GetVolume(Side.Sell), priceEnter - Slippage.ValueInt, priceEnter, StopActivateType.LowerOrEqyal,1);
+                        dealID++;
+                        stopPositions.Add(new pos{ Side = Side.Sell, dealID = dealID});
+                        dealsDataDictionary.Add(dealID.ToString(), CollectData()); // кидаем снимок в предварительную базу
                     }
+
                 }
-                return;
             }
         }
+        private bool CanBuy()
+        {
+            
+            if (Regime.ValueString == "OnlyShort")
+            {
+                return false;
+            }
+            if (FastMA.Values[FastMA.Values.Count - 1] < SlowMA.Values[SlowMA.Values.Count - 1])
+            {
+                return false;
+            }
+            if(RegimeML.ValueString == "Client") 
+            {
+                string answer = WebClient(CollectData() + delim + "multi");
+                if (answer != "0")
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        private bool CanSell()
+        {
+
+            if (Regime.ValueString == "OnlyLong")
+            {
+                return false;
+            }
+            if (FastMA.Values[FastMA.Values.Count - 1] > SlowMA.Values[SlowMA.Values.Count - 1])
+            {
+                return false;
+            }
+            if (RegimeML.ValueString == "Client")
+            {
+                string answer = WebClient(CollectData() + delim + "multi");
+                if (answer != "3")
+                {
+                    return false;
+                }
+            }
+            return true;
+
+            return true;
+        }
+
         private decimal GetVolume(Side side)
         {
             decimal Laststop = 0;
