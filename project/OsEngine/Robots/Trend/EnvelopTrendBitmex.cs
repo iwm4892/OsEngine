@@ -305,9 +305,9 @@ namespace OsEngine.Robots.Trend
             {
                 for (int k = 0; k < 3; k++)
                 {
-                    ValueList.Add(bearsPowersList[k].Values[bearsPowersList[k].Values.Count - 1].ToString());
-                    ValueList.Add(bullsPowersList[k].Values[bullsPowersList[k].Values.Count - 1].ToString());
-                    ValueList.Add(atrList[k].Values[atrList[k].Values.Count - 1].ToString());
+                    ValueList.Add(bearsPowersList[k].Values[bearsPowersList[k].Values.Count - 1].ToString(CultureInfo.InvariantCulture));
+                    ValueList.Add(bullsPowersList[k].Values[bullsPowersList[k].Values.Count - 1].ToString(CultureInfo.InvariantCulture));
+                    ValueList.Add(atrList[k].Values[atrList[k].Values.Count - 1].ToString(CultureInfo.InvariantCulture));
                 }
 
                 return string.Join(delim, ValueList.ToArray());
@@ -379,8 +379,8 @@ namespace OsEngine.Robots.Trend
                     pos p = stopPositions.FindLast(x => x.Side == Side.Sell);
                     if (dealsDataDictionary.ContainsKey(p.dealID.ToString()))
                     {
-                        tabel_multi.Add("3" + delim + dealsDataDictionary[position.SignalTypeOpen]);
-                        dealsDataDictionary.Remove(position.SignalTypeOpen);
+                        tabel_multi.Add("3" + delim + dealsDataDictionary[p.dealID.ToString()]);
+                        dealsDataDictionary.Remove(p.dealID.ToString());
                     }
                 }
                 else if (position.ProfitPortfolioPersent < 0 && position.Direction == Side.Sell)
@@ -431,7 +431,15 @@ namespace OsEngine.Robots.Trend
             CanselOldOrders();
             decimal activationPrice = GetTrailingStopPrice(position.Direction, position.EntryPrice,true);
             _tab.CloseAtServerTrailingStop(position, activationPrice, activationPrice);
+            if (position.Direction == Side.Buy)
+            {
+                _tab.CloseAtProfit(position, position.EntryPrice + 2 * position.EntryPrice * TrailStop.ValueDecimal / 100, position.EntryPrice + 2 * position.EntryPrice * TrailStop.ValueDecimal / 100);
+            }
+            else
+            {
+                _tab.CloseAtProfit(position, position.EntryPrice - 2 * position.EntryPrice * TrailStop.ValueDecimal / 100, position.EntryPrice - 2 * position.EntryPrice * TrailStop.ValueDecimal / 100);
 
+            }
 
         }
         private bool ValidateParams()
