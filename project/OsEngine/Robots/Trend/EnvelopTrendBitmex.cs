@@ -656,8 +656,6 @@ namespace OsEngine.Robots.Trend
                 }
             }
             return true;
-
-            return true;
         }
 
         private decimal GetVolume(Side side)

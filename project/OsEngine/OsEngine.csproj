@@ -355,6 +355,7 @@
       <DependentUpon>ProxiesUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="Entity\SecurityLevelOne.cs" />
+    <Compile Include="Entity\ServerTyped.cs" />
     <Compile Include="Entity\StartProgramm.cs" />
     <Compile Include="Entity\StrategyParameter.cs" />
     <Compile Include="Entity\TimeFrameBuilder.cs" />
@@ -739,6 +740,7 @@
     <Compile Include="Robots\High Frequency\Fisher.cs" />
     <Compile Include="Robots\CounterTrend\MovingChanelFlat.cs" />
     <Compile Include="Robots\High Frequency\HighFrequencyTrader.cs" />
+    <Compile Include="Robots\MarketMaker\ClassicArbitrageHFT.cs" />
     <Compile Include="Robots\MarketMaker\PairTraderSimple.cs" />
     <Compile Include="Robots\MarketMaker\PairTraderSimpleUi.xaml.cs">
       <DependentUpon>PairTraderSimpleUi.xaml</DependentUpon>
