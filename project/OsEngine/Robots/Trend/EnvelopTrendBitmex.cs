@@ -431,13 +431,15 @@ namespace OsEngine.Robots.Trend
             CanselOldOrders();
             decimal activationPrice = GetTrailingStopPrice(position.Direction, position.EntryPrice,true);
             _tab.CloseAtServerTrailingStop(position, activationPrice, activationPrice);
+            decimal profit = position.EntryPrice * MinProfitTraling.ValueDecimal / 100;
             if (position.Direction == Side.Buy)
             {
-                _tab.CloseAtProfit(position, position.EntryPrice + 2 * position.EntryPrice * TrailStop.ValueDecimal / 100, position.EntryPrice + 2 * position.EntryPrice * TrailStop.ValueDecimal / 100);
+                
+                _tab.CloseAtProfit(position, position.EntryPrice + profit, position.EntryPrice + profit);
             }
             else
             {
-                _tab.CloseAtProfit(position, position.EntryPrice - 2 * position.EntryPrice * TrailStop.ValueDecimal / 100, position.EntryPrice - 2 * position.EntryPrice * TrailStop.ValueDecimal / 100);
+                _tab.CloseAtProfit(position, position.EntryPrice - profit, position.EntryPrice - profit);
 
             }
 

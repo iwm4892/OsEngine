@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
+using System.Linq;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Entity;
 using OsEngine.Market;
@@ -21,41 +23,65 @@ namespace OsEngine.Robots.MarketMaker
         {
             TabCreate(BotTabType.Index);
             _tabIndex = TabsIndex[0];
+            _tabIndex.SpreadChangeEvent += _tabIndex_SpreadChangeEvent;
+            _tabIndex.UserFormula = "A0/A1";
+
+            _envelop = new Envelops(name + "Envelop", false);
+            _envelop = (Envelops)_tabIndex.CreateCandleIndicator(_envelop, "Prime");
+            _envelop.Save();
 
             TabCreate(BotTabType.Simple);
             _tab1 = TabsSimple[0];
             TabCreate(BotTabType.Simple);
             _tab2 = TabsSimple[1];
-            _tabIndex.SpreadChangeEvent += _tabIndex_SpreadChangeEvent;
 
             _tab1.PositionOpeningSuccesEvent += _PositionOpeningSuccesEvent;
             _tab2.PositionOpeningSuccesEvent += _PositionOpeningSuccesEvent;
 
-            Analiser = new MarketDepthSpreadAnaliser();
-            Analiser.addTab(_tab1);
-            Analiser.addTab(_tab2);
-            Analiser.SpreadChangeEvent += Analiser_SpreadChangeEvent;
-
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On", "OnlyLong", "OnlyShort", "OnlyClosePosition" });
-            
-            Volume1 = CreateParameter("Volume1", 3m, 1, 50, 1);
-            Volume2 = CreateParameter("Volume2", 3m, 1, 50, 1);
+            DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
             minSpread = CreateParameter("minSpread", 0.4m, 0.1m, 3, 0.05m);
             minProfit = CreateParameter("minProfit", 0.3m, 0.1m, 3, 0.05m);
 
             Slippage = CreateParameter("Slipage", 0, 0, 20, 1);
             ParametrsChangeByUser += ArbitrageIndex_ParametrsChangeByUser;
-        }
 
-        private void Analiser_SpreadChangeEvent(decimal obj)
-        {
-            Console.WriteLine("Spread: " + obj);
+            EnvelopDeviation = CreateParameter("Envelop Deviation", 0.3m, 5m, 10, 0.3m);
+            EnvelopMovingLength = CreateParameter("Envelop Moving Length", 10, 5, 200, 5);
+
+            _envelop.Deviation = EnvelopDeviation.ValueDecimal;
+            _envelop.MovingAverage.Lenght = EnvelopMovingLength.ValueInt;
+
+            VolumeDecimals1 = CreateParameter("Volume1 Decimals", 0, 0, 20, 1);
+            VolumeDecimals2 = CreateParameter("Volume2 Decimals", 0, 0, 20, 1);
+
         }
+        /// <summary>
+        /// Envelop deviation from center moving average 
+        /// Envelop отклонение от скользящей средней
+        /// </summary>
+        public StrategyParameterDecimal EnvelopDeviation;
+
+        /// <summary>
+        /// moving average length in Envelop 
+        /// длинна скользящей средней в конверте
+        /// </summary>
+        public StrategyParameterInt EnvelopMovingLength;
+
+        private Envelops _envelop;
+        private decimal _lastUp;
+        private decimal _lastDown;
+        private decimal _lastClose;
+        /// <summary>
+        /// Вылюта депозита (первая или вторая валюта валютной пары)
+        /// </summary>
+        private StrategyParameterString DepoCurrency;
 
         private void _PositionOpeningSuccesEvent(Position obj)
         {
-            obj.ComissionValue = 0.075m;
+            //obj.ComissionValue = 0.075m;
+            //obj.ComissionType = ComissionType.Percent;
             //throw new System.NotImplementedException();
         }
 
@@ -70,74 +96,161 @@ namespace OsEngine.Robots.MarketMaker
             {
                 return;
             }
+            if (_LastCandleTime != candles[candles.Count - 1].TimeStart)
+            {
+                _LastCandleTime = candles[candles.Count - 1].TimeStart;
+            }
+            else
+            {
+                return;
+            }
+
+            _envelop.Process(candles);
+            _lastUp = _envelop.ValuesUp.Last();
+            _lastDown = _envelop.ValuesDown.Last();
+            _lastClose = candles.Last().Close;
+            decimal _center = (_lastUp+_lastDown)/2;
+
             List<Position> positions1 = _tab1.PositionsOpenAll;
             List<Position> positions2 = _tab2.PositionsOpenAll;
 
             decimal pr1 = _tab1.CandlesAll[_tab1.CandlesAll.Count - 1].Close;
             decimal pr2 = _tab2.CandlesAll[_tab2.CandlesAll.Count - 1].Close;
-            decimal profit = 0.000000000m;
+            decimal vol1 = GetVol(GetBalance(_tab1) / GetPrice(_tab1,pr1),1);
+            decimal vol2 = GetVol(GetBalance(_tab2) / GetPrice(_tab2, pr2),2);
+            
+            if (vol1 == 0 || vol2 == 0) return;
+
             if (positions1.Count == 0 && positions2.Count == 0)
             {
-                if (candles[candles.Count - 1].Close > minSpread.ValueDecimal || candles[candles.Count - 1].Close < -minSpread.ValueDecimal)
+                if (_lastClose >_lastUp)
                 {
                     if (pr1 > pr2)
                     {
-                        _tab1.SellAtMarket(Volume1.ValueDecimal);
-                        _tab2.BuyAtMarket(Volume2.ValueDecimal);
+                        _tab1.SellAtMarket(vol1);
+                        _tab2.BuyAtMarket(vol2);
                     }
                     else
                     {
-                        _tab1.BuyAtMarket(Volume1.ValueDecimal);
-                        _tab2.SellAtMarket(Volume2.ValueDecimal);
+                        _tab1.BuyAtMarket(vol1);
+                        _tab2.SellAtMarket(vol2);
                     }
+                }
+                if(_lastClose < _lastDown)
+                {
+                    if (pr1 > pr2)
+                    {
+                        _tab1.BuyAtMarket(vol1);
+                        _tab2.SellAtMarket(vol2);
+                    }
+                    else
+                    {
+                        _tab1.SellAtMarket(vol1);
+                        _tab2.BuyAtMarket(vol2);
+                    }
+
                 }
             }
             else
             {
-                if (positions1[0].Direction == Side.Buy)
+                if(
+                    (_lastClose >_center && candles[candles.Count-2].Close <_center)
+                    || (_lastClose < _center && candles[candles.Count - 2].Close > _center)
+                  )
                 {
-                    if (positions1[0].State != PositionStateType.Open ||
-                        positions2[0].State != PositionStateType.Open)
-                    {
-                        return;
-                    }
-                    pr1 = _tab1.PriceBestBid;
-                    pr2 = _tab2.PriceBestAsk;
-                    profit = (pr1 - positions1[0].EntryPrice) / positions1[0].EntryPrice + (positions2[0].EntryPrice - pr2) / positions2[0].EntryPrice;
-                    if (profit > minProfit.ValueDecimal/100)
-                    {
-                        _tab1.CloseAllAtMarket();
-                        _tab2.CloseAllAtMarket();
-                    }
+                    _tab1.CloseAllAtMarket();
+                    _tab2.CloseAllAtMarket();
+                }
 
-                }
-                if (positions1[0].Direction == Side.Sell)
-                {
-                    if (positions1[0].State != PositionStateType.Open ||
-                        positions2[0].State != PositionStateType.Open)
-                    {
-                        return;
-                    }
-                    pr1 = _tab1.PriceBestAsk;
-                    pr2 = _tab2.PriceBestBid;
-                    profit = (positions1[0].EntryPrice - pr1) / positions1[0].EntryPrice + (pr2 - positions2[0].EntryPrice) / positions2[0].EntryPrice;
-                    if ( profit > minProfit.ValueDecimal/100)
-                    {
-                        _tab1.CloseAllAtMarket();
-                        _tab2.CloseAllAtMarket();
-                    }
-                }
-                Console.WriteLine("profit: " + profit);
             }
 
         }
+        private decimal GetVol(decimal v,int ind)
+        {
+                CultureInfo culture = new CultureInfo("ru-RU");
+                string[] _v = v.ToString(culture).Split(',');
+            if (ind == 1)
+            {
+                return (_v[0] + "," + _v[1].Substring(0, VolumeDecimals1.ValueInt)).ToDecimal();
+            }
+            if (ind == 2)
+            {
+                return (_v[0] + "," + _v[1].Substring(0, VolumeDecimals2.ValueInt)).ToDecimal();
+            }
+            return 0;
 
+        }
+
+        private decimal GetPrice(BotTabSimple _tab, decimal price)
+        {
+            if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
+            {
+                if (_tab.Securiti.Name == "ETHUSD")
+                {
+                    return price * 0.000001m;
+                }
+            }
+
+            if (DepoCurrency.ValueString == "Currency2")
+            {
+                return price;
+            }
+            else
+            {
+                return 1 / price;
+            }
+        }
+        private decimal GetBalance(BotTabSimple _tab)
+        {
+            if (_tab.Connector.MyServer.ServerType == ServerType.Tester ||
+                _tab.Connector.MyServer.ServerType == ServerType.Optimizer)
+            {
+                if (_tab.Portfolio.ValueBlocked != 0)
+                {
+                    Console.WriteLine("Заблокировано " + _tab.Portfolio.ValueBlocked);
+                }
+                return _tab.Portfolio.ValueCurrent;
+            }
+            if (_tab.Connector.MyServer.ServerType == ServerType.BinanceFutures)
+            {
+                List<PositionOnBoard> bal = _tab.Portfolio.GetPositionOnBoard();
+                if (bal != null && bal.Count > 0)
+                {
+                    PositionOnBoard b = bal.FindLast(x => x.SecurityNameCode == "USDT");
+                    if (b != null)
+                    {
+                        return b.ValueCurrent;
+                    }
+                }
+            }
+            if (_tab.Connector.MyServer.ServerType == ServerType.Binance)
+            {
+                List<PositionOnBoard> bal = _tab.Portfolio.GetPositionOnBoard();
+                if (bal != null && bal.Count > 0)
+                {
+                    PositionOnBoard b = bal.FindLast(x => x.SecurityNameCode == _tab.Securiti.NameClass);
+                    if (b != null)
+                    {
+                        return b.ValueCurrent;
+                    }
+                }
+            }
+            if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
+            {
+                return _tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked;
+            }
+            return 0;
+        }
         /// <summary>
         /// user change params
         /// пользователь изменил параметр
         /// </summary>
         void ArbitrageIndex_ParametrsChangeByUser()
         {
+            _envelop.Deviation = EnvelopDeviation.ValueDecimal;
+            _envelop.MovingAverage.Lenght = EnvelopMovingLength.ValueInt;
+            _envelop.Save();
+            _envelop.Reload();
         }
 
         /// <summary>
@@ -184,18 +297,25 @@ namespace OsEngine.Robots.MarketMaker
         /// </summary>
         public StrategyParameterString Regime;
 
-        /// <summary>
-        /// volume
-        /// объём исполняемый в одной сделке
-        /// </summary>
-        public StrategyParameterDecimal Volume1;
-        public StrategyParameterDecimal Volume2;
 
         public StrategyParameterDecimal minSpread;
 
         public StrategyParameterDecimal minProfit;
 
-        private MarketDepthSpreadAnaliser Analiser;
+        /// <summary>
+        /// Количество знаков после запятой в объеме
+        /// </summary>
+        public StrategyParameterInt VolumeDecimals1;
+        /// <summary>
+        /// Количество знаков после запятой в объеме
+        /// </summary>
+        public StrategyParameterInt VolumeDecimals2;
+
+        /// <summary>
+        /// Заглушка от повторного срабатывания
+        /// </summary>
+        private DateTime _LastCandleTime;
+
         // logic логика
 
 
