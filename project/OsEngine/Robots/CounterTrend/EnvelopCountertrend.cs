@@ -16,6 +16,7 @@ using System.Threading;
 using System.Linq;
 using OsEngine.OsTrader;
 using SmartCOM4Lib;
+using System.Globalization;
 
 namespace OsEngine.Robots.Trend
 {
@@ -183,6 +184,10 @@ namespace OsEngine.Robots.Trend
         /// Максимальное количество одновременно открытых позиций
         /// </summary>
         private StrategyParameterInt MaxPosition;
+        /// <summary>
+        /// Датап последнего выставленного ордера
+        /// </summary>
+        private DateTime _lastTradeDate;
 
         // trade logic
         private void Logic()
@@ -409,9 +414,18 @@ namespace OsEngine.Robots.Trend
             }
             
         }
+        
         private void LogicOpenPosition(List<Candle> candles)
         {
-           
+            if (_lastTradeDate.AddSeconds(2) > DateTime.Now)
+            {
+                return;
+            }
+            else
+            {
+                _lastTradeDate = DateTime.Now;
+            }
+
             if(_lastMa<_lastDown || _lastMa > _lastUp)
             {
                 return;
@@ -619,19 +633,21 @@ namespace OsEngine.Robots.Trend
                 return 1 / price;
             }
         }
+
         private decimal GetVol(decimal v)
         {
-            if (isContract.ValueBool)
+            if (isContract.ValueBool || VolumeDecimals.ValueInt == 0)
             {
                 return (int)v;
             }
             else
             {
-                decimal _v = (long)(v * (int)Math.Pow(10, VolumeDecimals.ValueInt));
-                return _v / (decimal)Math.Pow(10, VolumeDecimals.ValueInt);
-                //return Math.Round(v, VolumeDecimals.ValueInt, MidpointRounding.AwayFromZero);
+                CultureInfo culture = new CultureInfo("ru-RU");
+                string[] _v = v.ToString(culture).Split(',');
+                return (_v[0] + "," + _v[1].Substring(0, Math.Min(VolumeDecimals.ValueInt, _v[1].Length))).ToDecimal();
             }
         }
+
         private decimal GetBalance()
         {
             if (_tab.Connector.MyServer.ServerType == ServerType.Tester ||

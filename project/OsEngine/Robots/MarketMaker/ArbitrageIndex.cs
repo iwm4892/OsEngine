@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Entity;
+using OsEngine.Indicators;
 using OsEngine.Market;
 using OsEngine.OsTrader.Panels;
 using OsEngine.OsTrader.Panels.Tab;
@@ -38,6 +39,7 @@ namespace OsEngine.Robots.MarketMaker
             _tab1.PositionOpeningSuccesEvent += _PositionOpeningSuccesEvent;
             _tab2.PositionOpeningSuccesEvent += _PositionOpeningSuccesEvent;
 
+            
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On", "OnlyLong", "OnlyShort", "OnlyClosePosition" });
             DepoCurrency = CreateParameter("DepoCurrency", "Currency2", new[] { "Currency1", "Currency2" });
 
@@ -56,6 +58,17 @@ namespace OsEngine.Robots.MarketMaker
             VolumeDecimals1 = CreateParameter("Volume1 Decimals", 0, 0, 20, 1);
             VolumeDecimals2 = CreateParameter("Volume2 Decimals", 0, 0, 20, 1);
 
+            MaDay1 = IndicatorsFactory.CreateIndicatorByName("Sma", name + "MaDay1", false);
+            MaDay1 = (Aindicator)_tab1.CreateCandleIndicator(MaDay1, "Prime");
+            MaDay1.ParametersDigit[0].Value = 24;
+            MaDay1.Save();
+            
+            MaDay2 = IndicatorsFactory.CreateIndicatorByName("Sma", name + "MaDay2", false);
+            MaDay2 = (Aindicator)_tab2.CreateCandleIndicator(MaDay2, "Prime");
+            MaDay2.ParametersDigit[0].Value = 24;
+            MaDay2.Save();
+
+
         }
         /// <summary>
         /// Envelop deviation from center moving average 
@@ -73,6 +86,17 @@ namespace OsEngine.Robots.MarketMaker
         private decimal _lastUp;
         private decimal _lastDown;
         private decimal _lastClose;
+
+        private Aindicator MaDay1;
+        private Aindicator MaDay2;
+        private decimal _lastMa1;
+        private decimal _lastMa2;
+
+        private decimal pr1;
+        private decimal pr2;
+        private decimal vol1;
+        private decimal vol2;
+
         /// <summary>
         /// Вылюта депозита (первая или вторая валюта валютной пары)
         /// </summary>
@@ -109,7 +133,14 @@ namespace OsEngine.Robots.MarketMaker
             _lastUp = _envelop.ValuesUp.Last();
             _lastDown = _envelop.ValuesDown.Last();
             _lastClose = candles.Last().Close;
-            decimal _center = (_lastUp+_lastDown)/2;
+
+            _lastMa1 = MaDay1.DataSeries[0].Values.Last();
+            _lastMa2 = MaDay2.DataSeries[0].Values.Last();
+
+            if (_lastUp == 0 || _lastDown == 0 || _lastClose == 0 || _lastMa1 == 0 || _lastMa2 == 0)
+            {
+                return;
+            }
 
             List<Position> positions1 = _tab1.PositionsOpenAll;
             List<Position> positions2 = _tab2.PositionsOpenAll;
@@ -123,62 +154,74 @@ namespace OsEngine.Robots.MarketMaker
 
             if (positions1.Count == 0 && positions2.Count == 0)
             {
-                if (_lastClose >_lastUp)
-                {
-                    if (pr1 > pr2)
-                    {
-                        _tab1.SellAtMarket(vol1);
-                        _tab2.BuyAtMarket(vol2);
-                    }
-                    else
-                    {
-                        _tab1.BuyAtMarket(vol1);
-                        _tab2.SellAtMarket(vol2);
-                    }
-                }
-                if(_lastClose < _lastDown)
-                {
-                    if (pr1 > pr2)
-                    {
-                        _tab1.BuyAtMarket(vol1);
-                        _tab2.SellAtMarket(vol2);
-                    }
-                    else
-                    {
-                        _tab1.SellAtMarket(vol1);
-                        _tab2.BuyAtMarket(vol2);
-                    }
-
-                }
+                LogicOpenPosition();
             }
             else
             {
-                if(
-                    (_lastClose >_center && candles[candles.Count-2].Close <_center)
-                    || (_lastClose < _center && candles[candles.Count - 2].Close > _center)
-                  )
-                {
-                    _tab1.CloseAllAtMarket();
-                    _tab2.CloseAllAtMarket();
-                }
+                LogicClosePosition(candles);
+            }
+        }
+        private void LogicClosePosition(List<Candle> candles)
+        {
+            decimal _center = (_lastUp + _lastDown) / 2;
 
+            if (
+                (_lastClose > _center && candles[candles.Count - 2].Close < _center)
+                || (_lastClose < _center && candles[candles.Count - 2].Close > _center)
+              )
+            {
+                _tab1.CloseAllAtMarket();
+                _tab2.CloseAllAtMarket();
             }
 
         }
+        private void LogicOpenPosition()
+        {
+            if(pr1 > _lastMa1 && pr2<_lastMa2 && _lastClose>_lastUp) 
+            {
+                _tab1.SellAtMarket(vol1);
+                _tab2.BuyAtMarket(vol2);
+            }
+            if (pr1 < _lastMa1 && pr2 > _lastMa2 && _lastClose < _lastDown)
+            {
+                _tab1.BuyAtMarket(vol1);
+                _tab2.SellAtMarket(vol2);
+            }
+
+        }
+
         private decimal GetVol(decimal v,int ind)
         {
-                CultureInfo culture = new CultureInfo("ru-RU");
-                string[] _v = v.ToString(culture).Split(',');
+
+            CultureInfo culture = new CultureInfo("ru-RU");
+            string[] _v = v.ToString(culture).Split(',');
+            if (_v.Count() == 1)
+            {
+                return v;
+            }
             if (ind == 1)
             {
-                return (_v[0] + "," + _v[1].Substring(0, VolumeDecimals1.ValueInt)).ToDecimal();
+                if (VolumeDecimals1.ValueInt == 0)
+                {
+                    return (int)v;
+                }
+                else
+                {
+                    return (_v[0] + "," + _v[1].Substring(0, Math.Min(VolumeDecimals1.ValueInt, _v[1].Length))).ToDecimal();
+                }
             }
             if (ind == 2)
             {
-                return (_v[0] + "," + _v[1].Substring(0, VolumeDecimals2.ValueInt)).ToDecimal();
+                if (VolumeDecimals2.ValueInt == 0)
+                {
+                    return (int)v;
+                }
+                else
+                {
+                    return (_v[0] + "," + _v[1].Substring(0, Math.Min(VolumeDecimals2.ValueInt, _v[1].Length))).ToDecimal();
+                }
             }
             return 0;
-
         }
 
         private decimal GetPrice(BotTabSimple _tab, decimal price)
