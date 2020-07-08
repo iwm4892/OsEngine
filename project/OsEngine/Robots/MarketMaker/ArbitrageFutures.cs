@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using System.Threading;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Entity;
 using OsEngine.Market;
@@ -35,7 +37,7 @@ namespace OsEngine.Robots.MarketMaker
             Analiser.ProfitChangeEvent += Analiser_ProfitChangeEvent;
 
             Regime = CreateParameter("Regime", "Off", new[] { "Off", "On", "OnlyClosePosition" });
-            
+
             minSpread = CreateParameter("minSpread", 0.5m, 0.1m, 3, 0.05m);
             minSpreadAdd = CreateParameter("Добирать при расхождении", 0.5m, 0.1m, 3, 0.05m);
 
@@ -43,16 +45,70 @@ namespace OsEngine.Robots.MarketMaker
 
             Slippage = CreateParameter("Slipage", 0, 0, 20, 1);
             MaxTrade = CreateParameter("MaxTrade", 4, 1, 5, 1);
-            
-            _CountTrade = CreateParameter("Открыто доборов", 0,0, 5, 1);
+
+            _CountTrade = CreateParameter("Открыто доборов", 0, 0, 5, 1);
 
             leverage = CreateParameter("Маржинальное плечо", 1m, 1m, 10, 0.1m);
             isContract = CreateParameter("Торгуем контрактами", false);
             autoCanselTrades = CreateParameter("Принудительно закрывать по времени", true);
 
+            DepoCurrency1 = CreateParameter("Валюта 1", "Currency2", new[] { "Currency1", "Currency2" });
+            DepoCurrency2 = CreateParameter("Валюта 2", "Currency2", new[] { "Currency1", "Currency2" });
+
+            divider1 = CreateParameter("Размер 1 контр.", 1, 1, 100, 1);
+            divider2 = CreateParameter("Размер 2 контр.", 1, 1, 100, 1);
+
             ParametrsChangeByUser += ArbitrageIndex_ParametrsChangeByUser;
+            
+            Thread worker = new Thread(LogicError);
+            worker.IsBackground = true;
+            worker.Start();
 
         }
+        private void LogicError()
+        {
+
+            while (true)
+            {
+                Thread.Sleep(5 * 1000);
+                if (Regime.ValueString == "Off")
+                {
+                    continue;
+                }
+                foreach (var tab in Analiser.Tabs)
+                {
+                    if (!tab.IsConnected
+                    || tab.MarketDepth == null
+                    || tab.MarketDepth.Asks == null || tab.MarketDepth.Asks.Count == 0
+                    || tab.MarketDepth.Bids == null || tab.MarketDepth.Bids.Count == 0
+                    || tab.PriceBestBid == 0 || tab.PriceBestAsk == 0
+                    || tab.CandlesAll == null || tab.CandlesAll.Count == 0) continue;
+
+                    if (tab.Connector.MyServer.ServerType == ServerType.Tester ||
+                        tab.Connector.MyServer.ServerType == ServerType.Optimizer) return;
+                }
+                decimal counttades = 0;
+                _lastTradeTime = DateTime.MinValue;
+                foreach(var tab in Analiser.Tabs)
+                {
+                    counttades += tab.PositionsOpenAll.Count;
+                    if(tab.PositionsLast!= null)
+                    {
+                        if (_lastTradeTime < tab.PositionsLast.TimeOpen) _lastTradeTime = tab.PositionsLast.TimeOpen;
+                        if (_lastTradeTime < tab.PositionsLast.TimeClose) _lastTradeTime = tab.PositionsLast.TimeClose;
+                    }
+                }
+                if(counttades == 1)
+                {
+                    if(_lastTradeTime.ToLocalTime().AddSeconds(10) > DateTime.Now)
+                    {
+                        _tab1.CloseAllAtMarket();
+                        _tab2.CloseAllAtMarket();
+                    }
+                }
+            }
+        }
+        private DateTime _lastTradeTime;
 
         private void Analiser_ProfitChangeEvent(decimal obj)
         {
@@ -67,7 +123,7 @@ namespace OsEngine.Robots.MarketMaker
             ClosePositions(obj);
             //Добор позиции
             if (_CountTrade.ValueInt != 0
-                && - obj > _CountTrade.ValueInt * minSpreadAdd.ValueDecimal
+                && -obj > _CountTrade.ValueInt * minSpreadAdd.ValueDecimal
                 && _CountTrade.ValueInt <= MaxTrade.ValueInt)
             {
                 _tab1.SetNewLogMessage("Profit: " + _tab1.Securiti.Name + ": " + obj, Logging.LogMessageType.Signal);
@@ -87,27 +143,27 @@ namespace OsEngine.Robots.MarketMaker
             {
                 _lastTime = DateTime.Now;
             }
-            else 
+            else
             {
                 return;
             }
 
             Console.WriteLine("Spread: " + obj);
-            if(obj > minSpread.ValueDecimal || obj < -minSpread.ValueDecimal)
+            if (obj > minSpread.ValueDecimal || obj < -minSpread.ValueDecimal)
             {
-                _tab1.SetNewLogMessage("Spread: "+ _tab1.Securiti.Name +": "+ obj,Logging.LogMessageType.Signal);
+                _tab1.SetNewLogMessage("Spread: " + _tab1.Securiti.Name + ": " + obj, Logging.LogMessageType.Signal);
             }
             if (Regime.ValueString == "Off")
             {
                 return;
             }
-            if (_tab1.CandlesAll == null || _tab2.CandlesAll == null ||_tab1.CandlesAll.Count == 0 || _tab2.CandlesAll.Count == 0) return;
+            if (_tab1.CandlesAll == null || _tab2.CandlesAll == null || _tab1.CandlesAll.Count == 0 || _tab2.CandlesAll.Count == 0) return;
 
-            decimal CanTrade=0;
-            foreach(var el in Analiser.Tabs)
+            decimal CanTrade = 0;
+            foreach (var el in Analiser.Tabs)
             {
                 List<Position> openPositions = el.PositionsOpenAll;
-                if(openPositions == null || openPositions.Count == 0)
+                if (openPositions == null || openPositions.Count == 0)
                 {
                     CanTrade += 1;
                 }
@@ -117,22 +173,28 @@ namespace OsEngine.Robots.MarketMaker
                 if (obj > minSpread.ValueDecimal || obj < -minSpread.ValueDecimal)
                 {
                     OpenPositions();
-                     
+
                 }
             }
             if (CanTrade == 0)
             {
                 //ClosePositions();
                 //Добор позиции
-                if(_CountTrade.ValueInt !=0 
-                    && obj > _CountTrade.ValueInt* minSpreadAdd.ValueDecimal
-                    && _CountTrade.ValueInt <=MaxTrade.ValueInt)
+                if (_CountTrade.ValueInt != 0
+                    && obj > _CountTrade.ValueInt * minSpreadAdd.ValueDecimal
+                    && _CountTrade.ValueInt <= MaxTrade.ValueInt)
                 {
                     UpdatePositions();
                 }
             }
 
         }
+        private struct TabVol
+        {
+            public BotTabSimple Tab;
+            public decimal Volume;
+        }
+        private List<TabVol> tabVols = new List<TabVol>();
         private void OpenPositions()
         {
             if (Regime.ValueString == "OnlyClosePosition")
@@ -143,18 +205,34 @@ namespace OsEngine.Robots.MarketMaker
             {
                 return;
             }
+            
+            decimal minbalance = GetMinimalUSDBalance();
+            tabVols.Clear();
+            foreach(var t in Analiser._tabs)
+            {
+                tabVols.Add(new TabVol { Tab = t._tab, Volume = GetTradeVolume(t._tab, minbalance) });
+            }
+            foreach(var el in tabVols)
+            {
+                if (el.Volume == 0) return;
+            }
             foreach (var t in Analiser._tabs)
             {
-                decimal vol = leverage.ValueDecimal * (GetBalance(t._tab)) / GetPrice(t._tab.CandlesAll[t._tab.CandlesAll.Count-1].Close,t._tab) / TabsSimple.Count;
-                if (t.side == Side.Buy)
+                foreach(var el in tabVols)
                 {
-                    t._tab.BuyAtMarket(GetVol(vol,t._tab));
+                    if(t._tab == el.Tab)
+                    {
+                        if (t.side == Side.Buy)
+                        {
+                            t._tab.BuyAtMarket(el.Volume);
+                        }
+                        else
+                        {
+                            t._tab.SellAtMarket(el.Volume);
+                        }
+                    }
                 }
-                else
-                {
-                    t._tab.SellAtMarket(GetVol(vol,t._tab));
-                }
-            }
+           }
             _CountTrade.ValueInt += 1;
         }
         private void UpdatePositions()
@@ -163,18 +241,31 @@ namespace OsEngine.Robots.MarketMaker
             {
                 return;
             }
+            decimal minbalance = GetMinimalUSDBalance();
+            tabVols.Clear();
             foreach (var t in Analiser._tabs)
             {
-
-                decimal vol = leverage.ValueDecimal * (GetBalance(t._tab)) / GetPrice(t._tab.CandlesAll[t._tab.CandlesAll.Count - 1].Close, t._tab) / TabsSimple.Count;
-                
-                if (t.side == Side.Buy)
+                tabVols.Add(new TabVol { Tab = t._tab, Volume = GetTradeVolume(t._tab, minbalance) });
+            }
+            foreach (var el in tabVols)
+            {
+                if (el.Volume == 0) return;
+            }
+            foreach (var t in Analiser._tabs)
+            {
+                foreach (var el in tabVols)
                 {
-                    t._tab.BuyAtMarketToPosition(t._tab.PositionsLast,GetVol(vol, t._tab));
-                }
-                else
-                {
-                    t._tab.SellAtMarketToPosition(t._tab.PositionsLast,GetVol(vol, t._tab));
+                    if (t._tab == el.Tab)
+                    {
+                        if (t.side == Side.Buy)
+                        {
+                            t._tab.BuyAtMarketToPosition(t._tab.PositionsLast, el.Volume);
+                        }
+                        else
+                        {
+                            t._tab.SellAtMarketToPosition(t._tab.PositionsLast, el.Volume);
+                        }
+                    }
                 }
             }
             _CountTrade.ValueInt += 1;
@@ -182,7 +273,7 @@ namespace OsEngine.Robots.MarketMaker
         private void ClosePositions()
         {
             decimal profit = Analiser.GetProfitPersent();
-            ClosePositions(profit);    
+            ClosePositions(profit);
         }
         private void ClosePositions(decimal profit)
         {
@@ -194,34 +285,7 @@ namespace OsEngine.Robots.MarketMaker
                     t.SetNewLogMessage("profit: " + profit, Logging.LogMessageType.Signal);
                 }
             }
-            if (autoCanselTrades.ValueBool)
-            {
-                bool needclose = false;
-                foreach (var t in Analiser.Tabs)
-                {
-                    List<Position> opos = t.PositionsOpenAll;
-                    if (opos != null && opos.Count > 0)
-                    {
-                        foreach (var p in opos)
-                        {
-                            if (p.TimeCreate.AddHours(4) < t.TimeServerCurrent)
-                            {
-                                needclose = true;
-                            }
-                        }
-                    }
-                }
-                if (needclose)
-                {
-                    foreach (var t in Analiser.Tabs)
-                    {
-                        t.CloseAllAtMarket();
-                        t.SetNewLogMessage("profit: " + profit + " закрыта тк жила дольше 4х часов", Logging.LogMessageType.Signal);
-
-                    }
-                }
-            }
-                Console.WriteLine("profit: " + Math.Round(profit, 2));
+            Console.WriteLine("profit: " + Math.Round(profit, 2));
 
         }
         private PositionStateType Status;
@@ -271,7 +335,7 @@ namespace OsEngine.Robots.MarketMaker
         /// режим работы робота
         /// </summary>
         public StrategyParameterString Regime;
-        
+
         /// <summary>
         /// Используемый процент Депозита
         /// </summary>
@@ -295,7 +359,7 @@ namespace OsEngine.Robots.MarketMaker
         /// Плечо
         /// </summary>
         private StrategyParameterDecimal leverage;
-        
+
         /// <summary>
         /// Максимальное количество доборов позиции
         /// </summary>
@@ -305,89 +369,69 @@ namespace OsEngine.Robots.MarketMaker
         /// Текущее количество сделок
         /// </summary>
         private StrategyParameterInt _CountTrade;
-        
+
         /// <summary>
         /// Прикаком спреде добирать позицию
         /// </summary>
-        public StrategyParameterDecimal minSpreadAdd; 
+        public StrategyParameterDecimal minSpreadAdd;
 
-        private decimal GetPrice(decimal price,BotTabSimple _tab)
+        /// <summary>
+        /// Вылюта депозита (первая или вторая валюта валютной пары) 1я панель
+        /// </summary>
+        private StrategyParameterString DepoCurrency1;
+        /// <summary>
+        /// Вылюта депозита (первая или вторая валюта валютной пары) 2я панель
+        /// </summary>
+        private StrategyParameterString DepoCurrency2;
+
+        /// <summary>
+        /// Размер одного контракта панели 1
+        /// </summary>
+        public StrategyParameterInt divider1;
+        /// <summary>
+        /// Размер одного контракта панель 2
+        /// </summary>
+        public StrategyParameterInt divider2;
+
+        private decimal GetRoundVolume(decimal v, BotTabSimple _tab)
         {
-            if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
-            {
-                if (_tab.Securiti.Name == "ETHUSD")
-                {
-                    return price * 0.000001m;
-                }
-            }
-
-            return price;
-        }
-        private decimal GetVol(decimal v,BotTabSimple _tab)
-        {
-            if (isContract.ValueBool)
-            {
-                return (int)v;
-            }
-            else
-            {
-                switch (_tab.Securiti.Name)
-                {
-                    case "ETHUSDT": return Math.Round(v, 3);
-                    case "EOSUSDT": return Math.Round(v, 1);
-                    case "LINKUSDT": return Math.Round(v, 2);
-                    case "XMRUSDT": return Math.Round(v, 3);
-                    case "ATOMUSDT": return Math.Round(v, 2);
-                    case "TRXUSDT": return Math.Round(v, 0);
-                    case "ADAUSDT": return Math.Round(v, 0);
-                    case "BNBUSDT": return Math.Round(v, 2);
-                    case "BTCUSDT": return Math.Round(v, 3);
-                    case "ETCUSDT": return Math.Round(v, 2);
-                    case "BCHUSDT": return Math.Round(v, 3);
-                    case "ZECUSDT": return Math.Round(v, 3);
-                    case "LTCUSDT": return Math.Round(v, 3);
-                    case "XTZUSDT": return Math.Round(v, 1);
-                    case "XRPUSDT": return Math.Round(v, 1);
-                    case "XLMUSDT": return Math.Round(v, 0);
-                    case "ONTUSDT": return Math.Round(v, 1);
-                    case "IOTAUSDT": return Math.Round(v, 1);
-                    case "BATUSDT": return Math.Round(v, 1);
-                    case "VETUSDT": return Math.Round(v, 0);
-                    case "NEOUSDT": return Math.Round(v, 2);
-
-                        
-
-                }
-                return Math.Round(v, 3);
-            }
+            return CryptoUtil.GetRoundVolume(_tab, v);
         }
         private decimal GetBalance(BotTabSimple _tab)
         {
-            //return 300;
-            if (_tab.Connector.MyServer.ServerType == ServerType.Tester ||
-                _tab.Connector.MyServer.ServerType == ServerType.Optimizer)
-            {
-                return _tab.Portfolio.ValueCurrent;
-            }
-            if (_tab.Connector.MyServer.ServerType == ServerType.BinanceFutures)
-            {
-                List<PositionOnBoard> bal = _tab.Portfolio.GetPositionOnBoard();
-                if (bal != null && bal.Count > 0)
-                {
-                    PositionOnBoard b = bal.FindLast(x => x.SecurityNameCode == "USDT");
-                    if (b != null)
-                    {
-                        return b.ValueCurrent;
-                    }
-                }
-            }
-            if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
-            {
-                return _tab.Portfolio.ValueCurrent - _tab.Portfolio.ValueBlocked;
-            }
-            return 0;
+            return CryptoUtil.GetBalance(_tab);
         }
+        private decimal GetUSDBalance(BotTabSimple _tab)
+        {
+            if ((DepoCurrency1.ValueString == "Currency2" && _tab == _tab1)
+                    || (DepoCurrency2.ValueString == "Currency2" && _tab == _tab2))
+            {
+                return GetBalance(_tab);
+            }
+            else
+            {
+                return GetBalance(_tab) * _tab.CandlesAll.Last().Close;
+            }
 
+        }
+        private decimal GetMinimalUSDBalance()
+        {
+            return Math.Min(GetUSDBalance(_tab1), GetUSDBalance(_tab2));
+        }
+        private decimal GetTradeVolume(BotTabSimple tab,decimal minbalance)
+        {
+            decimal vol = leverage.ValueDecimal * minbalance / tab.CandlesAll.Last().Close / TabsSimple.Count;
+            if (tab == _tab1)
+            {
+                vol = vol / divider1.ValueInt;
+            }
+            else
+            {
+                vol = vol / divider2.ValueInt;
+            }
+            vol = GetRoundVolume(vol, tab);
+            return vol;
+        }
 
     }
 }

@@ -13,12 +13,12 @@ namespace OsEngine.Entity
     class CryptoUtil
     {
         /// <summary>
-        /// Округлить на нужно количество знаков
+        /// Округлить на нужное количество знаков
         /// </summary>
         /// <param name="volume">Округляемый объем</param>
         /// <param name="VolumeDecimals">Количество знаков</param>
         /// <returns></returns>
-        static decimal RoundVolume(decimal volume, int VolumeDecimals)
+        public static decimal RoundVolume(decimal volume, int VolumeDecimals)
         {
             if (VolumeDecimals == 0)
             {
@@ -36,7 +36,7 @@ namespace OsEngine.Entity
         /// </summary>
         /// <param name="tab">Панель </param>
         /// <returns></returns>
-        static int GetRoundVolumeDecimals(BotTabSimple tab)
+        public static int GetRoundVolumeDecimals(BotTabSimple tab)
         {
             if (tab.Connector.MyServer.ServerType == ServerType.BinanceFutures)
             {
@@ -70,11 +70,11 @@ namespace OsEngine.Entity
             return 0;
 
         }
-        static decimal GetRoundVolume(BotTabSimple tab,decimal volume)
+        public static decimal GetRoundVolume(BotTabSimple tab,decimal volume)
         {
             return RoundVolume(volume, GetRoundVolumeDecimals(tab));
         }
-        static decimal GetBalance(BotTabSimple tab)
+        public static decimal GetBalance(BotTabSimple tab)
         {
             if (tab.Connector.MyServer.ServerType == ServerType.Tester ||
                 tab.Connector.MyServer.ServerType == ServerType.Optimizer)
