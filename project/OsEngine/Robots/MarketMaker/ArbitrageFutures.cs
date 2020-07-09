@@ -203,7 +203,7 @@ namespace OsEngine.Robots.MarketMaker
             }
             if (!Analiser.CanTrade)
             {
-            //    return;
+                return;
             }
             
             decimal minbalance = GetMinimalUSDBalance();
@@ -239,7 +239,7 @@ namespace OsEngine.Robots.MarketMaker
         {
             if (!Analiser.CanTrade)
             {
-                return;
+             //   return;
             }
             decimal minbalance = GetMinimalUSDBalance();
             tabVols.Clear();
