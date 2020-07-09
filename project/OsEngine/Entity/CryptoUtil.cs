@@ -109,6 +109,18 @@ namespace OsEngine.Entity
                     }
                 }
             }
+            if (tab.Connector.MyServer.ServerType == ServerType.GateIoFutures)
+            {
+                List<PositionOnBoard> bal = tab.Portfolio.GetPositionOnBoard();
+                if (bal != null && bal.Count > 0)
+                {
+                    PositionOnBoard b = bal.FindLast(x => x.SecurityNameCode == "USDT");
+                    if (b != null)
+                    {
+                        return b.ValueCurrent;
+                    }
+                }
+            }
             if (tab.Connector.MyServer.ServerType == ServerType.BitMex)
             {
                 return tab.Portfolio.ValueCurrent - tab.Portfolio.ValueBlocked;
