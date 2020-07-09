@@ -55,8 +55,8 @@ namespace OsEngine.Robots.MarketMaker
             DepoCurrency1 = CreateParameter("Валюта 1", "Currency2", new[] { "Currency1", "Currency2" });
             DepoCurrency2 = CreateParameter("Валюта 2", "Currency2", new[] { "Currency1", "Currency2" });
 
-            divider1 = CreateParameter("Размер 1 контр.", 1, 1, 100, 1);
-            divider2 = CreateParameter("Размер 2 контр.", 1, 1, 100, 1);
+            divider1 = CreateParameter("Размер 1 контр.", 1m, 1m, 100, 1);
+            divider2 = CreateParameter("Размер 2 контр.", 1m, 1m, 100, 1);
 
             ParametrsChangeByUser += ArbitrageIndex_ParametrsChangeByUser;
             
@@ -387,11 +387,11 @@ namespace OsEngine.Robots.MarketMaker
         /// <summary>
         /// Размер одного контракта панели 1
         /// </summary>
-        public StrategyParameterInt divider1;
+        public StrategyParameterDecimal divider1;
         /// <summary>
         /// Размер одного контракта панель 2
         /// </summary>
-        public StrategyParameterInt divider2;
+        public StrategyParameterDecimal divider2;
 
         private decimal GetRoundVolume(decimal v, BotTabSimple _tab)
         {
@@ -423,11 +423,11 @@ namespace OsEngine.Robots.MarketMaker
             decimal vol = leverage.ValueDecimal * minbalance / tab.CandlesAll.Last().Close / TabsSimple.Count;
             if (tab == _tab1)
             {
-                vol = vol / divider1.ValueInt;
+                vol = vol / divider1.ValueDecimal;
             }
             else
             {
-                vol = vol / divider2.ValueInt;
+                vol = vol / divider2.ValueDecimal;
             }
             vol = GetRoundVolume(vol, tab);
             return vol;

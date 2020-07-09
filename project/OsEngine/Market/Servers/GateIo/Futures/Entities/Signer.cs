@@ -65,7 +65,7 @@ namespace OsEngine.Market.Servers.GateIo.Futures.Entities
             sb.Append(bodyHash + "\n");
             sb.Append(timeStamp);
 
-            Console.WriteLine(sb.ToString());
+            //Console.WriteLine(sb.ToString());
 
             return SingData(sb.ToString());
         }
