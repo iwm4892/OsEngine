@@ -153,7 +153,7 @@ namespace OsEngine.Market.Servers.Binance.Futures
         /// cancel order
         /// отозвать ордер
         /// </summary>
-        public void CanсelOrder(Order order)
+        public void CancelOrder(Order order)
         {
             _client.CanсelOrder(order);
         }
@@ -702,11 +702,6 @@ namespace OsEngine.Market.Servers.Binance.Futures
             {
                 LogMessageEvent(message, type);
             }
-        }
-
-        public void CancelOrder(Order order)
-        {
-            
         }
 
         /// <summary>
