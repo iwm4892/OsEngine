@@ -384,12 +384,12 @@ namespace OsEngine.Market.Servers.Optimizer
         /// </summary>
         private void LoadSecurities()
         {
-            if (!Directory.Exists(_activSet))
-            {
-                return;
-            }
             if (_sourceDataType == TesterSourceDataType.Set && !string.IsNullOrWhiteSpace(_activSet))
-            { // Hercules data sets / сеты данных Геркулеса
+            {
+                if (!Directory.Exists(_activSet))
+                {
+                    return;
+                }
                 string[] directories = Directory.GetDirectories(_activSet);
 
                 if (directories.Length == 0)
@@ -417,15 +417,17 @@ namespace OsEngine.Market.Servers.Optimizer
                 {
                     LoadCandleFromFolder(_pathToFolder);
                 }
-                if (TypeTesterData == TesterDataType.Candle)
+                if (TypeTesterData == TesterDataType.TickAllCandleState ||
+                    TypeTesterData == TesterDataType.TickOnlyReadyCandle)
                 {
                     LoadTickFromFolder(_pathToFolder);
                 }
-                if (TypeTesterData == TesterDataType.Candle)
+                if (TypeTesterData == TesterDataType.MarketDepthAllCandleState ||
+                    TypeTesterData == TesterDataType.MarketDepthOnlyReadyCandle)
                 {
                     LoadMarketDepthFromFolder(_pathToFolder);
                 }
-                
+
             }
 
             if (SecuritiesChangeEvent != null)
@@ -617,6 +619,22 @@ namespace OsEngine.Market.Servers.Optimizer
                             {
                                 minPriceStep = 0.0000001m;
                             }
+                            if (lenght == 8 && minPriceStep > 0.00000001m)
+                            {
+                                minPriceStep = 0.00000001m;
+                            }
+                            if (lenght == 9 && minPriceStep > 0.000000001m)
+                            {
+                                minPriceStep = 0.000000001m;
+                            }
+                            if (lenght == 10 && minPriceStep > 0.0000000001m)
+                            {
+                                minPriceStep = 0.0000000001m;
+                            }
+                        
+                            //++
+                            minPriceStep = (decimal)(1 /Math.Pow(10, lenght));
+                            //--
                         }
                         else
                         {
@@ -766,6 +784,11 @@ namespace OsEngine.Market.Servers.Optimizer
 
             List<string[]> array = LoadSecurityDopSettings(folderName + "\\SecuritiesSettings.txt");
 
+            if (array == null)
+            {
+                array = LoadSecurityDopSettings(_activSet + "\\SecuritiesSettings.txt");
+            }
+
             for (int i = 0; array != null && i < array.Count; i++)
             {
                 Security secu = Securities.Find(s => s.Name == array[i][0]);
@@ -896,6 +919,22 @@ namespace OsEngine.Market.Servers.Optimizer
                             {
                                 minPriceStep = 0.0000001m;
                             }
+                            if (lenght == 8 && minPriceStep > 0.00000001m)
+                            {
+                                minPriceStep = 0.00000001m;
+                            }
+                            if (lenght == 9 && minPriceStep > 0.000000001m)
+                            {
+                                minPriceStep = 0.000000001m;
+                            }
+                            if (lenght == 10 && minPriceStep > 0.0000000001m)
+                            {
+                                minPriceStep = 0.0000000001m;
+                            }
+                        
+                            //++
+                            minPriceStep = (decimal)(1 / Math.Pow(10, lenght));
+                            //--
                         }
                         else
                         {
@@ -1133,6 +1172,21 @@ namespace OsEngine.Market.Servers.Optimizer
                             {
                                 minPriceStep = 0.0000001m;
                             }
+                            if (lenght == 8 && minPriceStep > 0.00000001m)
+                            {
+                                minPriceStep = 0.00000001m;
+                            }
+                            if (lenght == 9 && minPriceStep > 0.000000001m)
+                            {
+                                minPriceStep = 0.000000001m;
+                            }
+                            if (lenght == 10 && minPriceStep > 0.0000000001m)
+                            {
+                                minPriceStep = 0.0000000001m;
+                            }
+                            //++
+                            minPriceStep = (decimal)(1 / Math.Pow(10, lenght));
+                            //--
                         }
                         else
                         {
@@ -1526,6 +1580,8 @@ namespace OsEngine.Market.Servers.Optimizer
                         return storage;
                     }
                     storage = LoadCandlesFromFolder(security, timeFrame, timeStart, timeEnd);
+
+                    storage.TimeFrame = timeFrame;
 
                     if (storage == null)
                     {

@@ -60,11 +60,16 @@ namespace OsEngine.Market.Servers
         /// </summary>
         public void SetSeriesToSave(CandleSeries series)
         {
-            if (_series.Find(
-                ser => ser.Specification == series.Specification) == null)
+            for (int i = 0; i < _series.Count; i++)
             {
-                _series.Add(series);
+                if (_series[i].Specification == series.Specification)
+                {
+                    _series.RemoveAt(i);
+                    break;
+                }
             }
+
+            _series.Add(series);
         }
 
         // for saving in one file
@@ -85,7 +90,7 @@ namespace OsEngine.Market.Servers
             {
                 try
                 {
-                    Thread.Sleep(15000);
+                    Thread.Sleep(60000);
 
                     if (MainWindow.ProccesIsWorked == false)
                     {
@@ -152,6 +157,11 @@ namespace OsEngine.Market.Servers
             }
 
             mySaveInfo.InsertCandles(series.CandlesAll);
+
+            if (Directory.Exists(_pathName) == false)
+            {
+                Directory.CreateDirectory(_pathName);
+            }
 
             StreamWriter writer = new StreamWriter(_pathName + "\\" + series.Specification + ".txt");
 

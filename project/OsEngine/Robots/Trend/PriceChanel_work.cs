@@ -93,11 +93,6 @@ namespace OsEngine.Robots.Trend
             Fractail.ParametersDigit[0].Value = Fractaillenth.ValueInt;
             Fractail.Save();
 
-            TrendMA = new MovingAverage(name + "TrendMA", false) { ColorBase = System.Drawing.Color.AntiqueWhite, Lenght = 300, TypePointsToSearch = PriceTypePoints.Close, TypeCalculationAverage = MovingAverageTypeCalculation.Simple };
-            TrendMA = (MovingAverage)_tab.CreateCandleIndicator(TrendMA, "Prime");
-            TrendMA.Lenght = 300;
-            TrendMA.Save();
-
             Thread closerThread = new Thread(CloseFailPosition);
             closerThread.IsBackground = true;
             closerThread.Start();
@@ -256,9 +251,6 @@ namespace OsEngine.Robots.Trend
         private MovingAverage FastMA;
         private MovingAverage SlowMA;
         
-        private MovingAverage TrendMA;
-        
-
         private Aindicator Fractail;
         /// <summary>
         /// Плечо
@@ -297,7 +289,7 @@ namespace OsEngine.Robots.Trend
             _pc.Process(candles);
             _atr.Lenght = LengthAtr.ValueInt;
             _atr.Process(candles);
-
+            Fractail.Process(candles);
             if (_pc.ValuesUp == null || _pc.ValuesDown == null || _atr.Values == null)
             {
                 return;

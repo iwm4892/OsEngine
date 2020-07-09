@@ -15,6 +15,8 @@ using OsEngine.Indicators;
 using System.Threading;
 using System.Linq;
 using OsEngine.OsTrader;
+using SmartCOM4Lib;
+using System.Globalization;
 
 namespace OsEngine.Robots.Trend
 {
@@ -49,6 +51,7 @@ namespace OsEngine.Robots.Trend
             VolumeDecimals = CreateParameter("Volume Decimals", 0, 0, 20, 1);
 
             MinVolume = CreateParameter("MinVolume", 1, 1, 10000, 0.0001m);
+            MaxPosition = CreateParameter("Макс. открытых позиций", 1, 1, 10, 1);
 
             _sma = IndicatorsFactory.CreateIndicatorByName("Sma", name + "Moving", false);
             _sma = (Aindicator)_tab.CreateCandleIndicator(_sma, "Prime");
@@ -172,9 +175,20 @@ namespace OsEngine.Robots.Trend
         // indicators / индикаторы
 
         private Envelops _envelop;
-
+        /// <summary>
+        /// Машка для профита
+        /// </summary>
         private Aindicator _sma;
         private bool _isDisposed;
+        /// <summary>
+        /// Максимальное количество одновременно открытых позиций
+        /// </summary>
+        private StrategyParameterInt MaxPosition;
+        /// <summary>
+        /// Датап последнего выставленного ордера
+        /// </summary>
+        private DateTime _lastTradeDate;
+
         // trade logic
         private void Logic()
         {
@@ -192,7 +206,7 @@ namespace OsEngine.Robots.Trend
 
                 if (_isDisposed)
                 {
-                    return;
+                    continue;
                 }
 
                 if (Regime.ValueString == "Off")
@@ -221,45 +235,60 @@ namespace OsEngine.Robots.Trend
                 {
                     continue;
                 }
-                decimal _lastprice = _tab.CandlesAll[_tab.CandlesAll.Count-1].Close;
-                decimal spread = 0;
-                decimal spreadAver = (_lastUp + _lastDown) / 2;
-                decimal spreadEnv = (_lastUp - _lastDown) / 2;
-                if (_lastprice > spreadAver)
-                {
-                    spread = (_lastUp - _lastprice) / spreadEnv;
-                }
-                else
-                {
-                    spread = ( _lastprice -_lastDown) / spreadEnv;
-                }
+
+                decimal spread = GetSpread();
+                decimal minspread = GetMinSpread();
                 
-                List<Position> positions = _tab.PositionsOpenAll;
-                decimal minspread = 0.4m;
-                if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
-                {
-                    minspread = 0.7m;
-                }
-                if (spread > minspread)
+                if (spread > minspread || _tab.PositionsOpenAll.Count > 1)
                 {
                     CanselAllOrders();
                 }
+
                 if (spread <= minspread)
                 {
-
+                    List<Position> positions = _tab.PositionsOpenAll;
                     if (positions == null || positions.Count == 0)
                     {
                         LogicOpenPosition(_tab.CandlesAll);
                     }
                 }
-                /*
-                CanselAllOrders();
-                CloseAllPositions();
-                OpenOrders();
-                */
             }
         }
-
+        private decimal GetMinSpread()
+        {
+            decimal minspread = 0.4m;
+            if (_tab.Connector.MyServer.ServerType == ServerType.BitMex)
+            {
+                minspread = 0.7m;
+            }
+            return minspread;
+        }
+        public decimal GetSpread()
+        {
+            if(_lastUp == 0 || _lastDown == 0)
+            {
+                return 1;
+            }
+            decimal _lastprice = _tab.CandlesAll[_tab.CandlesAll.Count - 1].Close;
+            decimal spread = 0;
+            decimal spreadAver = (_lastUp + _lastDown) / 2;
+            decimal spreadEnv = (_lastUp - _lastDown) / 2;
+            
+            if (_lastprice > spreadAver)
+            {
+                spread = (_lastUp - _lastprice) / spreadEnv;
+            }
+            else
+            {
+                spread = (_lastprice - _lastDown) / spreadEnv;
+            }
+            if ((Regime.ValueString == "OnlyShort" && _lastprice < spreadAver)
+                || (Regime.ValueString == "OnlyLong" && _lastprice > spreadAver))
+            {
+                spread = 1;
+            }
+            return spread;
+        }
         private void _tab_PositionOpeningSuccesEvent(Position position)
         {
             
@@ -333,10 +362,6 @@ namespace OsEngine.Robots.Trend
             {
                 return;
             }
-            /*
-            _tab.SellAtStopCancel();
-            _tab.BuyAtStopCancel();
-            */
             CanselAllOrders();
             List<Position> positions = _tab.PositionsOpenAll;
 
@@ -347,11 +372,18 @@ namespace OsEngine.Robots.Trend
  
             if (positions == null || positions.Count == 0)
             {
+                /*
                 if (_tab.Connector.MyServer.ServerType == ServerType.Tester ||
                     _tab.Connector.MyServer.ServerType == ServerType.Optimizer)
                 {
+                */
+                    decimal spread = GetSpread();
+                    decimal minspread = GetMinSpread();
+                    if (spread <= minspread)
+                    {
                         LogicOpenPosition(candles);
-                }
+                    }
+                //}
             }
         }
         private void CanselAllOrders()
@@ -382,14 +414,27 @@ namespace OsEngine.Robots.Trend
             }
             
         }
+        
         private void LogicOpenPosition(List<Candle> candles)
         {
-           
+            if (_lastTradeDate.AddSeconds(2) > DateTime.Now)
+            {
+                return;
+            }
+            else
+            {
+                _lastTradeDate = DateTime.Now;
+            }
+
             if(_lastMa<_lastDown || _lastMa > _lastUp)
             {
                 return;
             }
             if (Regime.ValueString == "OnlyClosePosition")
+            {
+                return;
+            }
+            if (!CanTrade())
             {
                 return;
             }
@@ -430,10 +475,6 @@ namespace OsEngine.Robots.Trend
 
 
         }
-        private decimal GetLastFractail(List<decimal> values)
-        {
-            return values.FindLast(x => x != 0);
-        }
         private decimal GetVolume(Side side)
         {
             decimal Laststop = 0;
@@ -465,28 +506,83 @@ namespace OsEngine.Robots.Trend
             {
                 _Vol = VollAll;
             }
-
-            int _maxPositions = (int)(1 / leverage.ValueDecimal);
+                
+            //int _maxPositions = (int)(1 / leverage.ValueDecimal);
             int _posCountNaw = GetOpenPositionsCount();
 
-            if (_maxPositions > 1)
+            if (MaxPosition.ValueInt > 1)
             {
                 
-                if(_posCountNaw >= _maxPositions)
+                if(_posCountNaw >= MaxPosition.ValueInt)
                 {
                     return 0;
                 }
-                _Vol = _Vol / (_maxPositions - _posCountNaw);
+                _Vol = _Vol / (MaxPosition.ValueInt);
             }
-            else
-            {
+            //else
+            //{
                 _Vol = _Vol * leverage.ValueDecimal;
-            }
+            //}
             _Vol = GetVol(_Vol);
             return _Vol;
         }
+        private struct Spreads
+        {
+            public Security Security;
+            public decimal spread;
+        }
+        private List<Spreads> SpredList;
+        private bool CanTrade()
+        {
+            if (_tab.Connector.MyServer.ServerType == ServerType.Optimizer)
+            {
+                return true;
+            }
+
+            if (GetOpenPositionsCount() >= MaxPosition.ValueInt)
+            {
+                return false;
+            }
+            if (SpredList == null)
+            {
+                SpredList = new List<Spreads>();
+            }
+            
+            SpredList.Clear();
+            foreach (var panel in OsTraderMaster.Master._panelsArray)
+            {
+                if (panel.IsConnected && panel.GetNameStrategyType() == this.GetNameStrategyType())
+                {
+                    foreach (var tab in panel.TabsSimple)
+                    {
+                        if (tab.Connector.ServerType == _tab.Connector.ServerType
+                            && tab.Connector.PortfolioName == _tab.Connector.PortfolioName
+                            && tab.CandlesAll!=null)
+                        {
+                            Spreads _sp = new Spreads();
+                            _sp.Security = tab.Securiti;
+                            _sp.spread = ((EnvelopCountertrend) panel).GetSpread();
+                            SpredList.Add(_sp);
+                        }
+                    }
+                }
+            }
+            SpredList.Sort((a, b) => decimal.Compare(a.spread, b.spread));
+            for(int i = 0; i < MaxPosition.ValueInt; i++)
+            {
+                if (_tab.Securiti == SpredList[i].Security)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         private int GetOpenPositionsCount()
         {
+            if(_tab.Connector.MyServer.ServerType == ServerType.Optimizer)
+            {
+                return 0;
+            }
             int result = 0;
             foreach(var panel in OsTraderMaster.Master._panelsArray)
             {
@@ -537,19 +633,21 @@ namespace OsEngine.Robots.Trend
                 return 1 / price;
             }
         }
+
         private decimal GetVol(decimal v)
         {
-            if (isContract.ValueBool)
+            if (isContract.ValueBool || VolumeDecimals.ValueInt == 0)
             {
                 return (int)v;
             }
             else
             {
-                decimal _v = (long)(v * (int)Math.Pow(10, VolumeDecimals.ValueInt));
-                return _v / (decimal)Math.Pow(10, VolumeDecimals.ValueInt);
-                //return Math.Round(v, VolumeDecimals.ValueInt, MidpointRounding.AwayFromZero);
+                CultureInfo culture = new CultureInfo("ru-RU");
+                string[] _v = v.ToString(culture).Split(',');
+                return (_v[0] + "," + _v[1].Substring(0, Math.Min(VolumeDecimals.ValueInt, _v[1].Length))).ToDecimal();
             }
         }
+
         private decimal GetBalance()
         {
             if (_tab.Connector.MyServer.ServerType == ServerType.Tester ||
@@ -584,7 +682,7 @@ namespace OsEngine.Robots.Trend
                         if(_tab.Connector.PortfolioName == "BinanceMargin" && b.ValueCurrent == 0 && b.ValueBlocked != 0)
                         {
                             int _posCountNaw = GetOpenPositionsCount();
-                            if (_posCountNaw >= 3) //тк 3е плечо на маржиналке то ограничимся 3мя позициями
+                            if (_posCountNaw > 3) //тк 3е плечо на маржиналке то ограничимся 3мя позициями
                             {
                                 return 0;
                             }

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Forms.Integration;
 using System.Windows.Shapes;
 using OsEngine.Alerts;
@@ -24,7 +25,7 @@ using OsEngine.OsTrader.Panels;
 using OsEngine.OsTrader.Panels.Tab;
 using OsEngine.OsTrader.RiskManager;
 using OsEngine.Robots;
-using Chart = System.Windows.Forms.DataVisualization.Charting.Chart;
+using Grid = System.Windows.Controls.Grid;
 
 namespace OsEngine.OsTrader
 {
@@ -45,7 +46,8 @@ namespace OsEngine.OsTrader
         /// create a robot manager
         /// создать менеджера роботов
         /// </summary>
-        /// <param name="hostChart">chart area / область для чарта</param>
+        /// <param name="gridChart">chart area wpf / область для чарта</param>
+        /// <param name="hostChart">chart area windows forms / область для чарта</param>
         /// <param name="hostGlass">market depth area / область для стакана</param>
         /// <param name="hostOpenDeals">open positions table area / область для таблицы открытых сделок</param>
         /// <param name="hostCloseDeals">closed positions table area / область для таблицы закрытых сделок</param>
@@ -59,7 +61,7 @@ namespace OsEngine.OsTrader
         /// <param name="textBoxLimitPrice">Textbox with limit price when entering an position / текстБокс с ценой лимитника при вводе заявки</param>
         /// <param name="gridChartControlPanel">grid for chart control panel / грид для панели управления чартом</param>
         /// <param name="startProgram">type of program that requested class creation / тип программы который запросил создание класса</param>
-        public OsTraderMaster(WindowsFormsHost hostChart, WindowsFormsHost hostGlass, WindowsFormsHost hostOpenDeals,
+        public OsTraderMaster(Grid gridChart, WindowsFormsHost hostChart, WindowsFormsHost hostGlass, WindowsFormsHost hostOpenDeals,
             WindowsFormsHost hostCloseDeals, WindowsFormsHost hostAllDeals, WindowsFormsHost hostLogBot, WindowsFormsHost hostLogPrime, Rectangle rectangleAroundChart,
             WindowsFormsHost hostAlerts,
             TabControl tabPanel, TabControl tabBotTab, TextBox textBoxLimitPrice, Grid gridChartControlPanel, StartProgram startProgram)
@@ -88,6 +90,8 @@ namespace OsEngine.OsTrader
             {
                 _tabBotTab.Items.Clear();
             }
+
+            _gridChart = gridChart;
             _textBoxLimitPrice = textBoxLimitPrice;
             _hostChart = hostChart;
             _hostGlass = hostGlass;
@@ -120,11 +124,12 @@ namespace OsEngine.OsTrader
             ReloadRiskJournals();
             _globalController.StartPaint();
 
-            OsTraderMaster.Master = this;
+            Master = this;
         }
 
         private WindowsFormsHost _hostLogPrime;
         private WindowsFormsHost _hostChart;
+        private Grid _gridChart;
         private WindowsFormsHost _hostGlass;
         private WindowsFormsHost _hostOpenDeals;
         private WindowsFormsHost _hostCloseDeals;
@@ -337,10 +342,8 @@ namespace OsEngine.OsTrader
 
                 _activPanel = newActivBot;
 
-                _activPanel.StartPaint(_hostChart, _hostGlass, _hostOpenDeals, _hostCloseDeals, _hostboxLog,
+                _activPanel.StartPaint(_gridChart, _hostChart, _hostGlass, _hostOpenDeals, _hostCloseDeals, _hostboxLog,
                     _rectangleAroundChart, _hostAlerts, _tabBotTab, _textBoxLimitPrice, _gridChartControlPanel);
-
-
 
                 _tabBotNames.SelectionChanged -= _tabBotControl_SelectionChanged;
 
@@ -654,7 +657,7 @@ namespace OsEngine.OsTrader
             {
                 if (_activPanel != null)
                 {
-                    _activPanel.StartPaint(_hostChart, _hostGlass, _hostOpenDeals, _hostCloseDeals, _hostboxLog,
+                    _activPanel.StartPaint(_gridChart, _hostChart, _hostGlass, _hostOpenDeals, _hostCloseDeals, _hostboxLog,
                         _rectangleAroundChart, _hostAlerts, _tabBotTab, _textBoxLimitPrice, _gridChartControlPanel);
                 }
 
@@ -742,7 +745,7 @@ namespace OsEngine.OsTrader
 
                     if (_activPanel != null)
                     {
-                        _activPanel.StartPaint(_hostChart, _hostGlass, _hostOpenDeals, _hostCloseDeals, _hostboxLog,
+                        _activPanel.StartPaint(_gridChart, _hostChart, _hostGlass, _hostOpenDeals, _hostCloseDeals, _hostboxLog,
                             _rectangleAroundChart, _hostAlerts, _tabBotTab, _textBoxLimitPrice, _gridChartControlPanel);
                     }
 
@@ -898,6 +901,24 @@ namespace OsEngine.OsTrader
             catch (Exception error)
             {
                 SendNewLogMessage(error.ToString(), LogMessageType.Error);
+            }
+        }
+
+        public void HotUpdateActiveBot()
+        {
+            SendNewLogMessage(OsLocalization.Trader.Label161, LogMessageType.System);
+            
+            HotUpdateResult<BotPanel> result = HotUpdateManager.Instance.Update(_activPanel);
+            if (HotUpdateResultStatus.Success == result.Status)
+            {
+                ReloadActivBot(result.UpdatedObject);
+                Save();
+                ReloadRiskJournals();
+                SendNewLogMessage(OsLocalization.Trader.Label162, LogMessageType.System);
+            }
+            else
+            {
+                SendNewLogMessage(OsLocalization.Trader.Label163 + $". {result.ErrorMessage}.", LogMessageType.System);
             }
         }
 
@@ -1168,49 +1189,6 @@ namespace OsEngine.OsTrader
                 return false;
             }
             return true;
-        }
-
-        /// <summary>
-        /// get list of charts for by bot name
-        /// получить список чартов по имени бота
-        /// </summary>
-        /// <param name="botName">bot name / имя бота</param>
-        /// <returns>
-        /// chart, tab name, chart information / чарт, имя таба, информация о чарте
-        /// </returns>
-        public List<Tuple<Chart, string, string>> GetCharts(string botName)
-        {
-            List<Tuple<int, Chart, string, string>> charts = new List<Tuple<int, Chart, string, string>>();
-            List<Tuple<Chart, string, string>> orderedCharts = new List<Tuple<Chart, string, string>>();
-
-            BotPanel bot = GetBotByName(botName);
-
-            if (bot == null)
-            {
-                return orderedCharts;
-            }
-
-            foreach (var tab in bot.TabsSimple)
-            {
-                charts.Add(new Tuple<int, Chart, string, string>(tab.TabNum, tab.GetChart(), tab.TabName, tab.GetChartLabel()));
-            }
-
-            foreach (var tab in bot.TabsIndex)
-            {
-                charts.Add(new Tuple<int, Chart, string, string>(tab.TabNum, tab.GetChart(), tab.TabName, tab.GetChartLabel()));
-            }
-
-            foreach (var tab in bot.TabsCluster)
-            {
-                charts.Add(new Tuple<int, Chart, string, string>(tab.TabNum, tab.GetChart(), tab.TabName, ""));
-            }
-
-            foreach (var chart in charts.OrderBy(i => i.Item1))
-            {
-                orderedCharts.Add(new Tuple<Chart, string, string>(chart.Item2, chart.Item3, chart.Item4));
-            }
-
-            return orderedCharts;
         }
 
         /// <summary>

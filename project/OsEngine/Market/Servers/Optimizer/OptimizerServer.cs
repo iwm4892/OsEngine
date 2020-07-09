@@ -125,6 +125,35 @@ namespace OsEngine.Market.Servers.Optimizer
         /// </summary>
         public void Clear()
         {
+            if (_allTrades != null)
+            {
+                for (int i = 0; i < _allTrades.Length; i++)
+                {
+                    _allTrades[i].Clear();
+                }
+                _allTrades = null;
+            }
+            _candleManager.Clear();
+            _candleManager.Dispose();
+            
+            _logMaster.Clear();
+
+            _securities.Clear();
+
+            if (_candleSeriesTesterActivate != null)
+            {
+                for (int i = 0; i < _candleSeriesTesterActivate.Count; i++)
+                {
+                    _candleSeriesTesterActivate[i].Clear();
+                }
+            }
+
+            if (_myTrades != null)
+            {
+                _myTrades.Clear();
+            }
+
+            _storagePrime = null;
             _cleared = true;
         }
         private bool _cleared;
@@ -285,7 +314,7 @@ namespace OsEngine.Market.Servers.Optimizer
         /// </summary>
         private void WorkThreadArea()
         {
-            Thread.Sleep(2000);
+            Thread.Sleep(100);
             while (true)
             {
                 try
@@ -298,7 +327,8 @@ namespace OsEngine.Market.Servers.Optimizer
                         //_candleManager.Clear();
                         _candleManager = null;
 
-                        for (int i = 0; i < _candleSeriesTesterActivate.Count; i++)
+                        for (int i = 0; _candleSeriesTesterActivate != null &&
+                                        i < _candleSeriesTesterActivate.Count; i++)
                         {
                             _candleSeriesTesterActivate[i].Clear();
                         }
@@ -316,7 +346,7 @@ namespace OsEngine.Market.Servers.Optimizer
 
                     if (_testerRegime == TesterRegime.Pause)
                     {
-                        Thread.Sleep(2000);
+                        Thread.Sleep(20);
                         continue;
                     }
 
@@ -365,7 +395,7 @@ namespace OsEngine.Market.Servers.Optimizer
 
             if (newStorage == null)
             {
-                Thread.Sleep(500);
+                Thread.Sleep(200);
                 newStorage = _storagePrime.GetStorageToSecurity(security, timeFrame, timeStart, timeEnd);
 
                 if (newStorage == null)
@@ -1773,7 +1803,7 @@ namespace OsEngine.Market.Servers.Optimizer
 		/// cancel order from the exchange
         /// отозвать ордер с биржи
         /// </summary>
-        public void CanselOrder(Order order)
+        public void CancelOrder(Order order)
         {
             if (ServerStatus == ServerConnectStatus.Disconnect)
             {
@@ -1960,11 +1990,11 @@ namespace OsEngine.Market.Servers.Optimizer
     {
         public SecurityOptimizer()
         {
-            if (ServerMaster.GetServers() != null &&
+            /*if (ServerMaster.GetServers() != null &&
                 ServerMaster.GetServers()[0] != null)
             {
                 ServerMaster.GetServers()[0].NewCandleIncomeEvent += SecurityTester_NewCandleIncomeEvent;
-            }
+            }*/
         }
 
         /// <summary>
@@ -2215,6 +2245,11 @@ namespace OsEngine.Market.Servers.Optimizer
             if (_lastCandleIndex >= Candles.Count)
             {
                 return;
+            }
+
+            if (_lastCandleIndex == 0)
+            {
+                _lastCandle = null;
             }
 
             if (LastCandle != null &&

@@ -112,6 +112,7 @@ namespace OsEngine.Entity
                 if ((tab.PriceBestAsk - tab.CandlesAll[tab.CandlesAll.Count-1].Close)/ tab.CandlesAll[tab.CandlesAll.Count - 1].Close > MaxSpread) return;
                 if ((tab.CandlesAll[tab.CandlesAll.Count - 1].Close - tab.PriceBestBid) / tab.PriceBestBid > MaxSpread) return;
             }
+
             lock (_locker)
             {
                 //CalcIndex();
@@ -460,6 +461,9 @@ namespace OsEngine.Entity
             public Side side;
             public bool Fast;
             public bool Slow;
+            public decimal PriceBestAsk;
+            public decimal PriceBestBid;
+
         }
         /// <summary>
         /// Список таблиц и их изменения

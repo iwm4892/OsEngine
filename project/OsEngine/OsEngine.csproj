@@ -104,6 +104,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Forms.DataVisualization" />
@@ -148,6 +149,7 @@
     </Compile>
     <Compile Include="Charts\CandleChart\Elements\IChartElement.cs" />
     <Compile Include="Charts\CandleChart\Elements\PointElement.cs" />
+    <Compile Include="Charts\CandleChart\IChartPainter.cs" />
     <Compile Include="Charts\CandleChart\Indicators\AccumulationDistribution.cs" />
     <Compile Include="Charts\CandleChart\Indicators\AccumulationDistributionUi.xaml.cs">
       <DependentUpon>AccumulationDistributionUi.xaml</DependentUpon>
@@ -291,6 +293,10 @@
     <Compile Include="Charts\CandleChart\Indicators\StochRsiUi.xaml.cs">
       <DependentUpon>StochRsiUi.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Charts\CandleChart\Indicators\TickVolume.cs" />
+    <Compile Include="Charts\CandleChart\Indicators\TickVolumeUi.xaml.cs">
+      <DependentUpon>TickVolumeUi.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Charts\CandleChart\Indicators\TradeThread.cs" />
     <Compile Include="Charts\CandleChart\Indicators\Trix.cs" />
     <Compile Include="Charts\CandleChart\Indicators\TrixUi.xaml.cs">
@@ -324,7 +330,7 @@
     </Compile>
     <Compile Include="Charts\ClusterChart\ChartClusterMaster.cs" />
     <Compile Include="Charts\ClusterChart\ChartClusterPainter.cs" />
-    <Compile Include="Charts\CandleChart\ChartCandlePainter.cs" />
+    <Compile Include="Charts\CandleChart\WinFormsChartPainter.cs" />
     <Compile Include="Charts\ColorKeeper\ChartMasterColorKeeper.cs" />
     <Compile Include="Charts\CandleChart\ChartCandleMaster.cs" />
     <Compile Include="Charts\CandleChart\Indicators\IndicarotCreateUi.xaml.cs">
@@ -335,6 +341,7 @@
     </Compile>
     <Compile Include="Entity\ClassWork.cs" />
     <Compile Include="Entity\CandleConverter.cs" />
+    <Compile Include="Entity\CryptoUtil.cs" />
     <Compile Include="Entity\DataGridFactory.cs" />
     <Compile Include="Entity\Extensions.cs" />
     <Compile Include="Entity\HorizontalVolume.cs" />
@@ -349,9 +356,11 @@
       <DependentUpon>ProxiesUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="Entity\SecurityLevelOne.cs" />
+    <Compile Include="Entity\ServerTyped.cs" />
     <Compile Include="Entity\StartProgramm.cs" />
     <Compile Include="Entity\StrategyParameter.cs" />
     <Compile Include="Entity\TimeFrameBuilder.cs" />
+    <Compile Include="Entity\Utils\CompressionUtils.cs" />
     <Compile Include="Entity\ClasterData.cs" />
     <Compile Include="Entity\Pattern.cs" />
     <Compile Include="Entity\PreSaveDataSet.cs" />
@@ -363,6 +372,7 @@
     <Compile Include="Indicators\IndicatorParameter.cs" />
     <Compile Include="Indicators\IndicatorsFactory.cs" />
     <Compile Include="Indicators\ScriptSpells.cs" />
+    <Compile Include="Journal\Internal\PositionController.cs" />
     <Compile Include="Journal\JournalUi.xaml.cs">
       <DependentUpon>JournalUi.xaml</DependentUpon>
     </Compile>
@@ -404,6 +414,7 @@
     <Compile Include="Market\Servers\Binance\Futures\BinanceClientFutures.cs" />
     <Compile Include="Market\Servers\Binance\Futures\BinanceServerFutures.cs" />
     <Compile Include="Market\Servers\Binance\Futures\Entity\AccountResponseFutures.cs" />
+    <Compile Include="Market\Servers\Binance\Futures\Entity\AgregatedHistoryTrade.cs" />
     <Compile Include="Market\Servers\Binance\Futures\Entity\BinanceFutureseDepthResponse.cs" />
     <Compile Include="Market\Servers\Binance\Futures\Entity\OrderUpdResponse.cs" />
     <Compile Include="Market\Servers\Binance\Spot\BinanceClientSpot.cs" />
@@ -464,19 +475,64 @@
     <Compile Include="Market\Servers\GateIo\EntityCreators\GatePortfolioCreator.cs" />
     <Compile Include="Market\Servers\GateIo\EntityCreators\GateSecurityCreator.cs" />
     <Compile Include="Market\Servers\GateIo\EntityCreators\GateTradesCreator.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Entities\Converter.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Entities\GfMarketDepthCreator.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Entities\GfOrderCreator.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Entities\GfSecurity.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Entities\PublicUrlBuilder.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Entities\RestRequestBuilder.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Entities\Signer.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Entities\WsRequestBuilder.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\GateIoFuturesServer.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\GateIoFuturesServerPermission.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Request\CreateOrderRequest.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Request\FuturesPing.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\CancelOrderResponese.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\CreateOrderResponse.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\GfAccount.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\GfBaseResponse.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\GfCandle.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\GfMyTrade.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\GfOrders.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\GfPosition.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\GfSubscribeDepthResponse.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\GfTick.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\GfTrade.cs" />
+    <Compile Include="Market\Servers\GateIo\Futures\Response\GfTrades.cs" />
     <Compile Include="Market\Servers\GateIo\GateIoServer.cs" />
     <Compile Include="Market\Servers\Hitbtc\HitbtcClient.cs" />
     <Compile Include="Market\Servers\Hitbtc\HitbtcEntity.cs" />
     <Compile Include="Market\Servers\Hitbtc\HitbtcServer.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiDMClient.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiDMServer.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\Account.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\ApiSignature.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\GZipHelper.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBContractBalanse.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBResponse.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HBWsResponse.cs" />
-    <Compile Include="Market\Servers\HuobiDM\HuobiEntity\HuobiRestApi.cs" />
+    <Compile Include="Market\Servers\Huobi\Entities\GetAccountBalanceResponse.cs" />
+    <Compile Include="Market\Servers\Huobi\Entities\GetAccountInfoResponse.cs" />
+    <Compile Include="Market\Servers\Huobi\Entities\GetSymbolsResponse.cs" />
+    <Compile Include="Market\Servers\Huobi\FuturesSwap\HuobiFuturesSwapServer.cs" />
+    <Compile Include="Market\Servers\Huobi\FuturesSwap\HuobiFuturesSwapServerPermission.cs" />
+    <Compile Include="Market\Servers\Huobi\Futures\Entities\CancelFuturesOrderResponse.cs" />
+    <Compile Include="Market\Servers\Huobi\Futures\Entities\FuturesAccountInfo.cs" />
+    <Compile Include="Market\Servers\Huobi\Futures\Entities\FuturesPing.cs" />
+    <Compile Include="Market\Servers\Huobi\Futures\Entities\FuturesSymbol.cs" />
+    <Compile Include="Market\Servers\Huobi\Futures\Entities\OrderFuturesNotify.cs" />
+    <Compile Include="Market\Servers\Huobi\Futures\Entities\PlaceFuturesOrderResponse.cs" />
+    <Compile Include="Market\Servers\Huobi\Futures\Entities\TradeInfo.cs" />
+    <Compile Include="Market\Servers\Huobi\Futures\HuobiFuturesServer.cs" />
+    <Compile Include="Market\Servers\Huobi\Futures\HuobiFuturesServerPermission.cs" />
+    <Compile Include="Market\Servers\Huobi\Spot\HuobiSpotServerPermission.cs" />
+    <Compile Include="Market\Servers\Huobi\Request\GetRequest.cs" />
+    <Compile Include="Market\Servers\Huobi\Request\PrivateUrlBuilder.cs" />
+    <Compile Include="Market\Servers\Huobi\Request\PublicUrlBuilder.cs" />
+    <Compile Include="Market\Servers\Huobi\Request\Signer.cs" />
+    <Compile Include="Market\Servers\Huobi\Response\CancelOrderByClientResponse.cs" />
+    <Compile Include="Market\Servers\Huobi\Response\GetCandlestickResponse.cs" />
+    <Compile Include="Market\Servers\Huobi\Response\GZipDecompresser.cs" />
+    <Compile Include="Market\Servers\Huobi\Response\MarketDataPingMessage.cs" />
+    <Compile Include="Market\Servers\Huobi\Response\PingMessage.cs" />
+    <Compile Include="Market\Servers\Huobi\Response\PlaceOrderResponse.cs" />
+    <Compile Include="Market\Servers\Huobi\Response\SubscribeDepthResponse.cs" />
+    <Compile Include="Market\Servers\Huobi\Response\SubscribeTradeResponse.cs" />
+    <Compile Include="Market\Servers\Huobi\Response\WebSocketResponseBase.cs" />
+    <Compile Include="Market\Servers\Huobi\Spot\HuobiSpotSecurityCreator.cs" />
+    <Compile Include="Market\Servers\Huobi\Spot\HuobiSpotServer.cs" />
     <Compile Include="Market\Servers\InteractivBrokers\IbClient.cs" />
     <Compile Include="Market\Servers\InteractivBrokers\IbContractStorageUi.xaml.cs">
       <DependentUpon>IbContractStorageUi.xaml</DependentUpon>
@@ -673,6 +729,7 @@
     <Compile Include="OsData\OsDataUi.xaml.cs">
       <DependentUpon>OsDataUi.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OsTrader\HotUpdateManager.cs" />
     <Compile Include="OsTrader\Panels\BotPanelChartUI.xaml.cs">
       <DependentUpon>BotPanelChartUI.xaml</DependentUpon>
     </Compile>
@@ -684,6 +741,7 @@
     <Compile Include="Robots\High Frequency\Fisher.cs" />
     <Compile Include="Robots\CounterTrend\MovingChanelFlat.cs" />
     <Compile Include="Robots\High Frequency\HighFrequencyTrader.cs" />
+    <Compile Include="Robots\MarketMaker\ClassicArbitrageHFT.cs" />
     <Compile Include="Robots\MarketMaker\PairTraderSimple.cs" />
     <Compile Include="Robots\MarketMaker\PairTraderSimpleUi.xaml.cs">
       <DependentUpon>PairTraderSimpleUi.xaml</DependentUpon>
@@ -701,6 +759,7 @@
     <Compile Include="Robots\OnScriptIndicators\PriceChannelVolatility.cs" />
     <Compile Include="Robots\OnScriptIndicators\RsiTrade.cs" />
     <Compile Include="Robots\OnScriptIndicators\RviTrade.cs" />
+    <Compile Include="Robots\OnScriptIndicators\TimeOfDayBot.cs" />
     <Compile Include="Robots\MarketMaker\ArbitrageFutures.cs" />
     <Compile Include="Robots\MarketMaker\ArbitrageIndex.cs" />
     <Compile Include="Robots\Trend\FractialMA_work .cs" />
@@ -770,7 +829,6 @@
     <Compile Include="OsTrader\RiskManager\RiskManagerUi.xaml.cs">
       <DependentUpon>RiskManagerUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Journal\Internal\PositionController.cs" />
     <Compile Include="OsTrader\Panels\BotPanel.cs" />
     <Compile Include="Robots\MarketMaker\MarketMakerBotUi.xaml.cs">
       <DependentUpon>MarketMakerBotUi.xaml</DependentUpon>
@@ -963,6 +1021,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Charts\CandleChart\Indicators\StochRsiUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Charts\CandleChart\Indicators\TickVolumeUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1400,7 +1462,9 @@
   <ItemGroup>
     <Resource Include="Images\MainWIndow\gear.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Market\Servers\Huobi\FuturesSwap\Entities\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

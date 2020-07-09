@@ -50,6 +50,7 @@ namespace OsEngine.Robots
             result.Add("Williams Band");
             result.Add("TwoLegArbitrage");
             result.Add("ThreeSoldier");
+            result.Add("TimeOfDayBot");
             result.Add("PriceChannelTrade");
             result.Add("SmaStochastic");
             result.Add("ClusterCountertrend");
@@ -125,6 +126,10 @@ namespace OsEngine.Robots
             }
 
             
+            if (nameClass == "TimeOfDayBot")
+            {
+                bot = new TimeOfDayBot(name, startProgram);
+            }
             if (nameClass == "Fisher")
             {
                 bot = new Fisher(name, startProgram);
@@ -567,30 +572,84 @@ namespace OsEngine.Robots
             return result;
         }
 
+// Names Include Bots With Params
 
-        // Names Include Bots With Params
-
-        public static List<string> GetNamesStrategyWithParameters()
+        public static List<string> GetNamesStrategyWithParametersSync()
         {
-            if (_searchIsStarted == false)
+            if (NeadToReload == false &&
+                (_namesWithParam == null ||
+                 _namesWithParam.Count == 0))
             {
-                _searchIsStarted = true;
-
-                for (int i = 0; i < 3; i++)
-                {
-                    Thread worker = new Thread(LoadNamesWithParam);
-                    worker.Name = i.ToString();
-                    worker.IsBackground = true;
-                    worker.Start();
-                }
+                LoadBotsNames();
             }
+
+            if (NeadToReload == false &&
+                _namesWithParam != null &&
+                _namesWithParam.Count != 0)
+            {
+                return _namesWithParam;
+            }
+
+            NeadToReload = false;
+
+            List<Thread> workers = new List<Thread>();
+
+            _namesWithParam = new List<string>();
+
+            for (int i = 0; i < 3; i++)
+            {
+                Thread worker = new Thread(LoadNamesWithParam);
+                worker.Name = i.ToString();
+                workers.Add(worker);
+                worker.Start();
+            }
+
+            while (workers.Find(w => w.IsAlive) != null)
+            {
+                Thread.Sleep(100);
+            }
+
+            SaveBotsNames();
 
             return _namesWithParam;
         }
 
-        private static List<string> _namesWithParam = new List<string>();
+        public static bool NeadToReload;
 
-        private static bool _searchIsStarted;
+        private static void LoadBotsNames()
+        {
+            _namesWithParam.Clear();
+
+            if (File.Exists("Engine\\OptimizerBots.txt") == false)
+            {
+                return;
+            }
+
+            using (StreamReader reader = new StreamReader("Engine\\OptimizerBots.txt"))
+            {
+                while (reader.EndOfStream == false)
+                {
+                    _namesWithParam.Add(reader.ReadLine());
+
+                }
+                reader.Close();
+            }
+        }
+
+        private static void SaveBotsNames()
+        {
+            using (StreamWriter writer = new StreamWriter("Engine\\OptimizerBots.txt"))
+            {
+                for (int i = 0; i < _namesWithParam.Count; i++)
+                {
+                    writer.WriteLine(_namesWithParam[i]);
+                }
+
+                writer.Close();
+            }
+        }
+
+        private static List<string> _namesWithParam = new List<string>();
 
         private static void LoadNamesWithParam()
         {

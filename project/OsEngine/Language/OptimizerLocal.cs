@@ -3,12 +3,6 @@
  * Ваши права на использование кода регулируются данной лицензией http://o-s-a.net/doc/license_simple_engine.pdf
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace OsEngine.Language
 {
     public class OptimizerLocal
@@ -30,8 +24,8 @@ namespace OsEngine.Language
             "Ru:Запрошено экстренное завершение оптимизации. Ждите остановки процессов_");
 
         public string Message4 => OsLocalization.ConvertToLocString(
-            "Eng:The number of bots for tests -_" +
-            "Ru:Количество ботов для обхода-_");
+            "Eng:Max count of bots for tests -_" +
+            "Ru:Максимальное количество ботов для обхода-_");
 
         public string Message5 => OsLocalization.ConvertToLocString(
             "Eng:InSample stage is complete. Filtering data ..._" +
@@ -319,6 +313,11 @@ namespace OsEngine.Language
         public string Label35 => OsLocalization.ConvertToLocString(
             "Eng:Select_" +
             "Ru:Выбрать_");
+
+        public string Label36 => OsLocalization.ConvertToLocString(
+            "Eng:Iteration count_" +
+            "Ru:Кол-во итераций_");
+        
 
     }
 }

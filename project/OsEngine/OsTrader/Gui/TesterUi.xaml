@@ -36,6 +36,7 @@
                         <Button Name="ButtonDeleteBot"  Content="Delete" HorizontalAlignment="Left" Margin="172,70,0,0" VerticalAlignment="Top" Width="55" Click="ButtonDeleteBot_Click"/>
                         <Label Name="LabelBotControl" Content="Bot control" HorizontalAlignment="Left" Margin="10,190,0,0" VerticalAlignment="Top"  FontSize="18" Height="26"/>
                         <Button Name="ButtonStrategSettings" Content="Position support"  HorizontalAlignment="Left" Margin="65,337,0,0" VerticalAlignment="Top" Width="161" Click="buttonStrategManualSettings_Click"/>
+                        <Button Name="ButtonUpdateBot" Content="Update Bot"  HorizontalAlignment="Left" Margin="66,384,0,0" VerticalAlignment="Top" Width="161" Click="ButtonUpdateBot_Click" ToolTip="Hot update changes from source file"/>
                         <Button Name="ButtonStrategSettingsIndividual" Content="Bot trade settings" HorizontalAlignment="Left" Margin="66,230,0,0" VerticalAlignment="Top" Width="161" Click="ButtonStrategIndividualSettings_Click" Height="24"/>
                         <Button Name="ButtonRedactTab" Content="Data settings"  HorizontalAlignment="Left" Margin="66,283,0,0" VerticalAlignment="Top" Width="161" Click="ButtonRedactTab_Click"  />
                         <Button Name="ButtonJournalCommunity" Content="Journal" HorizontalAlignment="Left" Margin="66,97,0,0" VerticalAlignment="Top" Width="161" Click="ButtonJournalCommunity_Click"/>
@@ -115,6 +116,7 @@
         </TabControl>
         <Grid Grid.Row="0" x:Name="GreedChartPanel" Margin="0,26,308,10">
             <Rectangle x:Name="RectChart"/>
+            <Grid x:Name="GridChart"/>
             <WindowsFormsHost x:Name="ChartHostPanel" Margin="26,23,0,0"/>
             <TabControl x:Name="TabControlBotTab" HorizontalAlignment="Left" TabStripPlacement="Left" Margin="0,33,0,10" Width="28">
                 <TabItem Header=" 1" Margin="0,0,0,0" >

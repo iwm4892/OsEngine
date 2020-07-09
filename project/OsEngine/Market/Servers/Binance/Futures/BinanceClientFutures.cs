@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 using OsEngine.Entity;
+using OsEngine.Language;
 using OsEngine.Logging;
 using OsEngine.Market.Servers.Binance.Futures.Entity;
 using OsEngine.Market.Servers.Binance.Spot.BinanceSpotEntity;
@@ -487,56 +488,83 @@ namespace OsEngine.Market.Servers.Binance.Futures
             return null;
         }
 
-        public List<Trade> GetTickHistoryToSecurity(Security security, string lastId)
+        private object _locker = new object();
+
+        public List<Trade> GetTickHistoryToSecurity(string security, DateTime endTime)
         {
-            try
+            lock (_locker)
             {
-
-                List<Trade> newTrades = new List<Trade>();
-
-                Dictionary<string, string> param = new Dictionary<string, string>();
-
-                if (string.IsNullOrEmpty(lastId) == false)
+                try
                 {
-                    param.Add("symbol=" + security.Name, "&limit=1000" + "&fromId=" + lastId);
+                    long from = TimeManager.GetTimeStampMilliSecondsToDateTime(endTime);
+
+                    string timeStamp = TimeManager.GetUnixTimeStampMilliseconds().ToString();
+                    Dictionary<string, string> param = new Dictionary<string, string>();
+
+                    param.Add("symbol=" + security, "&limit=1000" + "&startTime=" + from);
+
+                    string endPoint = "fapi/v1/aggTrades";
+
+                    var res2 = CreateQuery(Method.GET, endPoint, param, false);
+
+                    AgregatedHistoryTrade[] tradeHistory = JsonConvert.DeserializeObject<AgregatedHistoryTrade[]>(res2);
+
+                    var oldTrades = CreateTradesFromJson(security, tradeHistory);
+
+                    return oldTrades;
                 }
-                else
+                catch
                 {
-                    param.Add("symbol=" + security.Name, "&limit=1000");
+                    SendLogMessage(OsLocalization.Market.Message95 + security, LogMessageType.Error);
+
+                    return null;
                 }
-
-
-                string endPoint = "fapi/v1/historicalTrades";
-
-                var res2 = CreateQuery(Method.GET, endPoint, param, false);
-
-                List<HistoryTrade> tradeHistory = JsonConvert.DeserializeAnonymousType(res2, new List<HistoryTrade>());
-
-                //tradeHistory.Reverse();
-
-                foreach (var trades in tradeHistory)
-                {
-                    Trade trade = new Trade();
-                    trade.SecurityNameCode = security.Name;
-                    trade.Price = trades.price.ToDecimal();
-
-                    trade.Id = trades.id.ToString();
-                    trade.Time = new DateTime(1970, 1, 1).AddMilliseconds(Convert.ToDouble(trades.time));
-                    trade.Volume =
-                            trades.qty.ToDecimal();
-                    trade.Side = Convert.ToBoolean(trades.isBuyerMaker) == true ? Side.Buy : Side.Sell;
-
-                    newTrades.Add(trade);
-                }
-
-                return newTrades;
-
             }
-            catch (Exception error)
+        }
+
+        public decimal StringToDecimal(string value)
+        {
+            string sep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+            return Convert.ToDecimal(value.Replace(",", sep).Replace(".", sep));
+        }
+
+        private List<Trade> CreateTradesFromJson(string secName, AgregatedHistoryTrade[] binTrades)
+        {
+            List<Trade> trades = new List<Trade>();
+
+            foreach (var jtTrade in binTrades)
             {
-                SendLogMessage(error.ToString(), LogMessageType.Error);
-                return null;
+                var trade = new Trade();
+
+                trade.Time = new DateTime(1970, 1, 1).AddMilliseconds(Convert.ToDouble(jtTrade.T));
+                trade.Price = StringToDecimal(jtTrade.P);
+                trade.MicroSeconds = 0;
+                trade.Id = jtTrade.A.ToString();
+                trade.Volume = Math.Abs(StringToDecimal(jtTrade.Q));
+                trade.SecurityNameCode = secName;
+
+                if (StringToDecimal(jtTrade.Q) >= 0)
+                {
+                    trade.Side = Side.Buy;
+                    trade.Ask = 0;
+                    trade.AsksVolume = 0;
+                    trade.Bid = trade.Price;
+                    trade.BidsVolume = trade.Volume;
+                }
+                else if (StringToDecimal(jtTrade.Q) < 0)
+                {
+                    trade.Side = Side.Sell;
+                    trade.Ask = trade.Price;
+                    trade.AsksVolume = trade.Volume;
+                    trade.Bid = 0;
+                    trade.BidsVolume = 0;
+                }
+
+
+                trades.Add(trade);
             }
+
+            return trades;
         }
 
         /// <summary>
@@ -855,26 +883,9 @@ namespace OsEngine.Market.Servers.Binance.Futures
                     param.Add("&type=", "LIMIT");
                     param.Add("&timeInForce=", "GTC");
                     param.Add("&newClientOrderId=", order.NumberUser.ToString());
-                    //++++++++ вычисляем количество из размера лота
-                    Decimal quant;
-                    /*
-                    if (order.Side == Side.Sell)
-                    {
-                        quant = order.Volume / order.Price;
-                    }
-                    else
-                    {
-                    */
-                        quant = order.Volume;
-                    //}
-                    param.Add("&quantity=",
-                        quant.ToString("0.000000")//CultureInfo.InvariantCulture)
-                            .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, ".").Replace(",", "."));
-                    /*
                     param.Add("&quantity=",
                         order.Volume.ToString(CultureInfo.InvariantCulture)
                             .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));
-                    */
                     param.Add("&price=",
                         order.Price.ToString(CultureInfo.InvariantCulture)
                             .Replace(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator, "."));
@@ -908,7 +919,7 @@ namespace OsEngine.Market.Servers.Binance.Futures
         /// cancel order
         /// отменить ордер
         /// </summary>
-        public void CanselOrder(Order order)
+        public void CanсelOrder(Order order)
         {
             lock (_lockOrder)
             {
@@ -1190,6 +1201,10 @@ namespace OsEngine.Market.Servers.Binance.Futures
         /// <param name="e"></param>
         private void WsError(object sender, EventArgs e)
         {
+            if (e.ToString().Contains("Unknown order"))
+            {
+                return;
+            }
             SendLogMessage("Ошибка из ws4net :" + e, LogMessageType.Error);
         }
 
@@ -1416,7 +1431,7 @@ namespace OsEngine.Market.Servers.Binance.Futures
         /// </summary>
         public void Converter()
         {
-            
+
             while (true)
             {
                 try
@@ -1434,9 +1449,6 @@ namespace OsEngine.Market.Servers.Binance.Futures
 
                             else if (mes.Contains("\"e\":\"trade\""))
                             {
-                                //+++
-                                //Console.WriteLine(mes);
-                                SendLogMessage(mes, LogMessageType.Trade);
                                 var quotes = JsonConvert.DeserializeAnonymousType(mes, new TradeResponse());
 
 

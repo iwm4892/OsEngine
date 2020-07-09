@@ -30,6 +30,20 @@ namespace OsEngine.Market.Servers.Entity
             return Convert.ToInt64(GetUnixTimeStamp().TotalMilliseconds);
         }
 
+        public static int GetTimeStampSecondsToDateTime(DateTime time)
+        {
+            DateTime yearBegin = new DateTime(1970, 1, 1);
+
+            return (int)(time - yearBegin).TotalSeconds;
+        }
+
+        public static long GetTimeStampMilliSecondsToDateTime(DateTime time)
+        {
+            DateTime yearBegin = new DateTime(1970, 1, 1);
+
+            return (long)(time - yearBegin).TotalMilliseconds;
+        }
+
         private static TimeSpan GetUnixTimeStamp()
         {
             DateTime yearBegin = new DateTime(1970, 1, 1);
