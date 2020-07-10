@@ -417,13 +417,17 @@ namespace OsEngine.Robots.Trend
         
         private void LogicOpenPosition(List<Candle> candles)
         {
-            if (_lastTradeDate.AddSeconds(2) > DateTime.Now)
+            if (_tab.Connector.MyServer.ServerType != ServerType.Tester &&
+                    _tab.Connector.MyServer.ServerType != ServerType.Optimizer)
             {
-                return;
-            }
-            else
-            {
-                _lastTradeDate = DateTime.Now;
+                if (_lastTradeDate.AddSeconds(2) > DateTime.Now)
+                {
+                    return;
+                }
+                else
+                {
+                    _lastTradeDate = DateTime.Now;
+                }
             }
 
             if(_lastMa<_lastDown || _lastMa > _lastUp)
