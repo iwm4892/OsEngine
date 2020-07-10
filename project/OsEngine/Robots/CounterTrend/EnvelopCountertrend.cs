@@ -53,9 +53,9 @@ namespace OsEngine.Robots.Trend
             MinVolume = CreateParameter("MinVolume", 1, 1, 10000, 0.0001m);
             MaxPosition = CreateParameter("Макс. открытых позиций", 1, 1, 10, 1);
 
-            _sma = IndicatorsFactory.CreateIndicatorByName("Sma", name + "Moving", false);
-            _sma = (Aindicator)_tab.CreateCandleIndicator(_sma, "Prime");
-            _sma.ParametersDigit[0].Value = SmaLength.ValueInt;
+            _sma = new MovingAverage(name + "_sma", false);
+            _sma = (MovingAverage)_tab.CreateCandleIndicator(_sma, "Prime");
+            _sma.Lenght = SmaLength.ValueInt;
             _sma.Save();
 
             _envelop = new Envelops(name + "Envelop", false);
@@ -106,7 +106,7 @@ namespace OsEngine.Robots.Trend
             _envelop.Save();
             _envelop.Reload();
 
-            _sma.ParametersDigit[0].Value = SmaLength.ValueInt;
+            _sma.Lenght = SmaLength.ValueInt;
             _sma.Save();
             _sma.Reload();
 
@@ -178,7 +178,7 @@ namespace OsEngine.Robots.Trend
         /// <summary>
         /// Машка для профита
         /// </summary>
-        private Aindicator _sma;
+        private MovingAverage _sma;
         private bool _isDisposed;
         /// <summary>
         /// Максимальное количество одновременно открытых позиций
@@ -214,8 +214,8 @@ namespace OsEngine.Robots.Trend
                     continue;
                 }
 
-                if (_sma.DataSeries[0].Values == null ||
-                    _sma.ParametersDigit[0].Value + 3 > _sma.DataSeries[0].Values.Count)
+                if (_sma.Values == null ||
+                    _sma.Lenght + 3 > _sma.Values.Count)
                 {
                     continue;
                 }
@@ -225,7 +225,7 @@ namespace OsEngine.Robots.Trend
                     _envelop.Process(_tab.CandlesAll);
                     _lastUp = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1];
                     _lastDown = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1];
-                    _lastMa = _sma.DataSeries[0].Values[_sma.DataSeries[0].Values.Count - 1];
+                    _lastMa = _sma.Values.Last();
                 }
                 if (_lastUp == 0 || _lastDown == 0)
                 {
@@ -291,8 +291,11 @@ namespace OsEngine.Robots.Trend
         }
         private void _tab_PositionOpeningSuccesEvent(Position position)
         {
-            
-            
+            if (_tab.Connector.MyServer.ServerType == ServerType.Optimizer)
+            {
+                position.ComissionType = ComissionType.Percent;
+                position.ComissionValue = 0.1m;
+            }
             List<Position> openPositions = _tab.PositionsOpenAll;
             for (int i = 0; openPositions != null && i < openPositions.Count; i++)
             {
@@ -357,7 +360,7 @@ namespace OsEngine.Robots.Trend
             }
             _lastUp = _envelop.ValuesUp[_envelop.ValuesUp.Count - 1];
             _lastDown = _envelop.ValuesDown[_envelop.ValuesDown.Count - 1];
-            _lastMa = _sma.DataSeries[0].Values[_sma.DataSeries[0].Values.Count - 1];
+            _lastMa = _sma.Values.Last();
             if (_lastUp==0|| _lastDown == 0)
             {
                 return;
