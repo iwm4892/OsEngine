@@ -30,7 +30,7 @@ namespace OsEngine.Robots.MarketMaker
             _tab1.PositionClosingSuccesEvent += PositionClosingSuccesEvent;
             _tab2.PositionClosingSuccesEvent += PositionClosingSuccesEvent;
 
-            Analiser = new MarketDepthSpreadAnaliser();
+            Analiser = new MarketDepthSpreadAnaliserArb();
             Analiser.addTab(_tab1);
             Analiser.addTab(_tab2);
             Analiser.SpreadChangeEvent += Analiser_SpreadChangeEvent;
@@ -345,7 +345,7 @@ namespace OsEngine.Robots.MarketMaker
 
         public StrategyParameterDecimal minProfit;
 
-        private MarketDepthSpreadAnaliser Analiser;
+        private MarketDepthSpreadAnaliserArb Analiser;
         /// <summary>
         /// торгуем контрактами
         /// </summary>
