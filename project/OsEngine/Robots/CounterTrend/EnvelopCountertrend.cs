@@ -689,7 +689,7 @@ namespace OsEngine.Robots.Trend
                         if(_tab.Connector.PortfolioName == "BinanceMargin" && b.ValueCurrent == 0 && b.ValueBlocked != 0)
                         {
                             int _posCountNaw = GetOpenPositionsCount();
-                            if (_posCountNaw > 3) //тк 3е плечо на маржиналке то ограничимся 3мя позициями
+                            if (_posCountNaw > 3 || _posCountNaw == 0) //тк 3е плечо на маржиналке то ограничимся 3мя позициями, а если нет открытых то гдето ошибка
                             {
                                 return 0;
                             }
