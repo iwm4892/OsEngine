@@ -346,6 +346,7 @@
     <Compile Include="Entity\Extensions.cs" />
     <Compile Include="Entity\HorizontalVolume.cs" />
     <Compile Include="Entity\MarketDepthPainter.cs" />
+    <Compile Include="Entity\MarketDepthSpreadAnaliserArb.cs" />
     <Compile Include="Entity\MarketDepthSpreadAnaliser.cs" />
     <Compile Include="Entity\MovingAverageSimle.cs" />
     <Compile Include="Entity\ProxyHolder.cs" />
